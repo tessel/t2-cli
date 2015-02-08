@@ -1,16 +1,13 @@
 TODO:
 
-Milestone 1 (Hello World):
-Type node index.js, have it send a file over and run it (CHECK)
+Milestone 1 (Hello World) (CHECK):
+Type node index.js, have it send a file over and run it
 
-Milestone 2 (Tar and Feathers):
-Type node run index.js FILE/FOLDER, have it bundle up the entire repo, compress it, send it over sftp, untar it on the other side and run it
+Milestone 2 (Tar and Feathers) (CHECK):
+Type node run index.js, have it bundle up the entire test repo, compress it, send it over sftp, untar it on the other side and run it
 
-Milestone 3 (Going Global):
-Add the scaffolding necessary to run this module as command line tool and parse out arguments. hint: check omnomnom
-
-Milestone 4 (Abstraction Traction):
-Add flags for setting the ip address of the remote, path to the local ssh key, and passphrase for the key
+Milestone 3 (Going Global) (CHECK):
+Add the scaffolding necessary to run this module as command line tool and parse out folder arguments. hint: check nomnom
 
 Milestone 5 (Myfi WiFi):
 Add the ability to set the WiFi credentials

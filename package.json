@@ -2,9 +2,12 @@
   "name": "prime-cli",
   "version": "0.0.1",
   "description": "The starting point of Tessel Prime's command line interface",
-  "main": "index.js",
+  "main": "./bin/prime.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin" : {
+    "prime" : "./bin/prime.js"
   },
   "repository": {
     "type": "git",
@@ -29,7 +32,9 @@
   "dependencies": {
     "bluebird": "^2.9.6",
     "envfile": "^1.0.0",
+    "nomnom": "^1.8.1",
     "ssh2": "^0.4.2",
     "tessel": "^0.3.19"
-  }
+  },
+  "preferGlobal": true
 }
