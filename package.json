@@ -1,0 +1,35 @@
+{
+  "name": "prime-cli",
+  "version": "0.0.1",
+  "description": "The starting point of Tessel Prime's command line interface",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tessel/prime-cli.git"
+  },
+  "keywords": [
+    "tessel",
+    "prime",
+    "microcontroller",
+    "embedded",
+    "cli",
+    "v2",
+    "technical",
+    "machine"
+  ],
+  "author": "Technical Machine",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tessel/prime-cli/issues"
+  },
+  "homepage": "https://github.com/tessel/prime-cli",
+  "dependencies": {
+    "bluebird": "^2.9.6",
+    "envfile": "^1.0.0",
+    "ssh2": "^0.4.2",
+    "tessel": "^0.3.19"
+  }
+}
