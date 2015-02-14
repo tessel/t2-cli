@@ -43,6 +43,9 @@ parser.command('wifi')
     if (opts.scan) {
       wifi.scanForNetworks();
     }
+    else if (opts.ip) {
+      wifi.printIPAddress();
+    }
     else {
       'no good...';
     }
@@ -51,6 +54,11 @@ parser.command('wifi')
     abbr: 's',
     flag: true,
     help: "Scan for available networks"
+  })
+  .option('ip', {
+    abbr: 'i',
+    flag: true,
+    help: 'Print the IP Address of the remote Tessel'
   })
   .help('Configure the wireless connection');
 
