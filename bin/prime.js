@@ -46,8 +46,9 @@ parser.command('wifi')
     else if (opts.ip) {
       wifi.printIPAddress();
     }
-    else {
-      'no good...';
+    else if (opts.ssid && opts.password) {
+      var options = {ssid: opts.ssid, password: opts.password}
+      wifi.setWiFiCredentialsOverSSH(options)
     }
   })
   .option('scan', {
@@ -59,6 +60,14 @@ parser.command('wifi')
     abbr: 'i',
     flag: true,
     help: 'Print the IP Address of the remote Tessel'
+  })
+  .option('ssid', {
+    abbr: 'n',
+    help: "Set the SSID of the network to connect to"
+  })
+  .option('password', {
+    abbr: 'p',
+    help: "Set the password of the network to connect to"
   })
   .help('Configure the wireless connection');
 
