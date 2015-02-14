@@ -41,7 +41,7 @@ parser.command('root')
 parser.command('wifi')
   .callback(function(opts) {
     if (opts.scan) {
-      wifi.scanForNetworks();
+      wifi.printAvailableNetworks();
     }
     else if (opts.ip) {
       wifi.printIPAddress();
