@@ -23,7 +23,7 @@ parser.command('run')
 
 parser.command('root')
   .callback(function(opts) {
-    root.ssh(opts);
+    root.sshRoot(opts);
   })
   .option('host', {
     abbr: 'h',
