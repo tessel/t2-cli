@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 var parser = require("nomnom")
   , deploy = require('../lib/deploy')
-  , root = require('../lib/root');
+  , root = require('../lib/root')
+  , wifi = require('../lib/wifi')
   ;
 
 parser.command('run')
@@ -36,6 +37,22 @@ parser.command('root')
     abbr: ''
   })
   .help('Access the terminal of your remote Tessel');
+
+parser.command('wifi')
+  .callback(function(opts) {
+    if (opts.scan) {
+      wifi.scanForNetworks();
+    }
+    else {
+      'no good...';
+    }
+  })
+  .option('scan', {
+    abbr: 's',
+    flag: true,
+    help: "Scan for available networks"
+  })
+  .help('Configure the wireless connection');
 
 parser.usage('Usage: prime <command>');
 
