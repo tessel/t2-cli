@@ -13,6 +13,7 @@ Copy the example.env into a file called config.env and modify each of the fields
 ## TODO
 The commands below are planned to be implemented by product ship date.
 
+* `tessel` prints CLI usage
 * `tessel run FILE.lang` runs the provided FILE.lang
 * `tessel push FILE.lang` writes the provided FILE.lang to flash and runs it when Tessel boots up
 * `tessel erase` clears any program in flash
