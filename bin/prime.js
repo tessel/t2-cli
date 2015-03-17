@@ -4,6 +4,7 @@ var parser = require("nomnom")
   , erase = require('../lib/erase')
   , root = require('../lib/root')
   , wifi = require('../lib/wifi')
+  , init = require('../lib/init')
   ;
 
 parser.command('run')
