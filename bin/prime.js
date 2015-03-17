@@ -21,6 +21,22 @@ parser.command('run')
   })
   .help('Deploy a script to Tessel and run it with Node.');
 
+parser.command('push')
+  .callback(function(opts) {
+    deploy.sftpDeploy(opts, true); // true: push=true
+  })
+  .option('entryPoint', {
+    position: 1,
+    required: true,
+    help: 'the entry point file to deploy to Tessel'
+  })
+  .option('verbose', {
+    flag : true,
+    abbr: 'v',
+    help: 'choose to view more debugging information'
+  })
+  .help('Deploy a script to memory on Tessel and run it with Node whenever Tessel boots up.');
+
 parser.command('root')
   .callback(function(opts) {
     root.sshRoot(opts);
