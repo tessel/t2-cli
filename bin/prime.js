@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var parser = require("nomnom")
   , deploy = require('../lib/deploy')
+  , erase = require('../lib/erase')
   , root = require('../lib/root')
   , wifi = require('../lib/wifi')
   ;
@@ -20,6 +21,33 @@ parser.command('run')
     help: 'choose to view more debugging information'
   })
   .help('Deploy a script to Tessel and run it with Node.');
+
+parser.command('push')
+  .callback(function(opts) {
+    deploy.sftpDeploy(opts, true); // true: push=true
+  })
+  .option('entryPoint', {
+    position: 1,
+    required: true,
+    help: 'the entry point file to deploy to Tessel'
+  })
+  .option('verbose', {
+    flag : true,
+    abbr: 'v',
+    help: 'choose to view more debugging information'
+  })
+  .help('Deploy a script to memory on Tessel and run it with Node whenever Tessel boots up.');
+
+parser.command('erase')
+  .callback(function(opts) {
+    erase.erase(opts);
+  })
+  .option('verbose', {
+    flag : true,
+    abbr: 'v',
+    help: 'choose to view more debugging information'
+  })
+  .help('Erase pushed code from Tessel filesystem.');
 
 parser.command('root')
   .callback(function(opts) {
