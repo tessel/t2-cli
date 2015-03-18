@@ -35,7 +35,7 @@
     "keypress": "^0.2.1",
     "nomnom": "^1.8.1",
     "ssh2": "^0.4.2",
-    "tessel": "^0.3.19"
+    "tessel": "git+https://github.com/tessel/cli#jon-export-v2"
   },
   "preferGlobal": true
 }
