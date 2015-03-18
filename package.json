@@ -35,6 +35,7 @@
     "envfile": "^1.0.0",
     "keypress": "^0.2.1",
     "nomnom": "^1.8.1",
+    "npm": "^2.7.1",
     "promzard": "^0.3.0",
     "ssh2": "^0.4.2",
     "tessel": "git+https://github.com/tessel/cli#jon-export-v2",
