@@ -100,8 +100,6 @@ parser.command('wifi')
   })
   .help('Configure the wireless connection');
 
-parser.usage('Usage: prime <command>');
-
 parser.command('init')
   .callback(init)
   .option('interactive', {
@@ -110,5 +108,8 @@ parser.command('init')
     help: 'Run in interactive mode'
   })
   .help('Initialize repository for your Tessel project')
+
+parser.usage('Usage: prime <command>');
+
 
 parser.parse();
