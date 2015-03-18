@@ -32,6 +32,8 @@
   "dependencies": {
     "bluebird": "^2.9.6",
     "envfile": "^1.0.0",
+    "fs-extra": "^0.16.5",
+    "keypair": "^1.0.0",
     "keypress": "^0.2.1",
     "nomnom": "^1.8.1",
     "ssh2": "^0.4.2",
