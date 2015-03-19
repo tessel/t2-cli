@@ -2,6 +2,7 @@
 var parser = require("nomnom")
   , deploy = require('../lib/deploy')
   , erase = require('../lib/erase')
+  , setup = require('../lib/setup')
   , root = require('../lib/root')
   , wifi = require('../lib/wifi')
   ;
@@ -48,6 +49,12 @@ parser.command('erase')
     help: 'choose to view more debugging information'
   })
   .help('Erase pushed code from Tessel filesystem.');
+
+parser.command('setup')
+  .callback(function(opts) {
+    setup.setup(opts);
+  })
+  .help('Set up authorization between Tessel and your computer');
 
 parser.command('root')
   .callback(function(opts) {
