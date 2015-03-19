@@ -13,10 +13,6 @@ Copy the example.env into a file called config.env and modify each of the fields
 ## TODO
 The commands below are planned to be implemented by product ship date.
 
-* `tessel` prints CLI usage
-* `tessel run FILE.lang` runs the provided FILE.lang
-* `tessel push FILE.lang` writes the provided FILE.lang to flash and runs it when Tessel boots up
-* `tessel erase` clears any program in flash
 * `tessel wifi` show details about an existing WiFi connection
   * `[-l]` lists the available networks
   * `[-n SSID]` connects to the provided SSID
@@ -30,7 +26,6 @@ The commands below are planned to be implemented by product ship date.
   * `up` start an access point with previous credentials
   * `down` stop an access point
 * `tessel logs` lists the recent activity, console.logs of running program from flash or RAM
-* `tessel list` lists whether there are any Tessels connected to the computer via USB or LAN
 * `tessel status` prints the name of the script that is running on any connected Tessels, how long any scripts have been running, whether the script is in RAM or Flash, and each Tessel's Wifi connection status
   * `[-s]` prints the running script information
   * `[-w]` prints the wifi status
@@ -38,8 +33,3 @@ The commands below are planned to be implemented by product ship date.
 * `tessel init` sets up current working directory as a tessel project directory (similar to npm init)
 * `tessel root` provides access to the system on chip (SoC)
 
-The commands below are contingent on a web deployment strategy
-
-* `tessel register NAME` registers the Tessel with our provided cloud in order to allow remote pushing
-  * `[-l]` lists the current registered name
-* `tessel provision` configure a device for mass update to a fleet of devices in the field
