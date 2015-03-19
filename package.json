@@ -1,21 +1,21 @@
 {
-  "name": "prime-cli",
+  "name": "t2-cli",
   "version": "0.0.1",
-  "description": "The starting point of Tessel Prime's command line interface",
-  "main": "./bin/prime.js",
+  "description": "The starting point of Tessel 2's command line interface",
+  "main": "./bin/tessel-2.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "prime": "./bin/prime.js"
+    "t2": "./bin/tessel-2.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tessel/prime-cli.git"
+    "url": "https://github.com/tessel/v2-cli.git"
   },
   "keywords": [
     "tessel",
-    "prime",
+    "t2",
     "microcontroller",
     "embedded",
     "cli",
@@ -26,9 +26,9 @@
   "author": "Technical Machine",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tessel/prime-cli/issues"
+    "url": "https://github.com/tessel/v2-cli/issues"
   },
-  "homepage": "https://github.com/tessel/prime-cli",
+  "homepage": "https://github.com/tessel/v2-cli",
   "dependencies": {
     "async": "^0.9.0",
     "bluebird": "^2.9.6",
