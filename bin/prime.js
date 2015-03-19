@@ -5,7 +5,11 @@ var parser = require("nomnom")
 
 parser.command('run')
   .callback(function(opts) {
-    controller.runScript(opts, false);
+    controller.deployScript(opts, false, function (err) {
+      if (err) {
+        throw err;
+      }
+    });
   })
   .option('entryPoint', {
     position: 1,
@@ -21,7 +25,10 @@ parser.command('run')
 
 parser.command('push')
   .callback(function(opts) {
-    controller.runScript(opts, true); // true: push=true
+    // true: push=true
+    controller.deployScript(opts, true, function(err) {
+      throw err;
+    }); 
   })
   .option('entryPoint', {
     position: 1,
@@ -37,7 +44,9 @@ parser.command('push')
 
 parser.command('erase')
   .callback(function(opts) {
-    controller.erase(opts);
+    controller.eraseScript(opts, function(err) {
+      throw err;
+    });
   })
   .option('verbose', {
     flag : true,
@@ -48,7 +57,9 @@ parser.command('erase')
 
 parser.command('list')
   .callback(function(opts) {
-    controller.listTessels();
+    controller.listTessels(function(err) {
+      if (err) throw err;
+    });
   })
   .help('Show all connected Tessels');
 
