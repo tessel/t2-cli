@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var parser = require("nomnom")
-  , controller = require('../lib/controller');
+  , controller = require('../lib/controller')
+  , init = require('../lib/init')
   ;
 
 parser.command('run')
@@ -62,6 +63,15 @@ parser.command('list')
     });
   })
   .help('Show all connected Tessels');
+
+parser.command('init')
+  .callback(init)
+  .option('interactive', {
+    flag: true,
+    abbr: 'i',
+    help: 'Run in interactive mode'
+  })
+  .help('Initialize repository for your Tessel project')
 
 parser.usage('Usage: t2 <command>');
 
