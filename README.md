@@ -30,6 +30,5 @@ The commands below are planned to be implemented by product ship date.
   * `[-s]` prints the running script information
   * `[-w]` prints the wifi status
 * `tessel update` checks for and installs any firmware updates
-* `tessel init` sets up current working directory as a tessel project directory (similar to npm init)
 * `tessel root` provides access to the system on chip (SoC)
 
