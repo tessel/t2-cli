@@ -1,0 +1,48 @@
+{
+  "name": "t2-cli",
+  "version": "0.0.1",
+  "description": "The starting point of Tessel 2's command line interface",
+  "main": "./bin/tessel-2.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "t2": "./bin/tessel-2.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tessel/v2-cli.git"
+  },
+  "keywords": [
+    "tessel",
+    "t2",
+    "microcontroller",
+    "embedded",
+    "cli",
+    "v2",
+    "technical",
+    "machine"
+  ],
+  "author": "Technical Machine",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tessel/v2-cli/issues"
+  },
+  "homepage": "https://github.com/tessel/v2-cli",
+  "dependencies": {
+    "async": "^0.9.0",
+    "bluebird": "^2.9.6",
+    "envfile": "^1.0.0",
+    "keypress": "^0.2.1",
+    "lodash": "^3.5.0",
+    "mdns-js": "^0.3.1",
+    "nomnom": "^1.8.1",
+    "npm": "^2.7.1",
+    "promzard": "^0.3.0",
+    "osenv": "^0.1.0",
+    "ssh2": "^0.4.2",
+    "tessel": "git+https://github.com/tessel/cli#jon-export-v2",
+    "usb": "^1.0.5"
+  },
+  "preferGlobal": true
+}
