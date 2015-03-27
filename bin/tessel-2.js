@@ -27,9 +27,10 @@ parser.command('run')
 parser.command('push')
   .callback(function(opts) {
     // true: push=true
-    controller.deployScript(opts, true, function(err) {
-      throw err;
-    });
+    controller.deployScript(opts, true)
+      .catch(function(err) {
+        console.error(err);
+      });
   })
   .option('entryPoint', {
     position: 1,
