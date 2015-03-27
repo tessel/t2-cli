@@ -79,9 +79,23 @@ parser.command('wifi')
     flag: true,
     help: "List available Wifi networks"
   })
+  .option('ip', {
+    abbr: 'i',
+    flag: true,
+    help: "Show Tessel's IP ADDRESS"
+  })
   .callback(function(opts) {
     if (opts.list) {
-      controller.printAvailableNetworks();
+      controller.printAvailableNetworks(opts, function(err) {
+        if (err) throw err;
+        process.exit(1);
+      });
+    }
+    else if (opts.ip) {
+      controller.printIPAddress(opts, function(err) {
+        if (err) throw err;
+        process.exit(1);
+      });
     }
   })
   .help('Configure the wireless connection');
