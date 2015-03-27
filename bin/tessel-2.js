@@ -73,6 +73,19 @@ parser.command('init')
   })
   .help('Initialize repository for your Tessel project')
 
+parser.command('wifi')
+  .option('list', {
+    abbr: 'l',
+    flag: true,
+    help: "List available Wifi networks"
+  })
+  .callback(function(opts) {
+    if (opts.list) {
+      controller.printAvailableNetworks();
+    }
+  })
+  .help('Configure the wireless connection');
+
 parser.usage('Usage: t2 <command>');
 
 parser.parse();
