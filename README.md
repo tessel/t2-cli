@@ -6,7 +6,7 @@ Clone this repo and then run `npm link --local`.
 
 ## Setup
 
-Copy the example.env into a file called config.env and modify each of the fields so that they are accurate. The keyPath refers to the path to your SSH key (postinstall has made one at `HOME/.tessel/id_rsa`) and the keyPassphrase is an optional configuration if you need to specify a passphrase to access your key.
+Copy the example.env into a file called config.env and modify each of the fields so that they are accurate. The keyPath refers to the path to your SSH key (postinstall has made one at `HOME/.tessel/id_rsa`).
 
 ## Usage
 `t2 run FILENAME` will deploy that starting file and its dependencies to your remote Tessel
