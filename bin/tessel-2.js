@@ -29,7 +29,7 @@ parser.command('push')
     // true: push=true
     controller.deployScript(opts, true, function(err) {
       throw err;
-    }); 
+    });
   })
   .option('entryPoint', {
     position: 1,
@@ -60,6 +60,7 @@ parser.command('list')
   .callback(function(opts) {
     controller.listTessels(function(err) {
       if (err) throw err;
+      process.exit(1);
     });
   })
   .help('Show all connected Tessels');
