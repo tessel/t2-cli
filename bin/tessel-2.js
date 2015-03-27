@@ -91,6 +91,14 @@ parser.command('wifi')
     flag: true,
     help: "Show Tessel's IP ADDRESS"
   })
+  .option('ssid', {
+    abbr: 'n',
+    help: "Set the SSID of the network to connect to"
+  })
+  .option('password', {
+    abbr: 'p',
+    help: "Set the password of the network to connect to"
+  })
   .callback(function(opts) {
     if (opts.list) {
       controller.printAvailableNetworks(opts, function(err) {
@@ -103,6 +111,12 @@ parser.command('wifi')
         if (err) throw err;
         process.exit(1);
       });
+    }
+    else if (opts.ssid && opts.password) {
+      controller.connectToNetwork(opts, function(err) {
+        if (err) throw err;
+        process.exit(1);
+      })
     }
   })
   .help('Configure the wireless connection');
