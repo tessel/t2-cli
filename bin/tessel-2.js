@@ -2,6 +2,7 @@
 var parser = require("nomnom")
   , controller = require('../lib/controller')
   , init = require('../lib/init')
+  , setup = require('../lib/setup')
   ;
 
 parser.command('run')
@@ -60,7 +61,11 @@ parser.command('setup')
   .callback(function(opts) {
     setup.setup(opts);
   })
-  .help('Set up authorization between Tessel and your computer');
+  .option('name', {
+    flag: true,
+    help: 'change the hostname of the Tessel'
+  })
+  .help('Set up communication between Tessel and your computer');
 
 parser.command('list')
   .callback(function(opts) {
