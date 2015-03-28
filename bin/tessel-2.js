@@ -30,6 +30,7 @@ parser.command('push')
     controller.deployScript(opts, true)
       .catch(function(err) {
         console.error(err);
+        process.exit(1);
       });
   })
   .option('entryPoint', {
@@ -64,7 +65,8 @@ parser.command('list')
         process.exit(1);
       })
       .catch(function(error){
-        console.log(error);
+        console.error(error);
+        process.exit(1);
       });
   })
   .help('Show all connected Tessels');
