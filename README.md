@@ -28,7 +28,7 @@ The commands below are planned to be implemented by product ship date.
   * `down` stop an access point
 * `tessel logs` lists the recent activity, console.logs of running program from flash or RAM
 * `tessel setup` copies your RSA public key onto the Tessel so that you can SSH into that tessel
-  * `[--name NAME]` sets the hostname of the Tessel
+  * `[--name NAME]` gives the Tessel a name of your choosing
 * `tessel status` prints the name of the script that is running on any connected Tessels, how long any scripts have been running, whether the script is in RAM or Flash, and each Tessel's Wifi connection status
   * `[-s]` prints the running script information
   * `[-w]` prints the wifi status
