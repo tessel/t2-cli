@@ -2,13 +2,11 @@
 The starting point for the command line interface to the next version of Tessel
 
 ## Installation
-Clone this repo and then run `npm link --local`. 
+Clone this repo and then run `npm link --local`.
 
 ## Setup
 
-Create a folder at `HOME/.tessel` (for example, on OSX this is `mkdir ~/.tessel`). Copy your existing SSH key into that folder or make a new one (something like `cp ~/.ssh/id_rsa* ~/.tessel/`). 
-
-Copy the example.env into a file called config.env and modify each of the fields so that they are accurate. The keyPath refers to the path to your SSH key and the keyPassphrase is an optional configuration if you need to specify a passphrase to access your key.
+Copy the example.env into a file called config.env and modify each of the fields so that they are accurate. The keyPath refers to the path to your SSH key (postinstall has made one at `HOME/.tessel/id_rsa`).
 
 ## Usage
 `t2 run FILENAME` will deploy that starting file and its dependencies to your remote Tessel
@@ -29,9 +27,10 @@ The commands below are planned to be implemented by product ship date.
   * `up` start an access point with previous credentials
   * `down` stop an access point
 * `tessel logs` lists the recent activity, console.logs of running program from flash or RAM
+* `tessel setup` copies your RSA public key onto the Tessel so that you can SSH into that tessel
+  * `[--name NAME]` gives the Tessel a name of your choosing
 * `tessel status` prints the name of the script that is running on any connected Tessels, how long any scripts have been running, whether the script is in RAM or Flash, and each Tessel's Wifi connection status
   * `[-s]` prints the running script information
   * `[-w]` prints the wifi status
 * `tessel update` checks for and installs any firmware updates
 * `tessel root` provides access to the system on chip (SoC)
-

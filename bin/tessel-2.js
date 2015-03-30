@@ -2,6 +2,7 @@
 var parser = require("nomnom")
   , controller = require('../lib/controller')
   , init = require('../lib/init')
+  , setup = require('../lib/setup')
   ;
 
 parser.command('run')
@@ -29,7 +30,7 @@ parser.command('push')
     // true: push=true
     controller.deployScript(opts, true, function(err) {
       throw err;
-    }); 
+    });
   })
   .option('entryPoint', {
     position: 1,
@@ -55,6 +56,16 @@ parser.command('erase')
     help: 'choose to view more debugging information'
   })
   .help('Erase pushed code from Tessel filesystem.');
+
+parser.command('setup')
+  .callback(function(opts) {
+    setup.setup(opts);
+  })
+  .option('name', {
+    flag: true,
+    help: 'change the hostname of the Tessel'
+  })
+  .help('Set up communication between Tessel and your computer');
 
 parser.command('list')
   .callback(function(opts) {
