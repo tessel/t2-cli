@@ -29,6 +29,9 @@
     "url": "https://github.com/tessel/v2-cli/issues"
   },
   "homepage": "https://github.com/tessel/v2-cli",
+  "devDependencies": {
+    "debug": "^2.1.3"
+  },
   "dependencies": {
     "async": "^0.9.0",
     "bluebird": "^2.9.6",
