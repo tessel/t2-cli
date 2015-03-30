@@ -32,14 +32,15 @@
   "dependencies": {
     "async": "^0.9.0",
     "bluebird": "^2.9.6",
+    "char-spinner": "^1.0.1",
     "envfile": "^1.0.0",
     "keypress": "^0.2.1",
     "lodash": "^3.5.0",
     "mdns-js": "^0.3.1",
     "nomnom": "^1.8.1",
     "npm": "^2.7.1",
-    "promzard": "^0.3.0",
     "osenv": "^0.1.0",
+    "promzard": "^0.3.0",
     "ssh2": "^0.4.2",
     "tessel": "git+https://github.com/tessel/cli#jon-export-v2",
     "usb": "^1.0.5"
