@@ -4,8 +4,7 @@
   "description": "The starting point of Tessel 2's command line interface",
   "main": "./bin/tessel-2.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "node ./resources/postinstall.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
     "t2": "./bin/tessel-2.js"
