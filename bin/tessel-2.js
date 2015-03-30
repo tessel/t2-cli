@@ -101,22 +101,34 @@ parser.command('wifi')
   })
   .callback(function(opts) {
     if (opts.list) {
-      controller.printAvailableNetworks(opts, function(err) {
-        if (err) throw err;
-        process.exit(1);
-      });
+      controller.printAvailableNetworks(opts)
+        .then(function(info){
+          process.exit(1);
+        })
+        .catch(function(err) {
+          if (err) throw err;
+          process.exit(1);
+        });
     }
     else if (opts.ip) {
-      controller.printIPAddress(opts, function(err) {
-        if (err) throw err;
-        process.exit(1);
-      });
+      controller.printIPAddress(opts)
+        .then(function(info){
+          process.exit(1);
+        })
+        .catch(function(err) {
+          if (err) throw err;
+          process.exit(1);
+        });
     }
     else if (opts.ssid && opts.password) {
-      controller.connectToNetwork(opts, function(err) {
-        if (err) throw err;
-        process.exit(1);
-      })
+      controller.connectToNetwork(opts)
+        .then(function(info){
+          process.exit(1);
+        })
+        .catch(function(err) {
+          if (err) throw err;
+          process.exit(1);
+        });
     }
   })
   .help('Configure the wireless connection');
