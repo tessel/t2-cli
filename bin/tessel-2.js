@@ -6,11 +6,11 @@ var parser = require("nomnom")
 
 parser.command('run')
   .callback(function(opts) {
-    controller.deployScript(opts, false, function (err) {
-      if (err) {
-        throw err;
-      }
-    });
+    controller.deployScript(opts, false)
+      .catch(function (err) {
+        console.error(err);
+        process.exit(1);
+      });
   })
   .option('entryPoint', {
     position: 1,
@@ -27,9 +27,11 @@ parser.command('run')
 parser.command('push')
   .callback(function(opts) {
     // true: push=true
-    controller.deployScript(opts, true, function(err) {
-      throw err;
-    }); 
+    controller.deployScript(opts, true)
+      .catch(function(err) {
+        console.error(err);
+        process.exit(1);
+      });
   })
   .option('entryPoint', {
     position: 1,
@@ -58,9 +60,14 @@ parser.command('erase')
 
 parser.command('list')
   .callback(function(opts) {
-    controller.listTessels(function(err) {
-      if (err) throw err;
-    });
+    controller.listTessels()
+      .then(function() {
+        process.exit(1);
+      })
+      .catch(function(error){
+        console.error(error);
+        process.exit(1);
+      });
   })
   .help('Show all connected Tessels');
 
