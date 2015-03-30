@@ -80,6 +80,59 @@ parser.command('init')
   })
   .help('Initialize repository for your Tessel project')
 
+parser.command('wifi')
+  .option('list', {
+    abbr: 'l',
+    flag: true,
+    help: "List available Wifi networks"
+  })
+  .option('ip', {
+    abbr: 'i',
+    flag: true,
+    help: "Show Tessel's IP ADDRESS"
+  })
+  .option('ssid', {
+    abbr: 'n',
+    help: "Set the SSID of the network to connect to"
+  })
+  .option('password', {
+    abbr: 'p',
+    help: "Set the password of the network to connect to"
+  })
+  .callback(function(opts) {
+    if (opts.list) {
+      controller.printAvailableNetworks(opts)
+        .then(function(info){
+          process.exit(1);
+        })
+        .catch(function(err) {
+          if (err) throw err;
+          process.exit(1);
+        });
+    }
+    else if (opts.ip) {
+      controller.printIPAddress(opts)
+        .then(function(info){
+          process.exit(1);
+        })
+        .catch(function(err) {
+          if (err) throw err;
+          process.exit(1);
+        });
+    }
+    else if (opts.ssid && opts.password) {
+      controller.connectToNetwork(opts)
+        .then(function(info){
+          process.exit(1);
+        })
+        .catch(function(err) {
+          if (err) throw err;
+          process.exit(1);
+        });
+    }
+  })
+  .help('Configure the wireless connection');
+
 parser.usage('Usage: t2 <command>');
 
 parser.parse();
