@@ -102,6 +102,11 @@ parser.command('list')
         process.exit(1);
       });
   })
+  .option('all', {
+    flag: true,
+    abbr: 'a',
+    help: 'list all tessels, including ones you are not authorized on'
+  })
   .help('Show all connected Tessels');
 
 parser.command('init')
