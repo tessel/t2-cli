@@ -8,12 +8,14 @@ var parser = require("nomnom")
 var hostNameOption = {
   flag : true,
   abbr : 'n',
+  metavar : 'HOST_NAME',
   help : 'the name of the tessel on which the command will be executed.'
 }
 
 var ipOption = {
   flag : true,
   abbr : 'i',
+  metavar : 'IP_ADDRESS',
   help : 'the ip of the tessel on which the command will be executed.'
 }
 
