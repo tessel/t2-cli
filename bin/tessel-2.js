@@ -2,6 +2,7 @@
 var parser = require("nomnom")
   , controller = require('../lib/controller')
   , init = require('../lib/init')
+  , tessel = require('tessel')
   ;
 
 var hostNameOption = {
@@ -41,7 +42,7 @@ parser.command('push')
     // true: push=true
     controller.deployScript(opts, true)
       .catch(function(err) {
-        console.error(err);
+        tessel.logs.error(err);
         process.exit(1);
       });
   })
@@ -76,8 +77,11 @@ parser.command('list')
       .then(function() {
         process.exit(1);
       })
-      .catch(function(error){
-        console.error(error);
+      .catch(function(err){
+        if(err instanceof Error){
+          throw err;
+        };
+        tessel.logs.error(err);
         process.exit(1);
       });
   })
