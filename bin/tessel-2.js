@@ -4,6 +4,18 @@ var parser = require("nomnom")
   , init = require('../lib/init')
   ;
 
+var hostNameOption = {
+  flag : true,
+  abbr : 'n',
+  help : 'the name of the tessel on which the command will be executed.'
+}
+
+var ipOption = {
+  flag : true,
+  abbr : 'i',
+  help : 'the ip of the tessel on which the command will be executed.'
+}
+
 parser.command('run')
   .callback(function(opts) {
     controller.deployScript(opts, false)
@@ -60,7 +72,7 @@ parser.command('erase')
 
 parser.command('list')
   .callback(function(opts) {
-    controller.listTessels()
+    controller.listTessels(opts)
       .then(function() {
         process.exit(1);
       })
@@ -81,15 +93,12 @@ parser.command('init')
   .help('Initialize repository for your Tessel project')
 
 parser.command('wifi')
+  .option('name', hostNameOption)
+  .option('ip', ipOption)
   .option('list', {
     abbr: 'l',
     flag: true,
     help: "List available Wifi networks"
-  })
-  .option('ip', {
-    abbr: 'i',
-    flag: true,
-    help: "Show Tessel's IP ADDRESS"
   })
   .option('ssid', {
     abbr: 'n',
