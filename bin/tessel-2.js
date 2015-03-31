@@ -25,6 +25,8 @@ parser.command('run')
         process.exit(1);
       });
   })
+  .option('name', hostNameOption)
+  .option('ip', ipOption)
   .option('entryPoint', {
     position: 1,
     required: true,
@@ -46,6 +48,8 @@ parser.command('push')
         process.exit(1);
       });
   })
+  .option('name', hostNameOption)
+  .option('ip', ipOption)
   .option('entryPoint', {
     position: 1,
     required: true,
@@ -64,6 +68,8 @@ parser.command('erase')
       throw err;
     });
   })
+  .option('name', hostNameOption)
+  .option('ip', ipOption)
   .option('verbose', {
     flag : true,
     abbr: 'v',
@@ -143,6 +149,21 @@ parser.command('wifi')
           process.exit(1);
         });
     }
+  })
+  .option('name', hostNameOption)
+  .option('ip', ipOption)
+  .option('list', {
+    abbr: 'l',
+    flag: true,
+    help: "List available Wifi networks"
+  })
+  .option('ssid', {
+    abbr: 'n',
+    help: "Set the SSID of the network to connect to"
+  })
+  .option('password', {
+    abbr: 'p',
+    help: "Set the password of the network to connect to"
   })
   .help('Configure the wireless connection');
 
