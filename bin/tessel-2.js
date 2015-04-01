@@ -5,18 +5,10 @@ var parser = require("nomnom")
   , tessel = require('tessel')
   ;
 
-var hostNameOption = {
+var nameOption = {
   flag : true,
-  abbr : 'n',
-  metavar : 'HOST_NAME',
+  metavar : 'NAME',
   help : 'the name of the tessel on which the command will be executed.'
-}
-
-var ipOption = {
-  flag : true,
-  abbr : 'i',
-  metavar : 'IP_ADDRESS',
-  help : 'the ip of the tessel on which the command will be executed.'
 }
 
 parser.command('run')
@@ -30,8 +22,7 @@ parser.command('run')
         process.exit(1);
       });
   })
-  .option('name', hostNameOption)
-  .option('ip', ipOption)
+  .option('name', nameOption)
   .option('entryPoint', {
     position: 1,
     required: true,
@@ -56,8 +47,7 @@ parser.command('push')
         process.exit(1);
       });
   })
-  .option('name', hostNameOption)
-  .option('ip', ipOption)
+  .option('name', nameOption)
   .option('entryPoint', {
     position: 1,
     required: true,
@@ -81,8 +71,7 @@ parser.command('erase')
         process.exit(1);
       });
   })
-  .option('name', hostNameOption)
-  .option('ip', ipOption)
+  .option('name', nameOption)
   .option('verbose', {
     flag : true,
     abbr: 'v',
@@ -163,8 +152,7 @@ parser.command('wifi')
         });
     }
   })
-  .option('name', hostNameOption)
-  .option('ip', ipOption)
+  .option('name', nameOption)
   .option('list', {
     abbr: 'l',
     flag: true,
