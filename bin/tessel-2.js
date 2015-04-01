@@ -99,7 +99,7 @@ parser.command('list')
   })
   .option('timeout', {
     abbr: 't',
-    help: 'set time out for scanning for networked tessels'
+    help: 'set timeout in seconds for scanning for networked tessels'
   })
   .help('Show all connected Tessels');
 
