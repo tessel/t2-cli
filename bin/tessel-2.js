@@ -97,6 +97,10 @@ parser.command('list')
     abbr: 'a',
     help: 'list all tessels, including ones you are not authorized on'
   })
+  .option('timeout', {
+    abbr: 't',
+    help: 'set timeout in seconds for scanning for networked tessels'
+  })
   .help('Show all connected Tessels');
 
 parser.command('init')
