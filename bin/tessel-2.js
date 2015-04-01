@@ -6,7 +6,6 @@ var parser = require("nomnom")
   ;
 
 var nameOption = {
-  flag : true,
   metavar : 'NAME',
   help : 'the name of the tessel on which the command will be executed.'
 }
