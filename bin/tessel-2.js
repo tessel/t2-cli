@@ -2,16 +2,26 @@
 var parser = require("nomnom")
   , controller = require('../lib/controller')
   , init = require('../lib/init')
+  , tessel = require('tessel')
   ;
+
+var nameOption = {
+  metavar : 'NAME',
+  help : 'the name of the tessel on which the command will be executed.'
+}
 
 parser.command('run')
   .callback(function(opts) {
     controller.deployScript(opts, false)
       .catch(function (err) {
-        console.error(err);
+        if(err instanceof Error){
+          throw err;
+        }
+        tessel.logs.warn(err);
         process.exit(1);
       });
   })
+  .option('name', nameOption)
   .option('entryPoint', {
     position: 1,
     required: true,
@@ -28,11 +38,15 @@ parser.command('push')
   .callback(function(opts) {
     // true: push=true
     controller.deployScript(opts, true)
-      .catch(function(err) {
-        console.error(err);
+      .catch(function (err) {
+        if(err instanceof Error){
+          throw err;
+        }
+        tessel.logs.warn(err);
         process.exit(1);
       });
   })
+  .option('name', nameOption)
   .option('entryPoint', {
     position: 1,
     required: true,
@@ -47,10 +61,16 @@ parser.command('push')
 
 parser.command('erase')
   .callback(function(opts) {
-    controller.eraseScript(opts, function(err) {
-      throw err;
-    });
+    controller.eraseScript(opts)
+      .catch(function (err) {
+        if(err instanceof Error){
+          throw err;
+        }
+        tessel.logs.warn(err);
+        process.exit(1);
+      });
   })
+  .option('name', nameOption)
   .option('verbose', {
     flag : true,
     abbr: 'v',
@@ -60,14 +80,22 @@ parser.command('erase')
 
 parser.command('list')
   .callback(function(opts) {
-    controller.listTessels()
+    controller.listTessels(opts)
       .then(function() {
         process.exit(1);
       })
-      .catch(function(error){
-        console.error(error);
+      .catch(function(err){
+        if(err instanceof Error){
+          throw err;
+        };
+        tessel.logs.error(err);
         process.exit(1);
       });
+  })
+  .option('all', {
+    flag: true,
+    abbr: 'a',
+    help: 'list all tessels, including ones you are not authorized on'
   })
   .help('Show all connected Tessels');
 
@@ -81,15 +109,53 @@ parser.command('init')
   .help('Initialize repository for your Tessel project')
 
 parser.command('wifi')
+  .callback(function(opts) {
+    //TODO: Refactor switch case into controller.wifi
+    if (opts.list) {
+      controller.printAvailableNetworks(opts)
+        .then(function(info){
+          process.exit(1);
+        })
+        .catch(function (err) {
+          if(err instanceof Error){
+            throw err;
+          }
+          tessel.logs.warn(err);
+          process.exit(1);
+      });
+    }
+    else if (opts.ip) {
+      controller.printIPAddress(opts)
+        .then(function(info){
+          process.exit(1);
+        })
+        .catch(function (err) {
+          if(err instanceof Error){
+            throw err;
+          }
+          tessel.logs.warn(err);
+          process.exit(1);
+      });
+    }
+    else if (opts.ssid && opts.password) {
+      controller.connectToNetwork(opts)
+        .then(function(info){
+          process.exit(1);
+        })
+        .catch(function (err) {
+          if(err instanceof Error){
+            throw err;
+          }
+          tessel.logs.warn(err);
+          process.exit(1);
+        });
+    }
+  })
+  .option('name', nameOption)
   .option('list', {
     abbr: 'l',
     flag: true,
     help: "List available Wifi networks"
-  })
-  .option('ip', {
-    abbr: 'i',
-    flag: true,
-    help: "Show Tessel's IP ADDRESS"
   })
   .option('ssid', {
     abbr: 'n',
@@ -98,38 +164,6 @@ parser.command('wifi')
   .option('password', {
     abbr: 'p',
     help: "Set the password of the network to connect to"
-  })
-  .callback(function(opts) {
-    if (opts.list) {
-      controller.printAvailableNetworks(opts)
-        .then(function(info){
-          process.exit(1);
-        })
-        .catch(function(err) {
-          if (err) throw err;
-          process.exit(1);
-        });
-    }
-    else if (opts.ip) {
-      controller.printIPAddress(opts)
-        .then(function(info){
-          process.exit(1);
-        })
-        .catch(function(err) {
-          if (err) throw err;
-          process.exit(1);
-        });
-    }
-    else if (opts.ssid && opts.password) {
-      controller.connectToNetwork(opts)
-        .then(function(info){
-          process.exit(1);
-        })
-        .catch(function(err) {
-          if (err) throw err;
-          process.exit(1);
-        });
-    }
   })
   .help('Configure the wireless connection');
 
