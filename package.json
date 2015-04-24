@@ -34,6 +34,7 @@
     "bluebird": "^2.9.6",
     "char-spinner": "^1.0.1",
     "envfile": "^1.0.0",
+    "expand-tilde": "^1.2.0",
     "keypress": "^0.2.1",
     "lodash": "^3.5.0",
     "mdns-js": "^0.3.1",
