@@ -10,6 +10,19 @@ var nameOption = {
   help : 'the name of the tessel on which the command will be executed.'
 }
 
+parser.command('setup')
+  .callback(function(opts) {
+    controller.setupTessel(opts)
+      .catch(function(err) {
+        if(err instanceof Error){
+          throw err;
+        }
+        tessel.logs.warn(err);
+        process.exit(1);
+      });
+    })
+  .help('Authorize your computer to control the USB-connected Tessel.');
+
 parser.command('run')
   .callback(function(opts) {
     controller.deployScript(opts, false)
