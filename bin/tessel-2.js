@@ -101,7 +101,7 @@ parser.command('list')
         if(err instanceof Error){
           throw err;
         };
-        tessel.logs.error(err);
+        tessel.logs.err(err);
         process.exit(1);
       });
   })
