@@ -44,6 +44,7 @@
     "npm": "^2.7.1",
     "osenv": "^0.1.0",
     "promzard": "^0.3.0",
+    "shell-escape": "^0.2.0",
     "ssh2": "^0.4.2",
     "tessel": "git+https://github.com/tessel/cli#jon-export-v2",
     "usb": "^1.0.5",
