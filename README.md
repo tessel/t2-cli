@@ -6,9 +6,10 @@ Clone this repo and then run `npm link --local`.
 
 ## Setup
 
-Create a folder at `HOME/.tessel` (for example, on OSX this is `mkdir ~/.tessel`). Copy your existing SSH key into that folder or make a new one (something like `cp ~/.ssh/id_rsa* ~/.tessel/`).
+Using Tessel 2 over USB requires no special setup.
 
-Copy the example.env into a file called config.env and modify each of the fields so that they are accurate. The keyPath refers to the path to your SSH key and the keyPassphrase is an optional configuration if you need to specify a passphrase to access your key.
+In order to authorize the device with your computer to work over a LAN connection, call `tessel setup`. This will place an SSH key on the device.
+Use the `tessel wifi` command as described below to connect Tessel 2 to a local network. You should now be able to access your Tessel 2 remotely.
 
 ## Usage
 * `t2 setup` authorize your computer to access a Tessel over SSH (USB-connected Tessel only)
