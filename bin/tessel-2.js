@@ -89,7 +89,7 @@ parser.command('erase')
     abbr: 'v',
     help: 'choose to view more debugging information'
   })
-  .help('Erase pushed code from Tessel filesystem.');
+  .help('Erases files pushed to Flash using the tessel push command.');
 
 parser.command('list')
   .callback(function(opts) {
