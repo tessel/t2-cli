@@ -24,4 +24,6 @@ Use the `tessel wifi` command as described below to connect Tessel 2 to a local 
   * `[-p PASS]` connects with the given password
 
 ## TODO
-Tessel 2's CLI spec is under design [here](https://forums.tessel.io/t/t2-cli-spec-comments-requested/1743). Comments are welcome.
+Help us build Tessel 2's CLI! The [issues section](https://github.com/tessel/t2-cli/issues) of this repo is full of small, fully outlined projects to add functionality.
+
+Additional commands are under design [here](https://forums.tessel.io/t/t2-cli-spec-comments-requested/1743). Comments are welcome.
