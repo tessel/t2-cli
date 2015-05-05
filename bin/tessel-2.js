@@ -3,6 +3,8 @@ var parser = require("nomnom")
   , controller = require('../lib/controller')
   , init = require('../lib/init')
   , tessel = require('tessel')
+  , remote = require('../lib/remote')
+  , osenv = require('osenv')
   ;
 
 var nameOption = {
@@ -183,6 +185,46 @@ parser.command('wifi')
     help: "Set the password of the network to connect to"
   })
   .help('Configure the wireless connection');
+
+parser.command('remote')
+  .callback(function (opts) {
+    remote(opts)
+    .then(function() {
+      process.exit(1);
+    })
+    .catch(function(err){
+      if(err instanceof Error){
+        throw err;
+      };
+      tessel.logs.err(err);
+      process.exit(1);
+    });
+  })
+  .option('method', {
+    choices: ['add', 'remove', 'get'],
+    required: true,
+    position: 1
+  })
+  .option('host', {
+    required: true,
+    position: 2
+  })
+  .option('port', {
+    abbr: 'p',
+    default: 22
+  })
+  .option('keypath', {
+    abbr: 'k',
+    default: osenv.home() + "/.ssh/id_rsa.pub"
+  })
+  .option('passphrase', {
+    default: ''
+  })
+  .option('password', {
+    abbr: 'w',
+    default: ''
+  })
+  .help('Add undiscoverable remote devices manually');
 
 parser.usage('Usage: t2 <command>');
 
