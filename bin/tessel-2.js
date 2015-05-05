@@ -214,10 +214,11 @@ parser.command('remote')
     default: 22
   })
   .option('keypath', {
-    abbr: 'k',
+    abbr: 'i',
     default: osenv.home() + "/.ssh/id_rsa.pub"
   })
   .option('passphrase', {
+    abbr: 'h',
     default: ''
   })
   .option('password', {
