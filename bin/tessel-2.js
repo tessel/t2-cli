@@ -106,11 +106,6 @@ parser.command('list')
         process.exit(1);
       });
   })
-  .option('all', {
-    flag: true,
-    abbr: 'a',
-    help: 'List all tessels, including ones you are not authorized on'
-  })
   .option('timeout', {
     abbr: 't',
     metavar: 'TIMEOUT',
