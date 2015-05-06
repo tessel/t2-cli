@@ -184,6 +184,4 @@ parser.command('wifi')
   })
   .help('Configure the wireless connection');
 
-parser.usage('Usage: t2 <command>');
-
 parser.parse();
