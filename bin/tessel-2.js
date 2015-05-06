@@ -31,7 +31,7 @@ parser.command('run')
         if(err instanceof Error){
           throw err;
         }
-        tessel.logs.warn(err);
+        tessel.logs.err(err);
         process.exit(1);
       });
   })
