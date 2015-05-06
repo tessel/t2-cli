@@ -7,7 +7,7 @@ var parser = require("nomnom")
 
 var nameOption = {
   metavar : 'NAME',
-  help : 'the name of the tessel on which the command will be executed.'
+  help : 'The name of the tessel on which the command will be executed'
 }
 
 parser.command('setup')
@@ -21,7 +21,7 @@ parser.command('setup')
         process.exit(1);
       });
     })
-  .help('Authorize your computer to control the USB-connected Tessel.');
+  .help('Authorize your computer to control the USB-connected Tessel');
 
 parser.command('run')
   .callback(function(opts) {
@@ -38,14 +38,14 @@ parser.command('run')
   .option('entryPoint', {
     position: 1,
     required: true,
-    help: 'the entry point file to deploy to Tessel'
+    help: 'The entry point file to deploy to Tessel'
   })
   .option('verbose', {
     flag : true,
     abbr: 'v',
-    help: 'choose to view more debugging information'
+    help: 'Choose to view more debugging information'
   })
-  .help('Deploy a script to Tessel and run it with Node.');
+  .help('Deploy a script to Tessel and run it with Node');
 
 parser.command('push')
   .callback(function(opts) {
@@ -63,14 +63,14 @@ parser.command('push')
   .option('entryPoint', {
     position: 1,
     required: true,
-    help: 'the entry point file to deploy to Tessel'
+    help: 'The entry point file to deploy to Tessel'
   })
   .option('verbose', {
     flag : true,
     abbr: 'v',
-    help: 'choose to view more debugging information'
+    help: 'Choose to view more debugging information'
   })
-  .help('Deploy a script to memory on Tessel and run it with Node whenever Tessel boots up.');
+  .help('Deploy a script to memory on Tessel and run it with Node whenever Tessel boots up');
 
 parser.command('erase')
   .callback(function(opts) {
@@ -87,9 +87,9 @@ parser.command('erase')
   .option('verbose', {
     flag : true,
     abbr: 'v',
-    help: 'choose to view more debugging information'
+    help: 'Choose to view more debugging information'
   })
-  .help('Erases files pushed to Flash using the tessel push command.');
+  .help('Erases files pushed to Flash using the tessel push command');
 
 parser.command('list')
   .callback(function(opts) {
@@ -108,11 +108,12 @@ parser.command('list')
   .option('all', {
     flag: true,
     abbr: 'a',
-    help: 'list all tessels, including ones you are not authorized on'
+    help: 'List all tessels, including ones you are not authorized on'
   })
   .option('timeout', {
     abbr: 't',
-    help: 'set timeout in seconds for scanning for networked tessels'
+    metavar: 'TIMEOUT',
+    help: 'Set timeout in seconds for scanning for networked tessels'
   })
   .help('Show all connected Tessels');
 
@@ -176,10 +177,12 @@ parser.command('wifi')
   })
   .option('ssid', {
     abbr: 'n',
+    metavar: 'SSID',
     help: "Set the SSID of the network to connect to"
   })
   .option('password', {
     abbr: 'p',
+    metavar: 'PASSWORD',
     help: "Set the password of the network to connect to"
   })
   .help('Configure the wireless connection');
