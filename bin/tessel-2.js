@@ -200,4 +200,28 @@ parser.command('key')
     });
   })
 
+parser.command('rename')
+  .option('name', {
+    metavar : 'NAME',
+    help : 'The name of the tessel on which the command will be executed',
+    position: 1,
+  })
+  .option('reset', {
+    abbr: 'r',
+    flag: true
+  })
+  .callback(function(opts) {
+    controller.renameTessel(opts)
+    .then(function() {
+      process.exit(0);
+    })
+    .catch(function (err) {
+      if(err instanceof Error){
+        throw err;
+      }
+      tessel.logs.warn(err);
+      process.exit(1);
+    });
+  })
+
 parser.parse();
