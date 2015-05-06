@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var parser = require("nomnom")
   , controller = require('../lib/controller')
+  , key = require('../lib/key')
   , init = require('../lib/init')
   , tessel = require('tessel')
   ;
@@ -186,5 +187,22 @@ parser.command('wifi')
     help: "Set the password of the network to connect to"
   })
   .help('Configure the wireless connection');
+
+parser.command('key')
+  .option('method', {
+    position: 1,
+    required: true,
+    choices: ['generate'],
+  })
+  .callback(function(opts) {
+    key(opts)
+    .then(function(){
+      process.exit(0);
+    })
+    .catch(function (err) {
+      tessel.logs.warn(err);
+      process.exit(1);
+    });
+  })
 
 parser.parse();
