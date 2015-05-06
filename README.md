@@ -8,11 +8,11 @@ Clone this repo and then run `npm link --local`.
 
 Using Tessel 2 over USB requires no special setup.
 
-In order to authorize the device with your computer to work over a LAN connection, call `tessel setup`. This will place an SSH key on the device.
-Use the `tessel wifi` command as described below to connect Tessel 2 to a local network. You should now be able to access your Tessel 2 remotely.
+In order to authorize the device with your computer to work over a LAN connection, call `t2 provision`. This will place an SSH key on the device.
+Use the `t2 wifi` command as described below to connect Tessel 2 to a local network. You should now be able to access your Tessel 2 remotely.
 
 ## Usage
-* `t2 setup` authorize your computer to access a Tessel over SSH (USB-connected Tessel only)
+* `t2 provision` authorize your computer to access a Tessel over SSH (USB-connected Tessel only)
 * `t2 list` show what Tessels are available over WiFi and USB. Use the names (before the ".local") or IP addresses listed here to specify which Tessel to use with the command `--name <name>` or `--ip <ip>`
 * `t2 init` in the current directory, create a package.json and index.js with Hello World code. *Note that the index.js code doesn't yet work on Tessel 2*
 * `t2 run <file>` deploy the file and its dependencies

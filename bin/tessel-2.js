@@ -10,9 +10,9 @@ var nameOption = {
   help : 'The name of the tessel on which the command will be executed'
 }
 
-parser.command('setup')
+parser.command('provision')
   .callback(function(opts) {
-    controller.setupTessel(opts)
+    controller.provisionTessel(opts)
       .catch(function(err) {
         if(err instanceof Error){
           throw err;
