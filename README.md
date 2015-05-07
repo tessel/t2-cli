@@ -16,13 +16,14 @@ In order to authorize the device with your computer to work over a LAN connectio
 Check out the [Virtual Machine repo](www.github.com/tessel/t2-vm) for instructions on how to set up the VM. All CLI commands except `provision` and `wifi` should be functional with the VM.
 
 ## Usage
+Specify which Tessel to use with the `--name <name>` option appended to any command.
 
 ### Starting Projects
 * `t2 init` in the current directory, create a package.json and index.js with Hello World code. *Note that the index.js code doesn't yet work on Tessel 2*
 
 ### Tessel Management
 * `t2 provision` authorize your computer to access a Tessel over SSH (USB-connected Tessel only)
-* `t2 list` show what Tessels are available over WiFi and USB. Specify which Tessel to use with the `--name <name>` option.
+* `t2 list` show what Tessels are available over WiFi and USB.
 * `t2 rename` change the name of a Tessel
 
 ### Code Deploy
