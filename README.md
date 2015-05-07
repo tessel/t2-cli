@@ -13,7 +13,7 @@ Use the `t2 wifi` command as described below to connect Tessel 2 to a local netw
 
 ## Usage
 * `t2 provision` authorize your computer to access a Tessel over SSH (USB-connected Tessel only)
-* `t2 list` show what Tessels are available over WiFi and USB. Use the names (before the ".local") or IP addresses listed here to specify which Tessel to use with the command `--name <name>` or `--ip <ip>`
+* `t2 list` show what Tessels are available over WiFi and USB. Specify which Tessel to use with the `--name <name>` option.
 * `t2 init` in the current directory, create a package.json and index.js with Hello World code. *Note that the index.js code doesn't yet work on Tessel 2*
 * `t2 run <file>` deploy the file and its dependencies
 * `t2 push <file>` copy the file and its dependencies into Tessel's Flash & run immediately

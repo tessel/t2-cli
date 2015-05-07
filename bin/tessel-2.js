@@ -31,7 +31,7 @@ parser.command('run')
         if(err instanceof Error){
           throw err;
         }
-        tessel.logs.warn(err);
+        tessel.logs.err(err);
         process.exit(1);
       });
   })
@@ -105,11 +105,6 @@ parser.command('list')
         tessel.logs.err(err);
         process.exit(1);
       });
-  })
-  .option('all', {
-    flag: true,
-    abbr: 'a',
-    help: 'List all tessels, including ones you are not authorized on'
   })
   .option('timeout', {
     abbr: 't',
