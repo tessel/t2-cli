@@ -201,11 +201,11 @@ parser.command('key')
   })
 
 parser.command('rename')
-  .option('name', {
-    metavar : 'NAME',
-    help : 'The name of the tessel on which the command will be executed',
+  .option('newName', {
+    help : 'The new name for the selected Tessel',
     position: 1,
   })
+  .option('name', nameOption)
   .option('reset', {
     abbr: 'r',
     flag: true
@@ -219,9 +219,10 @@ parser.command('rename')
       if(err instanceof Error){
         throw err;
       }
-      tessel.logs.warn(err);
+      tessel.logs.err(err);
       process.exit(1);
     });
   })
+  .help("Change the name of a Tessel to something new.");
 
 parser.parse();
