@@ -36,6 +36,14 @@ parser.command('run')
       });
   })
   .option('name', nameOption)
+  .option('lan', {
+    flag: true,
+    help: 'Use LAN connection'
+  })
+  .option('usb',  {
+    flag: true,
+    help: 'Use USB connection'
+  })
   .option('entryPoint', {
     position: 1,
     required: true,
@@ -61,6 +69,14 @@ parser.command('push')
       });
   })
   .option('name', nameOption)
+  .option('lan', {
+    flag: true,
+    help: 'Use LAN connection'
+  })
+  .option('usb',  {
+    flag: true,
+    help: 'Use USB connection'
+  })
   .option('entryPoint', {
     position: 1,
     required: true,
