@@ -11,6 +11,12 @@ var nameOption = {
   help : 'The name of the tessel on which the command will be executed'
 };
 
+var rustProjectNameOption = {
+  metavar : 'NAME',
+  abbr: 'r',
+  help : 'The name of the Rust project to create'
+}
+
 parser.command('provision')
   .callback(function(opts) {
     controller.provisionTessel(opts)
@@ -136,7 +142,8 @@ parser.command('init')
     abbr: 'i',
     help: 'Run in interactive mode'
   })
-  .help('Initialize repository for your Tessel project');
+  .option('rust', rustProjectNameOption)
+  .help('Initialize repository for your Tessel project')
 
 parser.command('wifi')
   .callback(function(opts) {
