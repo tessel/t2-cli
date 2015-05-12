@@ -1,5 +1,5 @@
 // Import the interface to Tessel hardware
-extern crate rust_tessel as tessel;
+extern crate tessel;
 
 fn main() {
   
