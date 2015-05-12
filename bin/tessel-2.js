@@ -15,6 +15,7 @@ var language = {
   metavar : 'LANG',
   abbr: 'l',
   help : 'The language to use <javascript|rust|python>. Javascript by default'
+}
 
 parser.command('provision')
   .callback(function(opts) {
