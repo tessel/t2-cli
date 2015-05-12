@@ -11,10 +11,10 @@ var nameOption = {
   help: 'The name of the tessel on which the command will be executed'
 };
 
-var rustProjectNameOption = {
-  metavar : 'NAME',
-  abbr: 'r',
-  help : 'The name of the Rust project to create'
+var language = {
+  metavar : 'LANG',
+  abbr: 'l',
+  help : 'The language to use <javascript|rust|python>. Javascript by default'
 }
 
 parser.command('provision')
@@ -142,7 +142,7 @@ parser.command('init')
     abbr: 'i',
     help: 'Run in interactive mode'
   })
-  .option('rust', rustProjectNameOption)
+  .option('lang', language)
   .help('Initialize repository for your Tessel project')
 
 parser.command('wifi')
