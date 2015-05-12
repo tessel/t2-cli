@@ -1,6 +1,10 @@
 # t2-cli
 The starting point for the command line interface to the next version of Tessel
 
+Join the conversation on Slack!
+
+<img src="http://tessel-slack.herokuapp.com/badge.svg">
+
 ## Installation
 Clone this repo and then run `npm link --local`.
 
