@@ -95,7 +95,7 @@ module.exports = function(grunt) {
 
 
   // 'npm test' runs these tasks
-  grunt.registerTask('test', ['jshint']);
+  grunt.registerTask('test', ['jshint', 'jscs', 'grunt-jsbeautifier' /*, nodeunit*/]);
 
   // Default task.
   grunt.registerTask('default', ['test']);
