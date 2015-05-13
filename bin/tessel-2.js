@@ -127,6 +127,10 @@ parser.command('init')
     help: 'Run in interactive mode'
   })
   .option('lang', language)
+  .option('directory', {
+    position: 1,
+    help: 'Provide a directory to initialize your project'
+  })
   .help('Initialize repository for your Tessel project')
 
 parser.command('wifi')
