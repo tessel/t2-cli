@@ -1,0 +1,24 @@
+{
+  "loopfunc": true,
+  "laxcomma": true,
+  "curly": true,
+  "eqeqeq": true,
+  "immed": true,
+  "latedef": false,
+  "newcap": false,
+  "noarg": true,
+  "sub": true,
+  "undef": true,
+  "boss": true,
+  "eqnull": true,
+  "node": true,
+  "strict": false,
+  "esnext": true,
+  "unused": true,
+  "globals": {
+    "exports": true,
+    "document": true,
+    "Promise": true,
+    "copy": true
+  }
+}
