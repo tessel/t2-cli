@@ -3,7 +3,7 @@ var parser = require("nomnom")
   , controller = require('../lib/controller')
   , key = require('../lib/key')
   , init = require('../lib/init')
-  , tessel = require('tessel')
+  , logs = require('../lib/logs')
   ;
 
 var nameOption = {
@@ -18,7 +18,7 @@ parser.command('provision')
         if(err instanceof Error){
           throw err;
         }
-        tessel.logs.warn(err);
+        logs.warn(err);
         process.exit(1);
       });
     })
@@ -31,7 +31,7 @@ parser.command('run')
         if(err instanceof Error){
           throw err;
         }
-        tessel.logs.err(err);
+        logs.err(err);
         process.exit(1);
       });
   })
@@ -64,7 +64,7 @@ parser.command('push')
         if(err instanceof Error){
           throw err;
         }
-        tessel.logs.warn(err);
+        logs.warn(err);
         process.exit(1);
       });
   })
@@ -96,7 +96,7 @@ parser.command('erase')
         if(err instanceof Error){
           throw err;
         }
-        tessel.logs.warn(err);
+        logs.warn(err);
         process.exit(1);
       });
   })
@@ -118,7 +118,7 @@ parser.command('list')
         if(err instanceof Error){
           throw err;
         };
-        tessel.logs.err(err);
+        logs.err(err);
         process.exit(1);
       });
   })
@@ -150,7 +150,7 @@ parser.command('wifi')
           if(err instanceof Error){
             throw err;
           }
-          tessel.logs.warn(err);
+          logs.warn(err);
           process.exit(1);
       });
     }
@@ -163,7 +163,7 @@ parser.command('wifi')
           if(err instanceof Error){
             throw err;
           }
-          tessel.logs.warn(err);
+          logs.warn(err);
           process.exit(1);
       });
     }
@@ -176,7 +176,7 @@ parser.command('wifi')
           if(err instanceof Error){
             throw err;
           }
-          tessel.logs.warn(err);
+          logs.warn(err);
           process.exit(1);
         });
     }
@@ -211,7 +211,7 @@ parser.command('key')
       process.exit(0);
     })
     .catch(function (err) {
-      tessel.logs.warn(err);
+      logs.warn(err);
       process.exit(1);
     });
   })
@@ -235,7 +235,7 @@ parser.command('rename')
       if(err instanceof Error){
         throw err;
       }
-      tessel.logs.err(err);
+      logs.err(err);
       process.exit(1);
     });
   })
