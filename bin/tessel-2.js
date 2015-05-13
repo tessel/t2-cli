@@ -156,7 +156,7 @@ parser.command('init')
     position: 1,
     help: 'Provide a directory to initialize your project'
   })
-g  .help('Initialize repository for your Tessel project')
+  .help('Initialize repository for your Tessel project')
 
 parser.command('wifi')
   .callback(function(opts) {
