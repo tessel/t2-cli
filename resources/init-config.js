@@ -1,63 +1,67 @@
-var fs = require('fs'),
-  path = require('path');
+var fs = require('fs');
+var path = require('path');
 
+// `basename` is not defined
 module.exports = {
-  "name": prompt('name',
+  name: prompt('name',
     typeof name === 'undefined' ? basename.replace(/^node-|[.-]js$/g, '') : name),
-  "version": prompt('version', typeof version !== "undefined" ? version : '0.0.0'),
-  "description": (function() {
+  version: prompt('version', typeof version !== "undefined" ? version : '0.0.0'),
+  description: (function() {
     if (typeof description !== 'undefined' && description) {
-      return description
+      return description;
     }
-    var value;
+    var value, src, d;
     try {
-      var src = fs.readFileSync('README.md', 'utf8');
+      src = fs.readFileSync('README.md', 'utf8');
       value = src.split('\n').filter(function(line) {
           return /\s+/.test(line) && line.trim() !== basename.replace(/^node-/, '') && !line.trim().match(/^#/);
         })[0]
         .trim()
         .replace(/^./, function(c) {
-          return c.toLowerCase()
+          return c.toLowerCase();
         })
         .replace(/\.$/, '');
     } catch (e) {
       try {
         // Wouldn't it be nice if that file mattered?
-        var d = fs.readFileSync('.git/description', 'utf8');
+        d = fs.readFileSync('.git/description', 'utf8');
       } catch (e) {}
       if (d.trim() && !value) value = d;
     }
     return prompt('description', value);
   })(),
-  "main": (function() {
+  main: (function() {
     var f;
     try {
       f = fs.readdirSync(dirname).filter(function(f) {
-        return f.match(/\.js$/)
-      })
-      if (f.indexOf('index.js') !== -1)
-        f = 'index.js'
-      else if (f.indexOf('main.js') !== -1)
-        f = 'main.js'
-      else if (f.indexOf(basename + '.js') !== -1)
-        f = basename + '.js'
-      else
-        f = f[0]
+        return f.match(/\.js$/);
+      });
+      if (f.indexOf('index.js') !== -1) {
+        f = 'index.js';
+      } else if (f.indexOf('main.js') !== -1) {
+        f = 'main.js';
+      } else if (f.indexOf(basename + '.js') !== -1) {
+        f = basename + '.js';
+      } else {
+        f = f[0];
+      }
     } catch (e) {}
 
-    return prompt('entry point', f || 'index.js')
+    return prompt('entry point', f || 'index.js');
   })(),
-  "bin": function(cb) {
+  bin: function(cb) {
     fs.readdir(dirname + '/bin', function(er, d) {
       // no bins
-      if (er) return cb()
+      if (er) {
+        return cb();
+      }
         // just take the first js file we find there, or nada
       return cb(null, d.filter(function(f) {
         return f.match(/\.js$/)
       })[0])
     })
   },
-  "directories": function(cb) {
+  directories: function(cb) {
     fs.readdir('.', function(er, dirs) {
       if (er) return cb(er)
       var res = {}
@@ -80,7 +84,7 @@ module.exports = {
       return cb(null, res)
     })
   },
-  "dependencies": typeof dependencies !== 'undefined' ? dependencies : function(cb) {
+  dependencies: typeof dependencies !== 'undefined' ? dependencies : function(cb) {
     fs.readdir('node_modules', function(er, dir) {
       if (er) return cb()
       var deps = {}
@@ -107,7 +111,9 @@ module.exports = {
       }
     })
   },
-  "devDependencies": typeof devDependencies !== 'undefined' ? devDependencies : function(cb) {
+  // `devDependencies` isn't defined
+  //
+  devDependencies: typeof devDependencies !== 'undefined' ? devDependencies : function(cb) {
     // same as dependencies but for dev deps
     fs.readdir('node_modules', function(er, dir) {
       if (er) return cb()
@@ -137,19 +143,19 @@ module.exports = {
       }
     })
   },
-  "scripts": (function() {
+  scripts: (function() {
     // check to see what framework is in use, if any
+    var d;
     try {
-      var d = fs.readdirSync('node_modules');
+      d = fs.readdirSync('node_modules');
     } catch (e) {
       d = [];
     }
     var s = typeof scripts === 'undefined' ? {} : scripts;
 
-    if (d.indexOf('coffee-script') !== -1)
-      s.prepublish = prompt('build command',
-        s.prepublish || 'coffee src/*.coffee -o lib');
-
+    if (d.indexOf('coffee-script') !== -1) {
+      s.prepublish = prompt('build command', s.prepublish || 'coffee src/*.coffee -o lib');
+    }
     var notest = 'echo "Error: no test specified" && exit 1';
 
     function tx(test) {
@@ -167,43 +173,50 @@ module.exports = {
         s.test = prompt('test command', tx);
     }
 
-    return s
-
+    return s;
   })(),
 
-  "repository": (function() {
+  repository: (function() {
+    var gitConfig, i, u;
     try {
-      var gconf = fs.readFileSync('.git/config', 'utf8');
+      gitConfig = fs.readFileSync('.git/config', 'utf8');
     } catch (e) {
-      gconf = null;
-    }
-    if (gconf) {
-      gconf = gconf.split(/\r?\n/);
-      var i = gconf.indexOf('[remote "origin"]');
-      if (i !== -1) {
-        var u = gconf[i + 1];
-        if (!u.match(/^\s*url =/)) u = gconf[i + 2];
-        if (!u.match(/^\s*url =/)) u = null;
-        else u = u.replace(/^\s*url = /, '');
-      }
-      if (u && u.match(/^git@github.com:/))
-        u = u.replace(/^git@github.com:/, 'git://github.com/');
+      gitConfig = null;
     }
 
-    return prompt('git repository', u)
+    if (gitConfig) {
+      gitConfig = gitConfig.split(/\r?\n/);
+      i = gitConfig.indexOf('[remote "origin"]');
+      if (i !== -1) {
+        u = gitConfig[i + 1];
+        if (!u.match(/^\s*url =/)) {
+          u = gitConfig[i + 2];
+        }
+        if (!u.match(/^\s*url =/)) {
+          u = null;
+        } else {
+          u = u.replace(/^\s*url = /, '');
+        }
+      }
+      if (u && u.match(/^git@github.com:/)) {
+        u = u.replace(/^git@github.com:/, 'git://github.com/');
+      }
+    }
+    return prompt('git repository', u);
   })(),
 
-  "keywords": prompt(function(s) {
+  keywords: prompt(function(s) {
     if (!s) return undefined;
     if (Array.isArray(s)) s = s.join(' ');
     if (typeof s !== 'string') return s;
     // Add Tessel key word to all Tessel packages
     return 'Tessel ' + s.split(/[\s,]+/);
   }),
-  "author": config['init.author.name'] ? {
-    "name": config['init.author.name'],
-    "email": config['init.author.email'],
-    "url": config['init.author.url']
-  } : undefined,
-  "license": prompt('license', 'BSD')
-}
+  // `config` isn't defined
+  // author: config['init.author.name'] ? {
+  //   name: config['init.author.name'],
+  //   email: config['init.author.email'],
+  //   url: config['init.author.url']
+  // } : undefined,
+  license: prompt('license', 'BSD')
+};
