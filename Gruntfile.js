@@ -50,7 +50,6 @@ module.exports = function(grunt) {
         // 'resources/**/*.js',
       ],
       options: {
-        mode: 'VERIFY_ONLY',
         braceStyle: 'collapse',
         breakChainedMethods: false,
         e4x: false,
