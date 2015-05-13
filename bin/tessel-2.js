@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-var parser = require('nomnom')
-  , controller = require('../lib/controller')
-  , key = require('../lib/key')
-  , init = require('../lib/init')
-  , tessel = require('tessel')
-  ;
+
+var parser = require('nomnom'),
+  controller = require('../lib/controller'),
+  key = require('../lib/key'),
+  init = require('../lib/init'),
+  tessel = require('tessel');
 
 var nameOption = {
   metavar: 'NAME',

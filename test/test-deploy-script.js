@@ -6,7 +6,7 @@ var ledFileName = '/sys/class/leds/tessel\:blue\:user2/trigger';
 fs.exists(ledFileName, function(exists) {
   // We're running on actual hardware
   if (exists) {
-    fs.writeFile(ledFileName, 'timer', function (err) {
+    fs.writeFile(ledFileName, 'timer', function(err) {
       if (err) {
         throw err;
       }
