@@ -154,19 +154,6 @@ parser.command('wifi')
           process.exit(1);
       });
     }
-    else if (opts.ip) {
-      controller.printIPAddress(opts)
-        .then(function(info){
-          process.exit(1);
-        })
-        .catch(function (err) {
-          if(err instanceof Error){
-            throw err;
-          }
-          logs.warn(err);
-          process.exit(1);
-      });
-    }
     else if (opts.ssid && opts.password) {
       controller.connectToNetwork(opts)
         .then(function(info){
