@@ -228,4 +228,35 @@ parser.command('rename')
   })
   .help("Change the name of a Tessel to something new.");
 
+parser.command('version')
+  .option('mcu', {
+    abbr: 'm',
+    flag: true,
+    help: 'The version number from the MCU (Mediatek)'
+  })
+  .option('cp', {
+    abbr: 'c',
+    flag: true,
+    help: 'The version number from the CoProcessor (Atmel)'
+  })
+  .option('build', {
+    abbr: 'b',
+    flag: true,
+    help: 'Get the commit hash of the builds'
+  })
+  .callback(function(opts){
+    controller.getVersion(opts)
+    .then(function(){
+      process.exit(0);
+    })
+    .catch(function (err) {
+      if(err instanceof Error){
+        throw err;
+      }
+      logs.err(err);
+      process.exit(1);
+    });
+  })
+  .help("Get the version of the selected Tessel");
+
 parser.parse();
