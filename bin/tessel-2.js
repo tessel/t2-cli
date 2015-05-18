@@ -9,7 +9,7 @@ var parser = require("nomnom")
 var nameOption = {
   metavar : 'NAME',
   help : 'The name of the tessel on which the command will be executed'
-}
+};
 
 parser.command('provision')
   .callback(function(opts) {
@@ -117,7 +117,7 @@ parser.command('list')
       .catch(function(err){
         if(err instanceof Error){
           throw err;
-        };
+        }
         logs.err(err);
         process.exit(1);
       });
@@ -136,7 +136,7 @@ parser.command('init')
     abbr: 'i',
     help: 'Run in interactive mode'
   })
-  .help('Initialize repository for your Tessel project')
+  .help('Initialize repository for your Tessel project');
 
 parser.command('wifi')
   .callback(function(opts) {
@@ -201,7 +201,7 @@ parser.command('key')
       logs.warn(err);
       process.exit(1);
     });
-  })
+  });
 
 parser.command('rename')
   .option('newName', {
