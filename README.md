@@ -17,7 +17,7 @@ Using Tessel 2 over USB requires no special setup.
 In order to authorize the device with your computer to work over a LAN connection, call `t2 provision` after connecting it via USB. This will place an SSH key on the device. Use the `t2 wifi` command as described below to connect Tessel 2 to a local network. You should now be able to access your Tessel 2 remotely.
 
 ### Virtual Machine
-Check out the [Virtual Machine repo](www.github.com/tessel/t2-vm) for instructions on how to set up the VM. All CLI commands except `provision` and `wifi` should be functional with the VM.
+Check out the [Virtual Machine repo](https://github.com/tessel/t2-vm) for instructions on how to set up the VM. All CLI commands except `provision` and `wifi` should be functional with the VM.
 
 ## Usage
 Specify which Tessel to use with the `--name <name>` option appended to any command.
