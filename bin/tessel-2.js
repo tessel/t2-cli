@@ -87,7 +87,7 @@ parser.command('push')
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
-  .help('Deploy a script to memory on Tessel and run it with Node whenever Tessel boots up');
+  .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
 parser.command('erase')
   .callback(function(opts) {
