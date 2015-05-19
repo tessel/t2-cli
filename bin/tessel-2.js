@@ -142,7 +142,7 @@ parser.command('init')
       process.exit(0);
     })
     .catch(function (err) {
-      tessel.logs.warn(err);
+      logs.warn(err);
       process.exit(1);
     });
   })
