@@ -1,5 +1,5 @@
 var fs = require('fs');
-var ledFileName = '/sys/class/leds/tessel\:blue\:user2/trigger'
+var ledFileName = '/sys/class/leds/tessel\:blue\:user2/trigger';
 
 
 // Check if the file exists
