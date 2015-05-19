@@ -120,7 +120,16 @@ parser.command('list')
   .help('Show all connected Tessels');
 
 parser.command('init')
-  .callback(init)
+  .callback(function(opts) {
+    init(opts)
+    .then(function(){
+      process.exit(0);
+    })
+    .catch(function (err) {
+      tessel.logs.warn(err);
+      process.exit(1);
+    });
+  })
   .option('interactive', {
     flag: true,
     abbr: 'i',
