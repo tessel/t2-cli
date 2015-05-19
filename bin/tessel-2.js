@@ -143,7 +143,7 @@ parser.command('wifi')
     //TODO: Refactor switch case into controller.wifi
     if (opts.list) {
       controller.printAvailableNetworks(opts)
-        .then(function(info){
+        .then(function(){
           process.exit(1);
         })
         .catch(function (err) {
@@ -156,7 +156,7 @@ parser.command('wifi')
     }
     else if (opts.ssid && opts.password) {
       controller.connectToNetwork(opts)
-        .then(function(info){
+        .then(function(){
           process.exit(1);
         })
         .catch(function (err) {
