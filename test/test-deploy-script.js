@@ -6,8 +6,10 @@ var ledFileName = '/sys/class/leds/tessel\:blue\:user2/trigger';
 fs.exists(ledFileName, function(exists) {
   // We're running on actual hardware
   if (exists) {
-    fs.writeFile(ledFileName, 'timer', function (err) {
-      if(err) throw err;
+    fs.writeFile(ledFileName, 'timer', function(err) {
+      if (err) {
+        throw err;
+      }
       console.log('Blue light should be blinking. To turn it off, run echo none > /sys/class/leds/tessel\:blue\:user2/trigger on the Tessel.');
     });
   }
