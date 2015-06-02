@@ -44,6 +44,7 @@
     "bluebird": "^2.9.6",
     "char-spinner": "^1.0.1",
     "colors": "^1.1.0",
+    "concat-stream": "^1.4.8",
     "envfile": "^1.0.0",
     "fs-extra": "^0.18.0",
     "keypress": "^0.2.1",
