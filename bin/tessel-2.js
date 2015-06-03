@@ -1,15 +1,18 @@
 #!/usr/bin/env node
 
-var parser = require("nomnom"),
+var nomnom = require("nomnom"),
   controller = require('../lib/controller'),
   key = require('../lib/key'),
   init = require('../lib/init'),
-  logs = require('../lib/logs');
+  logs = require('../lib/logs'),
+  concat = require('concat-stream');
 
 var nameOption = {
   metavar: 'NAME',
   help: 'The name of the tessel on which the command will be executed'
 };
+
+var parser = nomnom();
 
 parser.command('provision')
   .callback(function(opts) {
@@ -226,5 +229,33 @@ parser.command('rename')
       });
   })
   .help("Change the name of a Tessel to something new.");
+
+function lookupPath (name, next) {
+  var spawn = require('child_process').spawn;
+  var p = spawn('which', [name])
+  p.stdout.pipe(concat(function (loc) {
+    var fullloc = loc.toString().replace(/^\s+|\s+$/, '');
+    next(null, fullloc);
+  }));
+}
+
+parser.printer(function(string) {
+  if (string.match(/no such command/)) {
+    var exec = 't2-' + nomnom().parse()[0];
+    lookupPath(exec, function (err, full) {
+      if (!full) {
+        console.log(string);
+        return;
+      }
+      var spawn = require('child_process').spawn;
+      spawn(full, process.argv.slice(3), {
+        stdio: 'inherit',
+      })
+      .on('exit', function (code) {
+        process.exit(code);
+      })
+    });
+  }
+});
 
 parser.parse();
