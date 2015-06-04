@@ -16,12 +16,12 @@ fs.exists(ledFileName, function(exists) {
   // This is running on the VM
   else {
 
-    var state = "on";
+    var state = 'on';
 
     setInterval(function() {
-      console.log("If I had an actual LED, it would be", state, "right now...");
+      console.log('If I had an actual LED, it would be', state, 'right now...');
       // Switch the LED state
-      state = (state === "on" ? "off" : "on");
+      state = (state === 'on' ? 'off' : 'on');
     }, 1000);
   }
 });

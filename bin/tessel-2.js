@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var parser = require("nomnom"),
+var parser = require('nomnom'),
   controller = require('../lib/controller'),
   key = require('../lib/key'),
   init = require('../lib/init'),
@@ -171,17 +171,17 @@ parser.command('wifi')
   .option('list', {
     abbr: 'l',
     flag: true,
-    help: "List available Wifi networks"
+    help: 'List available Wifi networks'
   })
   .option('ssid', {
     abbr: 'n',
     metavar: 'SSID',
-    help: "Set the SSID of the network to connect to"
+    help: 'Set the SSID of the network to connect to'
   })
   .option('password', {
     abbr: 'p',
     metavar: 'PASSWORD',
-    help: "Set the password of the network to connect to"
+    help: 'Set the password of the network to connect to'
   })
   .help('Configure the wireless connection');
 
@@ -225,6 +225,6 @@ parser.command('rename')
         process.exit(1);
       });
   })
-  .help("Change the name of a Tessel to something new.");
+  .help('Change the name of a Tessel to something new.');
 
 parser.parse();
