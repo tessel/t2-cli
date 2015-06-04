@@ -55,6 +55,8 @@
     "osenv": "^0.1.0",
     "promzard": "^0.3.0",
     "shell-escape": "^0.2.0",
+    "sinon": "^1.14.1",
+    "sprintf-js": "^1.0.2",
     "ssh-keygen": "^0.2.1",
     "ssh2": "^0.4.2",
     "tessel": "git+https://github.com/tessel/cli#jon-export-v2",
