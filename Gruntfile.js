@@ -51,11 +51,11 @@ module.exports = function(grunt) {
       ],
       options: {
         js: {
-          braceStyle: "collapse",
+          braceStyle: 'collapse',
           breakChainedMethods: false,
           e4x: false,
           evalCode: false,
-          indentChar: " ",
+          indentChar: ' ',
           indentLevel: 0,
           indentSize: 2,
           indentWithTabs: false,
@@ -95,7 +95,7 @@ module.exports = function(grunt) {
 
 
   // 'npm test' runs these tasks
-  grunt.registerTask('test', ['jshint', 'jscs', 'jsbeautifier' /*, nodeunit*/]);
+  grunt.registerTask('test', ['jshint', 'jscs', 'jsbeautifier' /*, nodeunit*/ ]);
 
   // Default task.
   grunt.registerTask('default', ['test']);

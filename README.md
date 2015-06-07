@@ -11,7 +11,7 @@ Clone this repo and then run `npm link --local`.
 ## Setup
 
 ### USB
-Using Tessel 2 over USB requires no special setup.
+Connecting to a Tessel 2 over USB requires no special setup.
 
 ### LAN
 In order to authorize the device with your computer to work over a LAN connection, call `t2 provision` after connecting it via USB. This will place an SSH key on the device. Use the `t2 wifi` command as described below to connect Tessel 2 to a local network. You should now be able to access your Tessel 2 remotely.

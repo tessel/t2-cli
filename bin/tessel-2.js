@@ -1,34 +1,34 @@
 #!/usr/bin/env node
-var parser = require("nomnom")
-  , controller = require('../lib/controller')
-  , key = require('../lib/key')
-  , init = require('../lib/init')
-  , logs = require('../lib/logs')
-  ;
+
+var parser = require('nomnom'),
+  controller = require('../lib/controller'),
+  key = require('../lib/key'),
+  init = require('../lib/init'),
+  logs = require('../lib/logs');
 
 var nameOption = {
-  metavar : 'NAME',
-  help : 'The name of the tessel on which the command will be executed'
+  metavar: 'NAME',
+  help: 'The name of the tessel on which the command will be executed'
 };
 
 parser.command('provision')
   .callback(function(opts) {
     controller.provisionTessel(opts)
       .catch(function(err) {
-        if(err instanceof Error){
+        if (err instanceof Error) {
           throw err;
         }
         logs.warn(err);
         process.exit(1);
       });
-    })
+  })
   .help('Authorize your computer to control the USB-connected Tessel');
 
 parser.command('run')
   .callback(function(opts) {
     controller.deployScript(opts, false)
-      .catch(function (err) {
-        if(err instanceof Error){
+      .catch(function(err) {
+        if (err instanceof Error) {
           throw err;
         }
         logs.err(err);
@@ -40,7 +40,7 @@ parser.command('run')
     flag: true,
     help: 'Use LAN connection'
   })
-  .option('usb',  {
+  .option('usb', {
     flag: true,
     help: 'Use USB connection'
   })
@@ -50,7 +50,7 @@ parser.command('run')
     help: 'The entry point file to deploy to Tessel'
   })
   .option('verbose', {
-    flag : true,
+    flag: true,
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
@@ -60,8 +60,8 @@ parser.command('push')
   .callback(function(opts) {
     // true: push=true
     controller.deployScript(opts, true)
-      .catch(function (err) {
-        if(err instanceof Error){
+      .catch(function(err) {
+        if (err instanceof Error) {
           throw err;
         }
         logs.warn(err);
@@ -73,7 +73,7 @@ parser.command('push')
     flag: true,
     help: 'Use LAN connection'
   })
-  .option('usb',  {
+  .option('usb', {
     flag: true,
     help: 'Use USB connection'
   })
@@ -83,7 +83,7 @@ parser.command('push')
     help: 'The entry point file to deploy to Tessel'
   })
   .option('verbose', {
-    flag : true,
+    flag: true,
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
@@ -92,8 +92,8 @@ parser.command('push')
 parser.command('erase')
   .callback(function(opts) {
     controller.eraseScript(opts)
-      .catch(function (err) {
-        if(err instanceof Error){
+      .catch(function(err) {
+        if (err instanceof Error) {
           throw err;
         }
         logs.warn(err);
@@ -102,7 +102,7 @@ parser.command('erase')
   })
   .option('name', nameOption)
   .option('verbose', {
-    flag : true,
+    flag: true,
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
@@ -114,8 +114,8 @@ parser.command('list')
       .then(function() {
         process.exit(1);
       })
-      .catch(function(err){
-        if(err instanceof Error){
+      .catch(function(err) {
+        if (err instanceof Error) {
           throw err;
         }
         logs.err(err);
@@ -143,24 +143,23 @@ parser.command('wifi')
     //TODO: Refactor switch case into controller.wifi
     if (opts.list) {
       controller.printAvailableNetworks(opts)
-        .then(function(info){
+        .then(function() {
           process.exit(1);
         })
-        .catch(function (err) {
-          if(err instanceof Error){
+        .catch(function(err) {
+          if (err instanceof Error) {
             throw err;
           }
           logs.warn(err);
           process.exit(1);
-      });
-    }
-    else if (opts.ssid && opts.password) {
+        });
+    } else if (opts.ssid && opts.password) {
       controller.connectToNetwork(opts)
-        .then(function(info){
+        .then(function() {
           process.exit(1);
         })
-        .catch(function (err) {
-          if(err instanceof Error){
+        .catch(function(err) {
+          if (err instanceof Error) {
             throw err;
           }
           logs.warn(err);
@@ -172,17 +171,17 @@ parser.command('wifi')
   .option('list', {
     abbr: 'l',
     flag: true,
-    help: "List available Wifi networks"
+    help: 'List available Wifi networks'
   })
   .option('ssid', {
     abbr: 'n',
     metavar: 'SSID',
-    help: "Set the SSID of the network to connect to"
+    help: 'Set the SSID of the network to connect to'
   })
   .option('password', {
     abbr: 'p',
     metavar: 'PASSWORD',
-    help: "Set the password of the network to connect to"
+    help: 'Set the password of the network to connect to'
   })
   .help('Configure the wireless connection');
 
@@ -194,18 +193,18 @@ parser.command('key')
   })
   .callback(function(opts) {
     key(opts)
-    .then(function(){
-      process.exit(0);
-    })
-    .catch(function (err) {
-      logs.warn(err);
-      process.exit(1);
-    });
+      .then(function() {
+        process.exit(0);
+      })
+      .catch(function(err) {
+        logs.warn(err);
+        process.exit(1);
+      });
   });
 
 parser.command('rename')
   .option('newName', {
-    help : 'The new name for the selected Tessel',
+    help: 'The new name for the selected Tessel',
     position: 1,
   })
   .option('name', nameOption)
@@ -215,17 +214,17 @@ parser.command('rename')
   })
   .callback(function(opts) {
     controller.renameTessel(opts)
-    .then(function() {
-      process.exit(0);
-    })
-    .catch(function (err) {
-      if(err instanceof Error){
-        throw err;
-      }
-      logs.err(err);
-      process.exit(1);
-    });
+      .then(function() {
+        process.exit(0);
+      })
+      .catch(function(err) {
+        if (err instanceof Error) {
+          throw err;
+        }
+        logs.err(err);
+        process.exit(1);
+      });
   })
-  .help("Change the name of a Tessel to something new.");
+  .help('Change the name of a Tessel to something new.');
 
 parser.parse();
