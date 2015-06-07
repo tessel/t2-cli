@@ -89,7 +89,7 @@ exports['Tessel.prototype.rename'] = {
     test.equal(this.setName.callCount, 1);
     test.equal(this.tessel.connection.exec.callCount, 1);
     test.equal(this.setHostname.callCount, 1);
-    test.ok(this.setHostname.lastCall.calledWith('Tessel-TheFakeName'));
+    test.ok(this.setHostname.lastCall.calledWith('Tessel-TheFakeMACAddress'));
 
     // getName is _not_ called.
     test.equal(this.getName.callCount, 0);
