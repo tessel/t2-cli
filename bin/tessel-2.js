@@ -194,6 +194,7 @@ parser.command('key')
   .callback(function(opts) {
     key(opts)
       .then(function() {
+        logs.info('Key successfully generated.');
         process.exit(0);
       })
       .catch(function(err) {
