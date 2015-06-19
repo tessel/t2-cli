@@ -10,7 +10,9 @@ module.exports.runTests = function(opts, selectedTessel) {
       return usb_test(opts, selectedTessel)
     })
     // Then run the Ethernet Test
-    // .then(eth_test)
+    .then(function() {
+      return eth_test(opts, selectedTessel)
+    })
     // If there were no issues, resolve
     .then(resolve)
     // Otherwise

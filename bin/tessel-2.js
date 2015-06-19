@@ -244,22 +244,23 @@ parser.command('test')
   .option('pid', {
     required: true,
   })
+  .option('host', {
+    required: true,
+  })
   .callback(function(opts) {
     controller.runTests(opts)
     .then(function() {
       process.exit(0);
     })
     .catch(function(err) {
-      if (err instanceof Error) {
-        throw err;
-      }
       logs.err(err);
       process.exit(1);
     });
   })
   .help("Runs a USB and Ethernet test on a Tessel 2. Expects two USB devices of the same \
 VID and PID as well as an ethernet connection already plugged in. VID and PID must be supplied with the --vid \
-and --pid flag as in 't2 test --vid 1d50 --pid 6097`");
+and --pid flag and a host that should be reachable over ethernet should be provided with the --host flag:\n\n\
+eg. 't2 test --vid 1d50 --pid 6097 --host google.com`");
 
 
 parser.parse();
