@@ -15,7 +15,7 @@ var timeoutOption = {
   abbr: 't',
   metavar: 'TIMEOUT',
   help: 'Set timeout in seconds for scanning for networked tessels',
-  default: 3
+  default: 1
 };
 
 parser.command('provision')
@@ -235,5 +235,19 @@ parser.command('rename')
   })
   .option('timeout', timeoutOption)
   .help('Change the name of a Tessel to something new.');
+
+parser.command('test')
+  .option('timeout', timeoutOption)
+  .callback(function(opts) {
+    controller.runTests(opts)
+    .then(function() {
+      process.exit(0);
+    })
+    .catch(function(err) {
+      throw err;
+      process.exit(1);
+    });
+  });
+
 
 parser.parse();
