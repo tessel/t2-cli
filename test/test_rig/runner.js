@@ -29,6 +29,17 @@ module.exports.runTests = function(opts, selectedTessel) {
   }); 
 }
 
+// break out just the ping test for wifi testing
+module.exports.runPingTest = function(opts, selectedTessel){
+  return new Promise(function(resolve, reject) {
+    eth_test(opts, selectedTessel)
+    .then(resolve)
+    .catch(function(err){
+      reject(err)
+    });
+  });
+}
+
 function resetLEDStates(selectedTessel) {
   return selectedTessel.setRedLED(0)
   .then(function() {

@@ -262,5 +262,34 @@ VID and PID as well as an ethernet connection already plugged in. VID and PID mu
 and --pid flag and a host that should be reachable over ethernet should be provided with the --host flag:\n\n\
 eg. 't2 test --vid 1d50 --pid 6097 --host google.com`");
 
+parser.command('test-wifi')
+  .option('timeout', timeoutOption)
+  .option('ssid', {required: true})
+  .option('password', {required:true})
+  .option('host', {required:true})
+  .callback(function(opts){
+    // connect to wifi network
+    controller.connectToNetwork(opts)
+    .then(function() {
+      // ping the host
+      controller.runWifiTest(opts)
+      .then(function(){
+        process.exit(0);
+      })
+      .catch(function(err){
+        logs.err(err);
+        process.exit(1);
+      })
+    })
+    .catch(function(err) {
+      if (err instanceof Error) {
+        throw err;
+      }
+      logs.warn(err);
+      process.exit(1);
+    });
+  })
+  .help("Runs a wifi test on a Tessel 2. Expects an ssid, password, and host to ping");
+
 
 parser.parse();
