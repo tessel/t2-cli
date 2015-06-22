@@ -7,6 +7,12 @@ function TesselSimulator() {
 
   tessel.connection = {
     exec: function(command, callback) {
+
+      if (!Array.isArray(command)) {
+        throw new Error('Invalid command passed to exec.');
+      }
+
+      tessel._rps.control.write(command.join(' '));
       if (typeof callback === 'function') {
         callback(null, tessel._rps);
       }

@@ -36,16 +36,17 @@ exports['Tessel (endConnection)'] = {
   },
 
   closeConnection: function(test) {
-    test.expect(3);
+    test.expect(2);
 
-    var length = process._events.SIGINT.length;
+    var processremoveListener = sinon.stub(process, 'removeListener');
     var tessel = new Tessel(this.mockConnection);
 
-    test.equal(process._events.SIGINT.length, length + 1);
     tessel.close();
 
-    test.equal(process._events.SIGINT.length, length);
+    test.equal(processremoveListener.callCount, 1);
     test.equal(this.end.callCount, 0);
+
+    processremoveListener.restore();
     test.done();
   },
 };
