@@ -269,25 +269,15 @@ parser.command('test-wifi')
   .option('host', {required:true})
   .callback(function(opts){
     // connect to wifi network
-    controller.connectToNetwork(opts)
-    .then(function() {
-      // ping the host
-      controller.runWifiTest(opts)
-      .then(function(){
-        process.exit(0);
-      })
-      .catch(function(err){
-        logs.err(err);
-        process.exit(1);
-      })
+    controller.runWifiTest(opts)
+    .then(function(){
+      process.exit(0);
     })
-    .catch(function(err) {
-      if (err instanceof Error) {
-        throw err;
-      }
-      logs.warn(err);
+    .catch(function(err){
+      logs.err(err);
       process.exit(1);
-    });
+    })
+    
   })
   .help("Runs a wifi test on a Tessel 2. Expects an ssid, password, and host to ping");
 

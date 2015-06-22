@@ -31,7 +31,7 @@ module.exports = function(opts, selectedTessel) {
           // It worked. Set the success LED
           selectedTessel.setBlueLED(1)
           .then(function() { 
-            logs.info("Ethernet Tests Passed.")
+            logs.info("Ping Tests Passed.")
             return resolve(selectedTessel);
           });
         }
