@@ -49,3 +49,13 @@ function resetLEDStates(selectedTessel) {
     return selectedTessel.setBlueLED(0)
   });
 }
+
+module.exports.runUSBTest = function (opts, selectedTessel){
+  return new Promise(function(resolve, reject){
+    usb_test.readFile(opts, selectedTessel)
+    .then(resolve)
+    .catch(function(err){
+      reject(err);
+    });
+  });
+}

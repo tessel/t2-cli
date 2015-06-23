@@ -4,7 +4,7 @@ var commands = require('../../lib/tessel/commands')
 // We are testing two usb ports
 var NUM_USB_PORT = 2;
 
-module.exports = function(opts, selectedTessel) {
+function checkVidPid(opts, selectedTessel) {
   return new Promise(function(resolve, reject) {
     // List USB devices with VID and PID matching provided options
     selectedTessel.connection.exec(commands.listUSBDevices(opts.vid, opts.pid), function(err, remoteProc) {
@@ -54,3 +54,39 @@ module.exports = function(opts, selectedTessel) {
     })
   });
 }
+
+// opts.filePath = path of file to dd
+// opts.bytes = number of bytes to dd
+// opts.verify = buffer of data to verify against
+function readFile(opts, selectedTessel) {
+  return new Promise(function(resolve, reject) {
+    selectedTessel.connection.exec(commands.readDisk(opts.filePath, opts.bytes), function(err, remoteProc) {
+      if (err) { 
+        return reject(err);
+      }
+
+      var foundFile = '';
+      var err = '';
+      remoteProc.stderr.on('data', function(d) {
+        // eat up the error because dd shows the records read on stederr
+        err += d.toString();
+      });
+
+      // Add new data strings to the concatenated var
+      remoteProc.stdout.on('data', function(d) {
+        foundFile += d;
+      });
+
+      remoteProc.once('close', function() {
+        if (foundFile == opts.verify.toString()){
+          return resolve(selectedTessel);
+        } else {
+          reject("file found does not match verification file. Found:"+foundFile+", expected: "+opts.verify.toString()+'. Got err'+err);
+        }
+      });
+    });
+  });
+}
+
+module.exports.checkVidPid = checkVidPid;
+module.exports.readFile = readFile;
