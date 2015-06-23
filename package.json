@@ -38,6 +38,8 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-jsbeautifier": "^0.2.10",
     "grunt-jscs": "^1.8.0",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.4.0",
     "sinon": "^1.14.1"
   },
   "dependencies": {

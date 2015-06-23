@@ -30,7 +30,7 @@ exports['Tessel.prototype.erase'] = {
     test.expect(3);
 
     // Test that we received the proper command
-    self.tessel._rps.once('command', function(command) {
+    self.tessel._rps.once('control', function(command) {
       var receivedCommands = command.toString().split(' ');
       var expected = commands.stopRunningScript();
       // Test that the command has the proper number of args

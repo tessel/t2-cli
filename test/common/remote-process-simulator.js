@@ -13,7 +13,14 @@ function RemoteProcessSimulator() {
 
   this.control._write = function(command, enc, cb) {
     // Emit commands for validation in tests
-    this.emit('command', command);
+    this.emit('control', command);
+    // Call the callback so we can receive more
+    cb();
+  }.bind(this);
+
+  this.stdin._write = function(data, enc, cb) {
+    // Emit incoming data for validation in tests
+    this.emit('stdin', data);
     // Call the callback so we can receive more
     cb();
   }.bind(this);
