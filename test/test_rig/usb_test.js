@@ -60,12 +60,13 @@ function checkVidPid(opts, selectedTessel) {
 // opts.verify = buffer of data to verify against
 function readFile(opts, selectedTessel) {
   return new Promise(function(resolve, reject) {
+    console.log("reading file", opts.filePath);
     selectedTessel.connection.exec(commands.readDisk(opts.filePath, opts.bytes), function(err, remoteProc) {
       if (err) { 
         return reject(err);
       }
 
-      var foundFile = '';
+      var foundFile = null;
       var err = '';
       remoteProc.stderr.on('data', function(d) {
         // eat up the error because dd shows the records read on stederr
@@ -74,14 +75,18 @@ function readFile(opts, selectedTessel) {
 
       // Add new data strings to the concatenated var
       remoteProc.stdout.on('data', function(d) {
-        foundFile += d;
+        if (!foundFile) {
+          foundFile = d;
+        } else {
+          foundFile = Buffer.concat([foundFile, d]);
+        }
       });
 
       remoteProc.once('close', function() {
-        if (foundFile == opts.verify.toString()){
+        if (foundFile.equals(opts.verify)) {
           return resolve(selectedTessel);
         } else {
-          reject("file found does not match verification file. Found:"+foundFile+", expected: "+opts.verify.toString()+'. Got err'+err);
+          reject("file found does not match verification file. Found:"+foundFile+", expected: "+opts.verify);
         }
       });
     });

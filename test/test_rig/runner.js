@@ -54,8 +54,16 @@ function resetLEDStates(selectedTessel) {
 
 module.exports.runUSBTest = function (opts, selectedTessel){
   return new Promise(function(resolve, reject){
+    opts.filePath = '/dev/sda';
     usb_test.readFile(opts, selectedTessel)
-    .then(resolve)
+    .then(function(){
+      opts.filePath = '/dev/sdb';
+      return usb_test.readFile(opts, selectedTessel)
+        .then(resolve)
+        .catch(function(err){
+          reject(err);
+        })
+    })
     .catch(function(err){
       reject(err);
     });
