@@ -11,6 +11,13 @@ var nameOption = {
   help: 'The name of the tessel on which the command will be executed'
 };
 
+var timeoutOption = {
+  abbr: 't',
+  metavar: 'TIMEOUT',
+  help: 'Set timeout in seconds for scanning for networked tessels',
+  default: 3
+};
+
 parser.command('provision')
   .callback(function(opts) {
     controller.provisionTessel(opts)
@@ -54,6 +61,7 @@ parser.command('run')
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
+  .option('timeout', timeoutOption)
   .help('Deploy a script to Tessel and run it with Node');
 
 parser.command('push')
@@ -87,6 +95,7 @@ parser.command('push')
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
+  .option('timeout', timeoutOption)
   .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
 parser.command('erase')
@@ -106,6 +115,7 @@ parser.command('erase')
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
+  .option('timeout', timeoutOption)
   .help('Erases files pushed to Flash using the tessel push command');
 
 parser.command('list')
@@ -122,12 +132,8 @@ parser.command('list')
         process.exit(1);
       });
   })
-  .option('timeout', {
-    abbr: 't',
-    metavar: 'TIMEOUT',
-    help: 'Set timeout in seconds for scanning for networked tessels'
-  })
-  .help('Show all connected Tessels');
+  .option('timeout', timeoutOption)
+  .help('Lists all connected Tessels and their authorization status.');
 
 parser.command('init')
   .callback(init)
@@ -183,6 +189,7 @@ parser.command('wifi')
     metavar: 'PASSWORD',
     help: 'Set the password of the network to connect to'
   })
+  .option('timeout', timeoutOption)
   .help('Configure the wireless connection');
 
 parser.command('key')
@@ -226,6 +233,7 @@ parser.command('rename')
         process.exit(1);
       });
   })
+  .option('timeout', timeoutOption)
   .help('Change the name of a Tessel to something new.');
 
 parser.parse();
