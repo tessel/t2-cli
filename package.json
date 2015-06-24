@@ -60,7 +60,7 @@
     "ssh2": "^0.4.2",
     "tessel": "git+https://github.com/tessel/cli#jon-export-v2",
     "usb": "^1.0.5",
-    "usb-daemon-parser": "0.0.1"
+    "usb-daemon-parser": "git+https://github.com/tessel/usb-daemon-parser#jh-dev-dependency"
   },
   "preferGlobal": true
 }
