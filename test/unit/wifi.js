@@ -179,6 +179,14 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
       ssid: 'tank',
       password: 'fish'
     };
+
+    // Test is expecting two closes...;
+    self.tessel._rps.on('command', function() {
+      setImmediate(function() {
+        self.tessel._rps.emit('close');
+      });
+    });
+
     this.tessel.connectToNetwork(creds)
       .then(function() {
         test.equal(self.setNetworkSSID.callCount, 1);
@@ -192,13 +200,5 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
       .catch(function(error) {
         test.fail(error);
       });
-
-    // Test is expecting two closes...;
-    setImmediate(function() {
-      self.tessel._rps.emit('close');
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
-      });
-    });
   }
 };
