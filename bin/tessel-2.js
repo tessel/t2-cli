@@ -29,6 +29,11 @@ parser.command('provision')
         process.exit(1);
       });
   })
+  .option('force', {
+    abbr: 'f',
+    flag: true,
+    help: 'Delete existing .tessel authorization and reprovision.'
+  })
   .help('Authorize your computer to control the USB-connected Tessel');
 
 parser.command('run')
