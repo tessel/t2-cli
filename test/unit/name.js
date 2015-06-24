@@ -31,6 +31,7 @@ exports['Tessel.prototype.rename'] = {
   },
 
   tearDown: function(done) {
+    this.tessel.close();
     this.isValidName.restore();
     this.renameTessel.restore();
     this.getName.restore();
