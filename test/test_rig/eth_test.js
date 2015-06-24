@@ -2,6 +2,7 @@ var commands = require('../../lib/tessel/commands');
 
 var numPings = 3;
 
+// takes in opts.host
 module.exports = function(opts, selectedTessel) {
   return new Promise(function(resolve, reject) {
     // Send some pings to a remote website
@@ -14,7 +15,7 @@ module.exports = function(opts, selectedTessel) {
       var pingData = '';
 
       remoteProc.once('error', function(err) {
-        return reject(new Error("Ethernet test failed: Unable to receive data..."));
+        return reject(new Error("Ping test failed: Unable to receive data..." + err));
       })
 
       // When data comes in about ping results, store it

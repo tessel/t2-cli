@@ -59,3 +59,13 @@ module.exports.runUSBTest = function (opts, selectedTessel){
     });
   });
 }
+
+module.exports.runEthernetTest = function(opts, selectedTessel) {
+  return new Promise(function(resolve, reject){
+    eth_test(opts, selectedTessel)
+    .then(resolve)
+    .catch(function(err){
+      reject(err);
+    });
+  });
+}
