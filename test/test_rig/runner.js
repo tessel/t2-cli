@@ -1,5 +1,6 @@
 var usb_test = require('./usb_test'),
-    eth_test = require('./eth_test')
+    eth_test = require('./eth_test'),
+    Promise = require('bluebird')
 
 module.exports.runTests = function(opts, selectedTessel) {
   return new Promise(function(resolve, reject) {

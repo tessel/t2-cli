@@ -1,5 +1,6 @@
-var commands = require('../../lib/tessel/commands')
-    logs = require('../../lib/logs')
+var commands = require('../../lib/tessel/commands'),
+    logs = require('../../lib/logs'),
+    Promise = require('bluebird')
 
 // We are testing two usb ports
 var NUM_USB_PORT = 2;
@@ -83,11 +84,21 @@ function readFile(opts, selectedTessel) {
       });
 
       remoteProc.once('close', function() {
-        if (foundFile.equals(opts.verify)) {
-          return resolve(selectedTessel);
-        } else {
+        // check buffer equals. node 0.10 does not have buffer.equals
+
+        function rejectErr() {
           reject("file found does not match verification file. Found:"+foundFile+", expected: "+opts.verify);
         }
+
+        if (foundFile.length != opts.verify.length) {
+          return rejectErr();
+        }
+
+        for (var i = 0; i < foundFile.length; i++) {
+          if (foundFile[i] !== opts.verify[i]) return rejectErr();
+        }
+
+        return resolve(selectedTessel);
       });
     });
   });

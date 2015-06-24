@@ -1,4 +1,5 @@
-var commands = require('../../lib/tessel/commands');
+var commands = require('../../lib/tessel/commands'),
+  Promise = require('bluebird')
 
 var numPings = 3;
 
@@ -32,7 +33,6 @@ module.exports = function(opts, selectedTessel) {
           // It worked. Set the success LED
           selectedTessel.setBlueLED(1)
           .then(function() { 
-            logs.info("Ping Tests Passed.")
             return resolve(selectedTessel);
           });
         }
