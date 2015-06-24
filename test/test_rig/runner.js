@@ -30,13 +30,15 @@ module.exports.runTests = function(opts, selectedTessel) {
 }
 
 // break out just the ping test for wifi testing
-module.exports.runPingTest = function(opts, selectedTessel){
+module.exports.runPingTest = function(opts, selectedTessel, timeout){
   return new Promise(function(resolve, reject) {
-    eth_test(opts, selectedTessel)
-    .then(resolve)
-    .catch(function(err){
-      reject(err)
-    });
+    setTimeout(function(){
+      eth_test(opts, selectedTessel)
+      .then(resolve)
+      .catch(function(err){
+        reject(err)
+      });
+    }, timeout ? timeout : 0); // wait for wifi to come back up again
   });
 }
 
@@ -53,16 +55,6 @@ function resetLEDStates(selectedTessel) {
 module.exports.runUSBTest = function (opts, selectedTessel){
   return new Promise(function(resolve, reject){
     usb_test.readFile(opts, selectedTessel)
-    .then(resolve)
-    .catch(function(err){
-      reject(err);
-    });
-  });
-}
-
-module.exports.runEthernetTest = function(opts, selectedTessel) {
-  return new Promise(function(resolve, reject){
-    eth_test(opts, selectedTessel)
     .then(resolve)
     .catch(function(err){
       reject(err);
