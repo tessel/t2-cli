@@ -6,7 +6,7 @@ Join the [conversation on Slack](https://tessel-slack.herokuapp.com/), our proje
 <img src="http://tessel-slack.herokuapp.com/badge.svg">
 
 ## Installation
-Clone this repo and then run `npm link --local`.
+Clone this repo and then run `npm link`.
 
 ## Setup
 
