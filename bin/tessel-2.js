@@ -127,7 +127,7 @@ parser.command('list')
   .callback(function(opts) {
     controller.listTessels(opts)
       .then(function() {
-        process.exit(1);
+        process.exit(0);
       })
       .catch(function(err) {
         if (err instanceof Error) {
@@ -155,7 +155,7 @@ parser.command('wifi')
     if (opts.list) {
       controller.printAvailableNetworks(opts)
         .then(function() {
-          process.exit(1);
+          process.exit(0);
         })
         .catch(function(err) {
           if (err instanceof Error) {
@@ -167,7 +167,7 @@ parser.command('wifi')
     } else if (opts.ssid && opts.password) {
       controller.connectToNetwork(opts)
         .then(function() {
-          process.exit(1);
+          process.exit(0);
         })
         .catch(function(err) {
           if (err instanceof Error) {
