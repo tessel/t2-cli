@@ -181,7 +181,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     };
 
     // Test is expecting two closes...;
-    self.tessel._rps.on('command', function() {
+    self.tessel._rps.on('control', function() {
       setImmediate(function() {
         self.tessel._rps.emit('close');
       });
