@@ -118,7 +118,7 @@ exports['controller.provisionTessel'] = {
   },
 
   completeForced: function(test) {
-    test.expect(3);
+    test.expect(4);
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
     Tessel.TESSEL_AUTH_PATH = 'funkytown';
@@ -129,9 +129,11 @@ exports['controller.provisionTessel'] = {
       test.equal(this.exec.callCount, 1);
       test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.TESSEL_AUTH_PATH);
       test.equal(this.provisionSpy.callCount, 1);
-
-      Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
-      test.done();
+      rimraf(path.join(process.cwd(), Tessel.TESSEL_AUTH_PATH), function(err) {
+        test.ifError(err);
+        Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+        test.done();
+      });
     }.bind(this));
   },
 
