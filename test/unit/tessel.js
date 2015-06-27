@@ -5,7 +5,8 @@ exports['Tessel (endConnection)'] = {
   setUp: function(done) {
 
     this.mockConnection = {
-      end: function() {}
+      end: function() {},
+      close: function() {}
     };
 
     this.end = sinon.spy(this.mockConnection, 'end');
@@ -44,9 +45,57 @@ exports['Tessel (endConnection)'] = {
     tessel.close();
 
     test.equal(processremoveListener.callCount, 1);
-    test.equal(this.end.callCount, 0);
+    test.equal(this.end.callCount, 1);
 
     processremoveListener.restore();
+    test.done();
+  },
+};
+
+exports['Tessel (get)'] = {
+
+  setUp: function(done) {
+    // TODO
+    done();
+  },
+
+  tearDown: function(done) {
+    // TODO
+    done();
+  },
+
+  noTessels: function(test) {
+    // TODO
+    test.done();
+  },
+
+  oneUSB: function(test) {
+    // TODO
+    test.done();
+  },
+
+  multipleUSB: function(test) {
+    // TODO
+    test.done();
+  },
+
+  usbAndNonAuthorizedLANSameTessel: function(test) {
+    // TODO
+    test.done();
+  },
+
+  usbAndAuthorizedLANSameTessel: function(test) {
+    // TODO
+    test.done();
+  },
+
+  manyLAN: function(test) {
+    // TODO
+    test.done();
+  },
+
+  oneUSBManyLAN: function(test) {
+    // TODO
     test.done();
   },
 };

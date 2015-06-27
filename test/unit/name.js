@@ -3,6 +3,7 @@ var Tessel = require('../../lib/tessel/tessel');
 var commands = require('../../lib/tessel/commands');
 var logs = require('../../lib/logs');
 var controller = require('../../lib/controller');
+var TesselSimulator = require('../common/tessel-simulator');
 
 exports['Tessel.prototype.rename'] = {
   setUp: function(done) {
@@ -21,17 +22,14 @@ exports['Tessel.prototype.rename'] = {
     this.getHostname = sinon.spy(commands, 'getHostname');
     this.logsWarn = sinon.stub(logs, 'warn', function() {});
     this.logsInfo = sinon.stub(logs, 'info', function() {});
-
-    this.tessel = new Tessel();
-    this.tessel.connection = {
-      exec: sinon.spy()
-    };
+    this.tessel = TesselSimulator();
+    this.tessel.connection.exec = sinon.spy();
 
     done();
   },
 
   tearDown: function(done) {
-    this.tessel.close();
+    this.tessel.mockClose();
     this.isValidName.restore();
     this.renameTessel.restore();
     this.getName.restore();

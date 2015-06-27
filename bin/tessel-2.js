@@ -15,7 +15,7 @@ var timeoutOption = {
   abbr: 't',
   metavar: 'TIMEOUT',
   help: 'Set timeout in seconds for scanning for networked tessels',
-  default: 3
+  default: 5
 };
 
 parser.command('provision')
@@ -39,6 +39,9 @@ parser.command('provision')
 parser.command('run')
   .callback(function(opts) {
     controller.deployScript(opts, false)
+      .then(function() {
+        process.exit(0);
+      })
       .catch(function(err) {
         if (err instanceof Error) {
           throw err;

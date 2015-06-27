@@ -2,10 +2,7 @@ var RemoteProcessSimulator = require('./remote-process-simulator');
 var Tessel = require('../../lib/tessel/tessel');
 
 function TesselSimulator() {
-  var tessel = new Tessel();
-  tessel._rps = new RemoteProcessSimulator();
-
-  tessel.connection = {
+  var simConnection = {
     exec: function(command, callback) {
 
       if (!Array.isArray(command)) {
@@ -24,7 +21,15 @@ function TesselSimulator() {
     }
   };
 
+  var tessel = new Tessel(simConnection);
+  tessel._rps = new RemoteProcessSimulator();
+
   return tessel;
 }
+
+Tessel.prototype.mockClose = function() {
+  this.close();
+  process.removeAllListeners('exit');
+};
 
 module.exports = TesselSimulator;

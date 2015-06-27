@@ -17,7 +17,7 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
   },
 
   tearDown: function(done) {
-    this.tessel.close();
+    this.tessel.mockClose();
     this.findAvailableNetworks.restore();
     this.logsWarn.restore();
     this.logsInfo.restore();
@@ -134,7 +134,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     done();
   },
   tearDown: function(done) {
-    this.tessel.close();
+    this.tessel.mockClose();
     this.connectToNetwork.restore();
     this.logsWarn.restore();
     this.logsInfo.restore();
