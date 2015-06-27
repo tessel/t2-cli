@@ -3,6 +3,7 @@ var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
 function RemoteProcessSimulator() {
+  var self = this;
   this.stdin = new stream.Writable();
   this.control = new stream.Writable();
   this.stdout = new stream.Readable();
@@ -18,12 +19,22 @@ function RemoteProcessSimulator() {
     cb();
   }.bind(this);
 
-  this.stdin._write = function(data, enc, cb) {
-    // Emit incoming data for validation in tests
-    this.emit('stdin', data);
+  function stdinRecorder(command, enc, cb) {
+    // Emit new data
+    self.emit('stdin', command);
     // Call the callback so we can receive more
     cb();
-  }.bind(this);
+  }
+
+  this.stdin._write = stdinRecorder;
+
+  // If a process tries to end stdin
+  this.stdin.on('finish', function() {
+    // Create a new writable
+    self.stdin = new stream.Writable();
+    // Keep recording what gets written
+    self.stdin._write = stdinRecorder;
+  });
 }
 
 util.inherits(RemoteProcessSimulator, EventEmitter);
