@@ -241,4 +241,11 @@ parser.command('rename')
   .option('timeout', timeoutOption)
   .help('Change the name of a Tessel to something new.');
 
-parser.parse();
+
+module.exports = function(args) {
+  parser.parse(args);
+};
+
+if (require.main === module) {
+  module.exports(process.argv.slice(2));
+}
