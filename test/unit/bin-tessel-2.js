@@ -2,7 +2,6 @@ var sinon = require('sinon');
 var cli = require('../../bin/tessel-2');
 var controller = require('../../lib/controller');
 var logs = require('../../lib/logs');
-var parser = require('nomnom');
 
 
 exports['Tessel (cli: provision)'] = {
@@ -23,7 +22,7 @@ exports['Tessel (cli: provision)'] = {
   noError: function(test) {
     test.expect(1);
 
-    cli([ 'provision' ]);
+    cli(['provision']);
 
     test.equal(this.provisionTessel.callCount, 1);
     test.done();
@@ -36,7 +35,7 @@ exports['Tessel (cli: provision)'] = {
 
     this.provisionTessel.returns(provisionOp);
 
-    cli([ 'provision' ]);
+    cli(['provision']);
 
     provisionOp.catch(function() {
       test.equal(this.provisionTessel.callCount, 1);
@@ -66,7 +65,7 @@ exports['Tessel (cli: wifi)'] = {
   noOpts: function(test) {
     test.expect(1);
 
-    cli([ 'wifi' ]);
+    cli(['wifi']);
 
     test.equal(this.printAvailableNetworks.callCount, 0);
     test.done();
@@ -78,7 +77,7 @@ exports['Tessel (cli: wifi)'] = {
     var resolve = Promise.resolve();
     this.printAvailableNetworks.returns(resolve);
 
-    cli([ 'wifi', '--list', ' ' ]);
+    cli(['wifi', '--list', ' ']);
 
     resolve.then(function() {
       test.equal(this.processExit.lastCall.args[0], 0);
@@ -92,10 +91,10 @@ exports['Tessel (cli: wifi)'] = {
     var reject = Promise.reject();
     this.printAvailableNetworks.returns(reject);
 
-    cli([ 'wifi', '--list', ' ' ]);
+    cli(['wifi', '--list', ' ']);
 
     reject.catch(function() {
-      throw "Without this, the catch in the test is invoked before the catch in the cli program.";
+      throw 'Without this, the catch in the test is invoked before the catch in the cli program.';
     }).catch(function() {
       test.equal(this.processExit.lastCall.args[0], 1);
       test.done();
@@ -108,7 +107,7 @@ exports['Tessel (cli: wifi)'] = {
     var resolve = Promise.resolve();
     this.connectToNetwork.returns(resolve);
 
-    cli([ 'wifi', '--ssid', 'a', '--password', 'b' ]);
+    cli(['wifi', '--ssid', 'a', '--password', 'b']);
 
     resolve.then(function() {
       test.equal(this.processExit.lastCall.args[0], 0);
@@ -122,10 +121,10 @@ exports['Tessel (cli: wifi)'] = {
     var reject = Promise.reject();
     this.connectToNetwork.returns(reject);
 
-    cli([ 'wifi', '--ssid', 'a', '--password', 'b' ]);
+    cli(['wifi', '--ssid', 'a', '--password', 'b']);
 
     reject.catch(function() {
-      throw "Without this, the catch in the test is invoked before the catch in the cli program.";
+      throw 'Without this, the catch in the test is invoked before the catch in the cli program.';
     }).catch(function() {
       test.equal(this.processExit.lastCall.args[0], 1);
       test.done();
