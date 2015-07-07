@@ -280,7 +280,7 @@ exports['Tessel.prototype.provision'] = {
         test.fail();
       }
       // Attempt to set up local keys
-      provision.setupLocal(/* intentionally empty */)
+      provision.setupLocal( /* intentionally empty */ )
         .then(function() {
           // Make sure we wrote both keys
           test.equal(self.writeFileSpy.callCount, 2);

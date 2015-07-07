@@ -3,7 +3,7 @@ The starting point for the command line interface to the next version of Tessel
 
 Join the [conversation on Slack](https://tessel-slack.herokuapp.com/), our project's chat client!
 
-<img src="http://tessel-slack.herokuapp.com/badge.svg">
+[![Slack](http://tessel-slack.herokuapp.com/badge.svg)](https://tessel-slack.herokuapp.com/)
 
 [![Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli) 
 
