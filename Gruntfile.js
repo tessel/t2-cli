@@ -71,20 +71,6 @@ module.exports = function(grunt) {
         }
       }
     },
-    watch: {
-      src: {
-        files: [
-          'Gruntfile.js',
-          'lib/**/!(johnny-five)*.js',
-          'test/**/*.js',
-          'eg/**/*.js'
-        ],
-        tasks: ['default'],
-        options: {
-          interrupt: true,
-        },
-      }
-    }
   });
 
   // These plugins provide necessary tasks.
