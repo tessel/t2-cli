@@ -32,7 +32,7 @@ exports['Tessel.isProvisioned()'] = {
 
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = 'funkytown';
+    Tessel.TESSEL_AUTH_PATH = 'tmp';
     Tessel.isProvisioned();
 
     test.equal(this.existsSync.callCount, 2);
@@ -50,7 +50,7 @@ exports['Tessel.isProvisioned()'] = {
 
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = 'funkytown';
+    Tessel.TESSEL_AUTH_PATH = 'tmp';
     Tessel.isProvisioned();
 
     test.equal(this.existsSync.callCount, 1);
@@ -106,6 +106,8 @@ exports['controller.provisionTessel'] = {
     this.getTessel.restore();
     this.logsWarn.restore();
     this.logsInfo.restore();
+
+    deleteKeyTestFolder();
     done();
   },
 
@@ -121,7 +123,7 @@ exports['controller.provisionTessel'] = {
     test.expect(4);
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = 'funkytown';
+    Tessel.TESSEL_AUTH_PATH = 'tmp';
 
     this.provisionTessel({
       force: true
@@ -138,14 +140,35 @@ exports['controller.provisionTessel'] = {
   },
 
   completeUnprovisioned: function(test) {
-    test.expect(1);
+    test.expect(2);
+    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+
+    Tessel.TESSEL_AUTH_PATH = 'tmp';
+
+    this.isProvisioned.returns(false);
+
+    this.provisionTessel().then(function() {
+      test.equal(this.exec.callCount, 0);
+      test.equal(this.provisionSpy.callCount, 1);
+      Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+      test.done();
+    }.bind(this));
+  },
+
+  completeUnprovisionedForced: function(test) {
+    test.expect(2);
+    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+
+    Tessel.TESSEL_AUTH_PATH = 'tmp';
 
     this.isProvisioned.returns(false);
 
     this.provisionTessel({
       force: true
     }).then(function() {
+      test.equal(this.exec.callCount, 0);
       test.equal(this.provisionSpy.callCount, 1);
+      Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
       test.done();
     }.bind(this));
   },
@@ -205,7 +228,7 @@ exports['Tessel.prototype.provision'] = {
     // Set the connectionType to LAN so it will fail
     this.tessel.connectionType = 'LAN';
 
-    // Attempt to provision 
+    // Attempt to provision
     this.tessel.provisionTessel()
       // If an error is not thrown, this test failed
       .then(test.fail)
@@ -224,7 +247,7 @@ exports['Tessel.prototype.provision'] = {
 
     test.expect(1);
 
-    // Create folders for the folder that we'd like to 
+    // Create folders for the folder that we'd like to
     createKeyTestFolder(function(err) {
       if (err) {
         test.fail();
