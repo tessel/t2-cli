@@ -5,6 +5,8 @@ Join the [conversation on Slack](https://tessel-slack.herokuapp.com/), our proje
 
 <img src="http://tessel-slack.herokuapp.com/badge.svg">
 
+[![Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli) 
+
 ## Installation
 Clone this repo and then run `npm link`.
 
