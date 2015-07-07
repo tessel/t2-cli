@@ -266,6 +266,37 @@ exports['Tessel.prototype.provision'] = {
     });
   },
 
+  fallbackKeyPath: function(test) {
+    var self = this;
+
+    test.expect(3);
+
+    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    Tessel.TESSEL_AUTH_PATH = testPath;
+
+    // Create folders for the folder that we'd like to
+    createKeyTestFolder(function(err) {
+      if (err) {
+        test.fail();
+      }
+      // Attempt to set up local keys
+      provision.setupLocal(/* intentionally empty */)
+        .then(function() {
+          // Make sure we wrote both keys
+          test.equal(self.writeFileSpy.callCount, 2);
+          test.equal(path.dirname(self.writeFileSpy.firstCall.args[0]), testPath);
+          test.equal(path.dirname(self.writeFileSpy.lastCall.args[0]), testPath);
+
+          Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+          // End the test
+          test.done();
+        })
+        .catch(function() {
+          test.fail('Key write failed.');
+        });
+    });
+  },
+
   keyAlreadyInRemoteAuth: function(test) {
     var self = this;
 
