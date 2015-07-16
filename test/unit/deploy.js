@@ -3,6 +3,7 @@ var Tessel = require('../../lib/tessel/tessel');
 var commands = require('../../lib/tessel/commands');
 var logs = require('../../lib/logs');
 var TesselSimulator = require('../common/tessel-simulator');
+var tesselClassic = require('../common/tessel-classic');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var path = require('path');
@@ -24,6 +25,9 @@ exports['Tessel.prototype.deployScript'] = {
     this.setExecutablePermissions = sinon.spy(commands, 'setExecutablePermissions');
     this.startPushedScript = sinon.spy(commands, 'startPushedScript');
 
+    this.analyzeScript = sinon.spy(tesselClassic, 'analyzeScript');
+    this.tarCode = sinon.spy(tesselClassic, 'tarCode');
+
     this.logsWarn = sinon.stub(logs, 'warn', function() {});
     this.logsInfo = sinon.stub(logs, 'info', function() {});
 
@@ -44,6 +48,10 @@ exports['Tessel.prototype.deployScript'] = {
     this.openStdinToFile.restore();
     this.setExecutablePermissions.restore();
     this.startPushedScript.restore();
+
+    this.analyzeScript.restore();
+    this.tarCode.restore();
+
     this.logsWarn.restore();
     this.logsInfo.restore();
     deleteTemporaryDeployCode()
@@ -106,7 +114,7 @@ exports['Tessel.prototype.deployScript'] = {
 
     // Actually deploy the script (but we didn't create the deploy folder in the first place)
     self.tessel.deployScript({
-        entryPoint: path.relative(process.cwd(), deployFile)
+        entryPoint: 'fail.js'
       }, false)
       // If it finishes, it was successful
       .then(function success() {
