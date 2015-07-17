@@ -86,33 +86,39 @@ exports['Tessel (get)'] = {
 
   noTessels: function(test) {
     // Try to get Tessels but return none
-    Tessel.get({timeout:1})
-    // If 
-    .then(function(tessels) {
-      test.equal(tessels, false, 'Somehow Tessels were returned');
-    })
-    .catch(function(err) {
-      test.equal(typeof err, 'string', 'No error thrown');
-      test.done()
-    })
+    Tessel.get({
+        timeout: 1
+      })
+      // If
+      .then(function(tessels) {
+        test.equal(tessels, false, 'Somehow Tessels were returned');
+      })
+      .catch(function(err) {
+        test.equal(typeof err, 'string', 'No error thrown');
+        test.done();
+      });
   },
 
   oneUSB: function(test) {
     var testConnectionType = 'USB';
     var testName = 'testTessel';
     // Try to get Tessels but return none
-    Tessel.get({timeout:1})
-    // If 
-    .then(function(tessel) {
-      test.equal(tessel.name, testName);
-      test.equal(tessel.connection.connectionType, testConnectionType);
-      test.done()
-    })
-    .catch(function(err) {
-      test.equal(err, undefined, 'A valid USB Tessel was reject upon get.');
-    })
+    Tessel.get({
+        timeout: 1
+      })
+      // If
+      .then(function(tessel) {
+        test.equal(tessel.name, testName);
+        test.equal(tessel.connection.connectionType, testConnectionType);
+        test.done();
+      })
+      .catch(function(err) {
+        test.equal(err, undefined, 'A valid USB Tessel was reject upon get.');
+      });
 
-    var tessel = new Tessel({connectionType: testConnectionType});
+    var tessel = new Tessel({
+      connectionType: testConnectionType
+    });
     tessel.name = testName;
     this.activeSeeker.emit('tessel', tessel);
   },
