@@ -1,5 +1,9 @@
 var sinon = require('sinon');
 var Tessel = require('../../lib/tessel/tessel');
+var Seeker = require('../../lib/discover.js');
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
+var logs = require('../../lib/logs');
 
 exports['Tessel (endConnection)'] = {
   setUp: function(done) {
@@ -55,23 +59,62 @@ exports['Tessel (endConnection)'] = {
 exports['Tessel (get)'] = {
 
   setUp: function(done) {
-    // TODO
+    var self = this;
+    this.activeSeeker = undefined;
+    this.seeker = sinon.stub(Seeker, 'TesselSeeker', function Seeker() {
+      this.start = function() {
+        self.activeSeeker = this;
+        return this;
+      };
+      this.stop = function() {
+        return this;
+      };
+    });
+    util.inherits(this.seeker, EventEmitter);
+    this.logsWarn = sinon.stub(logs, 'warn', function() {});
+    this.logsInfo = sinon.stub(logs, 'info', function() {});
+
     done();
   },
 
   tearDown: function(done) {
-    // TODO
+    this.seeker.restore();
+    this.logsWarn.restore();
+    this.logsInfo.restore();
     done();
   },
 
   noTessels: function(test) {
-    // TODO
-    test.done();
+    // Try to get Tessels but return none
+    Tessel.get({timeout:1})
+    // If 
+    .then(function(tessels) {
+      test.equal(tessels, false, 'Somehow Tessels were returned');
+    })
+    .catch(function(err) {
+      test.equal(typeof err, 'string', 'No error thrown');
+      test.done()
+    })
   },
 
   oneUSB: function(test) {
-    // TODO
-    test.done();
+    var testConnectionType = 'USB';
+    var testName = 'testTessel';
+    // Try to get Tessels but return none
+    Tessel.get({timeout:1})
+    // If 
+    .then(function(tessel) {
+      test.equal(tessel.name, testName);
+      test.equal(tessel.connection.connectionType, testConnectionType);
+      test.done()
+    })
+    .catch(function(err) {
+      test.equal(err, undefined, 'A valid USB Tessel was reject upon get.');
+    })
+
+    var tessel = new Tessel({connectionType: testConnectionType});
+    tessel.name = testName;
+    this.activeSeeker.emit('tessel', tessel);
   },
 
   multipleUSB: function(test) {
