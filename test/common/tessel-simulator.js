@@ -30,6 +30,7 @@ function TesselSimulator() {
 Tessel.prototype.mockClose = function() {
   this.close();
   process.removeAllListeners('exit');
+  process.removeAllListeners('SIGINT');
 };
 
 module.exports = TesselSimulator;

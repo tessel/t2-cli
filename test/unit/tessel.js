@@ -60,8 +60,9 @@ exports['Tessel (get)'] = {
 
   setUp: function(done) {
     var self = this;
+    this.sandbox = sinon.sandbox.create();
     this.activeSeeker = undefined;
-    this.seeker = sinon.stub(Seeker, 'TesselSeeker', function Seeker() {
+    this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
       this.start = function() {
         self.activeSeeker = this;
         return this;
@@ -71,16 +72,14 @@ exports['Tessel (get)'] = {
       };
     });
     util.inherits(this.seeker, EventEmitter);
-    this.logsWarn = sinon.stub(logs, 'warn', function() {});
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
 
     done();
   },
 
   tearDown: function(done) {
-    this.seeker.restore();
-    this.logsWarn.restore();
-    this.logsInfo.restore();
+    this.sandbox.restore();
     done();
   },
 
@@ -110,6 +109,7 @@ exports['Tessel (get)'] = {
       .then(function(tessel) {
         test.equal(tessel.name, testName);
         test.equal(tessel.connection.connectionType, testConnectionType);
+        tessel.close();
         test.done();
       })
       .catch(function(err) {
@@ -123,28 +123,223 @@ exports['Tessel (get)'] = {
     this.activeSeeker.emit('tessel', tessel);
   },
 
-  multipleUSB: function(test) {
-    // TODO
-    test.done();
+  multipleUSBNoName: function(test) {
+    test.expect(1);
+    // Try to get Tessels but return none
+    Tessel.get({
+        timeout: 0.1
+      })
+      .catch(function() {
+        test.equal(
+          this.logsInfo.lastCall.args[0],
+          'Please specify a Tessel by name'
+        );
+        a.close();
+        b.close();
+        test.done();
+      }.bind(this));
+
+    var a = new Tessel({
+      connectionType: 'USB'
+    });
+    var b = new Tessel({
+      connectionType: 'USB'
+    });
+
+    a.name = 'a';
+    b.name = 'b';
+
+    this.activeSeeker.emit('tessel', a);
+    this.activeSeeker.emit('tessel', b);
+  },
+
+  multipleUSBHasName: function(test) {
+    test.expect(1);
+
+    Tessel.get({
+        timeout: 0.1,
+        name: 'a'
+      })
+      .then(function(tessel) {
+        test.equal(tessel.name, 'a');
+        a.close();
+        b.close();
+        test.done();
+      })
+      .catch(function() {
+        test.fail();
+      });
+
+    var a = new Tessel({
+      connectionType: 'USB'
+    });
+    var b = new Tessel({
+      connectionType: 'USB'
+    });
+
+    a.name = 'a';
+    b.name = 'b';
+
+    this.activeSeeker.emit('tessel', a);
+    this.activeSeeker.emit('tessel', b);
   },
 
   usbAndNonAuthorizedLANSameTessel: function(test) {
-    // TODO
-    test.done();
+    test.expect(2);
+
+    // Try to get Tessels but return none
+    Tessel.get({
+        timeout: 0.5,
+      })
+      .then(function(tessel) {
+        test.equal(tessel.name, 'a');
+        test.equal(tessel.connection.connectionType, 'USB');
+
+        usb.close();
+        lan.close();
+        test.done();
+      })
+      .catch(function() {
+        test.fail();
+      });
+
+    var usb = new Tessel({
+      connectionType: 'USB'
+    });
+    var lan = new Tessel({
+      connectionType: 'LAN'
+    });
+
+    usb.name = 'a';
+    lan.name = 'a';
+
+    this.activeSeeker.emit('tessel', usb);
+    this.activeSeeker.emit('tessel', lan);
+  },
+
+  usbAndNonAuthorizedLANSameTesselLANFirst: function(test) {
+    test.expect(2);
+
+    // Try to get Tessels but return none
+    Tessel.get({
+        timeout: 0.5,
+      })
+      .then(function(tessel) {
+        test.equal(tessel.name, 'a');
+        test.equal(tessel.connection.connectionType, 'USB');
+        test.done();
+      })
+      .catch(function() {
+        test.fail();
+      });
+
+    var usb = new Tessel({
+      connectionType: 'USB'
+    });
+    var lan = new Tessel({
+      connectionType: 'LAN'
+    });
+
+    usb.name = 'a';
+    lan.name = 'a';
+
+    // "Detect" the lan first. This order is intentional
+    // 1
+    this.activeSeeker.emit('tessel', lan);
+    // 2
+    this.activeSeeker.emit('tessel', usb);
   },
 
   usbAndAuthorizedLANSameTessel: function(test) {
-    // TODO
-    test.done();
+    test.expect(2);
+
+    // Try to get Tessels but return none
+    Tessel.get({
+        timeout: 0.5,
+      })
+      .then(function(tessel) {
+        test.equal(tessel.name, 'a');
+        test.equal(tessel.connection.connectionType, 'LAN');
+        test.done();
+      })
+      .catch(function() {
+        test.fail();
+      });
+
+    var usb = new Tessel({
+      connectionType: 'USB'
+    });
+    var lan = new Tessel({
+      connectionType: 'LAN'
+    });
+
+    usb.name = 'a';
+    lan.name = 'a';
+
+    lan.connection.authorized = true;
+
+    this.activeSeeker.emit('tessel', usb);
+    this.activeSeeker.emit('tessel', lan);
   },
 
-  manyLAN: function(test) {
-    // TODO
-    test.done();
+  multipleLANNoName: function(test) {
+    test.expect(1);
+    // Try to get Tessels but return none
+    Tessel.get({
+        timeout: 0.1
+      })
+      .catch(function() {
+        test.equal(
+          this.logsInfo.lastCall.args[0],
+          'Please specify a Tessel by name'
+        );
+        a.close();
+        b.close();
+        test.done();
+      }.bind(this));
+
+    var a = new Tessel({
+      connectionType: 'LAN'
+    });
+    var b = new Tessel({
+      connectionType: 'LAN'
+    });
+
+    a.name = 'a';
+    b.name = 'b';
+
+    this.activeSeeker.emit('tessel', a);
+    this.activeSeeker.emit('tessel', b);
   },
 
-  oneUSBManyLAN: function(test) {
-    // TODO
-    test.done();
+  multipleLANHasName: function(test) {
+    test.expect(1);
+
+    Tessel.get({
+        timeout: 0.1,
+        name: 'a'
+      })
+      .then(function(tessel) {
+        test.equal(tessel.name, 'a');
+        a.close();
+        b.close();
+        test.done();
+      })
+      .catch(function() {
+        test.fail();
+      });
+
+    var a = new Tessel({
+      connectionType: 'LAN'
+    });
+    var b = new Tessel({
+      connectionType: 'LAN'
+    });
+
+    a.name = 'a';
+    b.name = 'b';
+
+    this.activeSeeker.emit('tessel', a);
+    this.activeSeeker.emit('tessel', b);
   },
 };
