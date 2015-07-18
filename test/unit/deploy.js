@@ -14,7 +14,6 @@ var rimraf = require('rimraf');
 
 exports['Tessel.prototype.deployScript'] = {
   setUp: function(done) {
-
     this.deployScript = sinon.spy(Tessel.prototype, 'deployScript');
     this.stopRunningScript = sinon.spy(commands, 'stopRunningScript');
     this.deleteFolder = sinon.spy(commands, 'deleteFolder');
@@ -38,7 +37,7 @@ exports['Tessel.prototype.deployScript'] = {
   },
 
   tearDown: function(done) {
-    this.tessel.close();
+    this.tessel.mockClose();
     this.deployScript.restore();
     this.stopRunningScript.restore();
     this.deleteFolder.restore();

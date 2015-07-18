@@ -17,7 +17,7 @@ exports['Tessel.prototype.erase'] = {
   },
 
   tearDown: function(done) {
-    this.tessel.close();
+    this.tessel.mockClose();
     this.erase.restore();
     this.logsWarn.restore();
     this.logsInfo.restore();
