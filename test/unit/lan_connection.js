@@ -63,6 +63,10 @@ exports['LAN.Scanner.prototype.start'] = {
       return emitter;
     }.bind(this));
 
+    this.readFileSync = this.sandbox.stub(fs, 'readFileSync', function() {
+      return 'this is the contents of id_rsa';
+    });
+
     this.scanner = new LAN.Scanner();
 
     done();
