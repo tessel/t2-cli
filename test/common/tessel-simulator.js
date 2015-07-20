@@ -3,21 +3,21 @@ var Tessel = require('../../lib/tessel/tessel');
 
 function TesselSimulator() {
   var simConnection = {
-    exec: function(command, callback) {
+    exec: function(command) {
+      return new Promise(function(resolve) {
+        if (!Array.isArray(command)) {
+          throw new Error('Invalid command passed to exec.');
+        }
 
-      if (!Array.isArray(command)) {
-        throw new Error('Invalid command passed to exec.');
-      }
+        tessel._rps.control.write(command.join(' '));
 
-      tessel._rps.control.write(command.join(' '));
-      if (typeof callback === 'function') {
-        callback(null, tessel._rps);
-      }
+        resolve(tessel._rps);
+      });
     },
-    end: function(callback) {
-      if (typeof callback === 'function') {
-        callback();
-      }
+    end: function() {
+      return new Promise(function(resolve) {
+        resolve();
+      });
     }
   };
 
