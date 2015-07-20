@@ -18,16 +18,29 @@ var timeoutOption = {
   default: 5
 };
 
+function closeSuccessfulCommand() {
+  process.exit(0);
+}
+
+function closeFailedCommand(err) {
+  // If the returned value is an error
+  if (err instanceof Error) {
+    // Throw it
+    throw err;
+  }
+  // Otherwise
+  else {
+    // Print a stern warning
+    logs.warn(err);
+  }
+  // Exit with non-zero code
+  process.exit(1);
+}
+
 parser.command('provision')
   .callback(function(opts) {
     controller.provisionTessel(opts)
-      .catch(function(err) {
-        if (err instanceof Error) {
-          throw err;
-        }
-        logs.warn(err);
-        process.exit(1);
-      });
+      .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('force', {
     abbr: 'f',
@@ -39,16 +52,7 @@ parser.command('provision')
 parser.command('run')
   .callback(function(opts) {
     controller.deployScript(opts, false)
-      .then(function() {
-        process.exit(0);
-      })
-      .catch(function(err) {
-        if (err instanceof Error) {
-          throw err;
-        }
-        logs.err(err);
-        process.exit(1);
-      });
+      .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('name', nameOption)
   .option('lan', {
@@ -76,13 +80,7 @@ parser.command('push')
   .callback(function(opts) {
     // true: push=true
     controller.deployScript(opts, true)
-      .catch(function(err) {
-        if (err instanceof Error) {
-          throw err;
-        }
-        logs.warn(err);
-        process.exit(1);
-      });
+      .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('name', nameOption)
   .option('lan', {
@@ -109,16 +107,7 @@ parser.command('push')
 parser.command('erase')
   .callback(function(opts) {
     controller.eraseScript(opts)
-      .catch(function(err) {
-        if (err instanceof Error) {
-          throw err;
-        }
-        logs.warn(err);
-        process.exit(1);
-      })
-      .then(function() {
-        process.exit(0);
-      });
+      .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('name', nameOption)
   .option('verbose', {
@@ -132,16 +121,7 @@ parser.command('erase')
 parser.command('list')
   .callback(function(opts) {
     controller.listTessels(opts)
-      .then(function() {
-        process.exit(0);
-      })
-      .catch(function(err) {
-        if (err instanceof Error) {
-          throw err;
-        }
-        logs.err(err);
-        process.exit(1);
-      });
+      .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('timeout', timeoutOption)
   .help('Lists all connected Tessels and their authorization status.');
@@ -160,28 +140,10 @@ parser.command('wifi')
     //TODO: Refactor switch case into controller.wifi
     if (opts.list) {
       controller.printAvailableNetworks(opts)
-        .then(function() {
-          process.exit(0);
-        })
-        .catch(function(err) {
-          if (err instanceof Error) {
-            throw err;
-          }
-          logs.warn(err);
-          process.exit(1);
-        });
+        .then(closeSuccessfulCommand, closeFailedCommand);
     } else if (opts.ssid && opts.password) {
       controller.connectToNetwork(opts)
-        .then(function() {
-          process.exit(0);
-        })
-        .catch(function(err) {
-          if (err instanceof Error) {
-            throw err;
-          }
-          logs.warn(err);
-          process.exit(1);
-        });
+        .then(closeSuccessfulCommand, closeFailedCommand);
     }
   })
   .option('name', nameOption)
@@ -213,12 +175,8 @@ parser.command('key')
     key(opts)
       .then(function() {
         logs.info('Key successfully generated.');
-        process.exit(0);
       })
-      .catch(function(err) {
-        logs.warn(err);
-        process.exit(1);
-      });
+      .then(closeSuccessfulCommand, closeFailedCommand);
   });
 
 parser.command('rename')
@@ -233,16 +191,7 @@ parser.command('rename')
   })
   .callback(function(opts) {
     controller.renameTessel(opts)
-      .then(function() {
-        process.exit(0);
-      })
-      .catch(function(err) {
-        if (err instanceof Error) {
-          throw err;
-        }
-        logs.err(err);
-        process.exit(1);
-      });
+      .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('timeout', timeoutOption)
   .help('Change the name of a Tessel to something new.');

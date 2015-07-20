@@ -25,7 +25,12 @@ exports['Tessel (cli: provision)'] = {
     cli(['provision']);
 
     test.equal(this.provisionTessel.callCount, 1);
-    test.done();
+
+    // We must wait for the command too complete
+    // or else the sandbox will be cleared to early
+    setImmediate(function() {
+      test.done();
+    });
   },
 
   exitCodeOne: function(test) {
