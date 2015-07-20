@@ -7,12 +7,17 @@ var TesselSimulator = require('../common/tessel-simulator');
 
 exports['Tessel.prototype.rename'] = {
   setUp: function(done) {
+    var self = this;
 
-    this.getName = sinon.stub(Tessel.prototype, 'getName', function(callback) {
-      callback(null, 'TheFakeName');
+    this.getName = sinon.stub(Tessel.prototype, 'getName', function() {
+      return new Promise(function(resolve) {
+        resolve('TheFakeName');
+      });
     });
-    this._getMACAddress = sinon.stub(Tessel.prototype, '_getMACAddress', function(callback) {
-      callback(null, 'TheFakeMACAddress');
+    this._getMACAddress = sinon.stub(Tessel.prototype, '_getMACAddress', function() {
+      return new Promise(function(resolve) {
+        resolve('TheFakeMACAddress');
+      });
     });
 
     this.isValidName = sinon.spy(Tessel, 'isValidName');
@@ -23,7 +28,19 @@ exports['Tessel.prototype.rename'] = {
     this.logsWarn = sinon.stub(logs, 'warn', function() {});
     this.logsInfo = sinon.stub(logs, 'info', function() {});
     this.tessel = TesselSimulator();
-    this.tessel.connection.exec = sinon.spy();
+    this.exec = sinon.spy(this.tessel.connection, 'exec');
+
+    function closeAdvance(event) {
+      if (event === 'close') {
+        setImmediate(function() {
+          // Emit the close event to keep it going
+          self.tessel._rps.emit('close');
+        });
+      }
+    }
+
+    // When we get a listener that the Tessel process needs to close before advancing
+    this.tessel._rps.on('newListener', closeAdvance);
 
     done();
   },
@@ -39,6 +56,7 @@ exports['Tessel.prototype.rename'] = {
     this.getHostname.restore();
     this.logsWarn.restore();
     this.logsInfo.restore();
+    this.tessel._rps.removeAllListeners('newListener');
     done();
   },
 
@@ -76,92 +94,103 @@ exports['Tessel.prototype.rename'] = {
   resetName: function(test) {
     test.expect(6);
 
+    var self = this;
+
     this.tessel.rename({
-      reset: true
-    });
+        reset: true
+      })
+      .then(function nameReset() {
+        // When reset:
+        // - the mac address is requested
+        // - setName is called
+        // - the connection executes the setHostName command
+        test.equal(self._getMACAddress.callCount, 1);
+        test.equal(self.setName.callCount, 1);
+        test.equal(self.exec.callCount, 5);
+        test.equal(self.setHostname.callCount, 1);
+        test.ok(self.setHostname.lastCall.calledWith('Tessel-TheFakeMACAddress'));
 
-    // When reset:
-    // - the mac address is requested
-    // - setName is called
-    // - the connection executes the setHostName command
-    test.equal(this._getMACAddress.callCount, 1);
-    test.equal(this.setName.callCount, 1);
-    test.equal(this.tessel.connection.exec.callCount, 1);
-    test.equal(this.setHostname.callCount, 1);
-    test.ok(this.setHostname.lastCall.calledWith('Tessel-TheFakeMACAddress'));
+        // getName is _not_ called.
+        test.equal(self.getName.callCount, 0);
 
-    // getName is _not_ called.
-    test.equal(this.getName.callCount, 0);
-
-    test.done();
+        test.done();
+      });
   },
 
   validRename: function(test) {
-    // test.expect(3);
+    var self = this;
+    test.expect(5);
 
     this.tessel.rename({
-      newName: 'ValidAndUnique'
-    });
+        newName: 'ValidAndUnique'
+      })
+      .then(function renamed() {
+        // When valid rename:
+        // - getName is called
+        // - setName is called
+        // - the connection executes the setHostName command
+        test.equal(self.getName.callCount, 1);
+        test.equal(self.setName.callCount, 1);
+        test.equal(self.exec.callCount, 5);
+        test.equal(self.setHostname.callCount, 1);
+        test.ok(self.setHostname.lastCall.calledWith('ValidAndUnique'));
 
-    // When valid rename:
-    // - getName is called
-    // - setName is called
-    // - the connection executes the setHostName command
-    test.equal(this.getName.callCount, 1);
-    test.equal(this.setName.callCount, 1);
-    test.equal(this.tessel.connection.exec.callCount, 1);
-    test.equal(this.setHostname.callCount, 1);
-    test.ok(this.setHostname.lastCall.calledWith('ValidAndUnique'));
-
-    test.done();
+        test.done();
+      });
   },
 
   validRenameSameAsCurrent: function(test) {
-    test.expect(2);
-
-    var spy = sinon.spy();
+    var self = this;
+    test.expect(1);
 
     this.tessel.rename({
-      newName: 'TheFakeName'
-    }, spy);
-    // When renamed with same current name:
-    // - warning is logged
-    // - callback called
-    //
-    test.equal(this.logsWarn.callCount, 1);
-    test.equal(spy.callCount, 1);
-
-    test.done();
+        newName: 'TheFakeName'
+      })
+      .then(function done() {
+        // When renamed with same current name:
+        // - warning is logged
+        test.equal(self.logsWarn.callCount, 1);
+        test.done();
+      });
   },
 
   invalidRename: function(test) {
+    var self = this;
     test.expect(2);
 
     this.tessel.rename({
-      newName: '...'
-    });
+        newName: '...'
+      }).then(function(value) {
+        test.equal(value, true, 'this should never be hit');
+      })
+      .catch(function() {
+        // When invalid rename:
+        // - name is checked
+        // - getName is NOT called
+        test.equal(self.isValidName.callCount, 1);
+        test.equal(self.getName.callCount, 0);
 
-    // When invalid rename:
-    // - name is checked
-    // - getName is NOT called
-    test.equal(this.isValidName.callCount, 1);
-    test.equal(this.getName.callCount, 0);
-
-    test.done();
+        test.done();
+      });
   },
 
   invalidSetName: function(test) {
-    test.expect(3);
+    var self = this;
+    test.expect(2);
 
-    this.tessel.setName('...');
+    this.tessel.setName('...')
+      .then(function(value) {
+        test.equal(value, true, 'this should never be hit');
+      })
+      .catch(function() {
+        // When invalid rename:
+        // - name is checked
+        // - the connection NEVER executes the setHostName command
+        test.equal(self.isValidName.callCount, 1);
+        // test.equal(this.tessel.connection.exec.callCount, 0);
+        test.equal(self.setHostname.callCount, 0);
 
-    // When invalid rename:
-    // - name is checked
-    // - the connection NEVER executes the setHostName command
-    test.equal(this.isValidName.callCount, 1);
-    test.equal(this.tessel.connection.exec.callCount, 0);
-    test.equal(this.setHostname.callCount, 0);
-
-    test.done();
+        test.done();
+      });
   },
 };

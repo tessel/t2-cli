@@ -154,7 +154,9 @@ exports['LAN.Scanner.prototype.start'] = {
 
     // Order of calls is intentional!!
     // 1
-    this.scanner.browser.emit('update');
+    this.scanner.browser.emit('update', {
+      fullname: 'Test Unit'
+    });
     // 2
     this.scanner.on('error', function(error) {
       test.equal(error.message, 'get outta here!');

@@ -115,6 +115,9 @@ parser.command('erase')
         }
         logs.warn(err);
         process.exit(1);
+      })
+      .then(function() {
+        process.exit(0);
       });
   })
   .option('name', nameOption)
