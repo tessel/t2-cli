@@ -62,6 +62,8 @@ exports['Tessel (get)'] = {
     var self = this;
     this.sandbox = sinon.sandbox.create();
     this.activeSeeker = undefined;
+    // This is necessary to prevent an EventEmitter memory leak warning
+    this.processOn = this.sandbox.stub(process, 'on');
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
       this.start = function() {
         self.activeSeeker = this;
