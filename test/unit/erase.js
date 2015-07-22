@@ -52,7 +52,9 @@ exports['Tessel.prototype.erase'] = {
         test.fail('Error thrown on proper flash erase');
       });
 
-    self.tessel._rps.emit('close');
+    setImmediate(function() {
+      self.tessel._rps.emit('close');
+    });
   },
 
   noCodeInFlash: function(test) {
