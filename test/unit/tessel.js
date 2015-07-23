@@ -62,6 +62,8 @@ exports['Tessel (get)'] = {
     var self = this;
     this.sandbox = sinon.sandbox.create();
     this.activeSeeker = undefined;
+    // This is necessary to prevent an EventEmitter memory leak warning
+    this.processOn = this.sandbox.stub(process, 'on');
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
       this.start = function() {
         self.activeSeeker = this;
@@ -140,10 +142,16 @@ exports['Tessel (get)'] = {
       }.bind(this));
 
     var a = new Tessel({
-      connectionType: 'USB'
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
     });
     var b = new Tessel({
-      connectionType: 'USB'
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
     });
 
     a.name = 'a';
@@ -171,10 +179,16 @@ exports['Tessel (get)'] = {
       });
 
     var a = new Tessel({
-      connectionType: 'USB'
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
     });
     var b = new Tessel({
-      connectionType: 'USB'
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
     });
 
     a.name = 'a';
@@ -204,10 +218,17 @@ exports['Tessel (get)'] = {
       });
 
     var usb = new Tessel({
-      connectionType: 'USB'
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
     });
     var lan = new Tessel({
-      connectionType: 'LAN'
+      connectionType: 'LAN',
+      authorized: false,
+      end: function() {
+        return Promise.resolve();
+      }
     });
 
     usb.name = 'a';
@@ -219,7 +240,6 @@ exports['Tessel (get)'] = {
 
   usbAndNonAuthorizedLANSameTesselLANFirst: function(test) {
     test.expect(2);
-
     // Try to get Tessels but return none
     Tessel.get({
         timeout: 0.5,
@@ -234,10 +254,17 @@ exports['Tessel (get)'] = {
       });
 
     var usb = new Tessel({
-      connectionType: 'USB'
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
     });
     var lan = new Tessel({
-      connectionType: 'LAN'
+      connectionType: 'LAN',
+      authorized: false,
+      end: function() {
+        return Promise.resolve();
+      }
     });
 
     usb.name = 'a';
@@ -267,10 +294,17 @@ exports['Tessel (get)'] = {
       });
 
     var usb = new Tessel({
-      connectionType: 'USB'
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
     });
     var lan = new Tessel({
-      connectionType: 'LAN'
+      connectionType: 'LAN',
+      authorized: true,
+      end: function() {
+        return Promise.resolve();
+      }
     });
 
     usb.name = 'a';
@@ -299,10 +333,18 @@ exports['Tessel (get)'] = {
       }.bind(this));
 
     var a = new Tessel({
-      connectionType: 'LAN'
+      connectionType: 'LAN',
+      authorized: true,
+      end: function() {
+        return Promise.resolve();
+      }
     });
     var b = new Tessel({
-      connectionType: 'LAN'
+      connectionType: 'LAN',
+      authorized: true,
+      end: function() {
+        return Promise.resolve();
+      }
     });
 
     a.name = 'a';
@@ -330,10 +372,18 @@ exports['Tessel (get)'] = {
       });
 
     var a = new Tessel({
-      connectionType: 'LAN'
+      connectionType: 'LAN',
+      authorized: true,
+      end: function() {
+        return Promise.resolve();
+      }
     });
     var b = new Tessel({
-      connectionType: 'LAN'
+      connectionType: 'LAN',
+      authorized: true,
+      end: function() {
+        return Promise.resolve();
+      }
     });
 
     a.name = 'a';
