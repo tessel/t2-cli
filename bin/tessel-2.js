@@ -3,7 +3,6 @@
 var parser = require('nomnom'),
   controller = require('../lib/controller'),
   key = require('../lib/key'),
-  init = require('../lib/init'),
   logs = require('../lib/logs');
 
 var nameOption = {
@@ -17,6 +16,14 @@ var timeoutOption = {
   help: 'Set timeout in seconds for scanning for networked tessels',
   default: 5
 };
+
+var verbose = {
+  default: false,
+  flag: true,
+  abbr: 'v',
+  help: 'Choose to view more debugging information'
+};
+
 
 function closeSuccessfulCommand() {
   process.exit(0);
@@ -37,11 +44,14 @@ function closeFailedCommand(err) {
   process.exit(1);
 }
 
+
 parser.command('provision')
   .callback(function(opts) {
+    logs.verbose = opts.verbose;
     controller.provisionTessel(opts)
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
+  .option('verbose', verbose)
   .option('force', {
     abbr: 'f',
     flag: true,
@@ -51,6 +61,7 @@ parser.command('provision')
 
 parser.command('run')
   .callback(function(opts) {
+    logs.verbose = opts.verbose;
     controller.deployScript(opts, false)
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
@@ -68,16 +79,13 @@ parser.command('run')
     required: true,
     help: 'The entry point file to deploy to Tessel'
   })
-  .option('verbose', {
-    flag: true,
-    abbr: 'v',
-    help: 'Choose to view more debugging information'
-  })
+  .option('verbose', verbose)
   .option('timeout', timeoutOption)
   .help('Deploy a script to Tessel and run it with Node');
 
 parser.command('push')
   .callback(function(opts) {
+    logs.verbose = opts.verbose;
     // true: push=true
     controller.deployScript(opts, true)
       .then(closeSuccessfulCommand, closeFailedCommand);
@@ -96,47 +104,47 @@ parser.command('push')
     required: true,
     help: 'The entry point file to deploy to Tessel'
   })
-  .option('verbose', {
-    flag: true,
-    abbr: 'v',
-    help: 'Choose to view more debugging information'
-  })
+  .option('verbose', verbose)
   .option('timeout', timeoutOption)
   .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
 parser.command('erase')
   .callback(function(opts) {
+    logs.verbose = opts.verbose;
     controller.eraseScript(opts)
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('name', nameOption)
-  .option('verbose', {
-    flag: true,
-    abbr: 'v',
-    help: 'Choose to view more debugging information'
-  })
+  .option('verbose', verbose)
   .option('timeout', timeoutOption)
   .help('Erases files pushed to Flash using the tessel push command');
 
 parser.command('list')
   .callback(function(opts) {
+    logs.verbose = opts.verbose;
     controller.listTessels(opts)
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('timeout', timeoutOption)
+  .option('verbose', verbose)
   .help('Lists all connected Tessels and their authorization status.');
 
 parser.command('init')
-  .callback(init)
+  .callback(function(opts) {
+    logs.verbose = opts.verbose;
+    controller.init(opts);
+  })
   .option('interactive', {
     flag: true,
     abbr: 'i',
     help: 'Run in interactive mode'
   })
+  .option('verbose', verbose)
   .help('Initialize repository for your Tessel project');
 
 parser.command('wifi')
   .callback(function(opts) {
+    logs.verbose = opts.verbose;
     //TODO: Refactor switch case into controller.wifi
     if (opts.list) {
       controller.printAvailableNetworks(opts)
@@ -163,6 +171,7 @@ parser.command('wifi')
     help: 'Set the password of the network to connect to'
   })
   .option('timeout', timeoutOption)
+  .option('verbose', verbose)
   .help('Configure the wireless connection');
 
 parser.command('key')
@@ -172,12 +181,15 @@ parser.command('key')
     choices: ['generate'],
   })
   .callback(function(opts) {
+    logs.verbose = opts.verbose;
     key(opts)
       .then(function() {
         logs.info('Key successfully generated.');
       })
       .then(closeSuccessfulCommand, closeFailedCommand);
-  });
+  })
+  .option('verbose', verbose);
+
 
 parser.command('rename')
   .option('newName', {
@@ -190,10 +202,12 @@ parser.command('rename')
     flag: true
   })
   .callback(function(opts) {
+    logs.verbose = opts.verbose;
     controller.renameTessel(opts)
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('timeout', timeoutOption)
+  .option('verbose', verbose)
   .help('Change the name of a Tessel to something new.');
 
 

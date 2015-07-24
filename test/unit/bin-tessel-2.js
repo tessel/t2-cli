@@ -4,18 +4,171 @@ var controller = require('../../lib/controller');
 var logs = require('../../lib/logs');
 
 
-exports['Tessel (cli: provision)'] = {
+exports['Tessel (*: verbose flag)'] = {
   setUp: function(done) {
-    this.sinon = sinon.sandbox.create();
-    this.warn = this.sinon.stub(logs, 'warn');
-    this.provisionTessel = this.sinon.stub(controller, 'provisionTessel').returns(Promise.resolve());
-    this.processExit = this.sinon.stub(process, 'exit');
+    this.sandbox = sinon.sandbox.create();
+    this.info = this.sandbox.stub(logs, 'info');
+    this.provisionTessel = this.sandbox.stub(controller, 'provisionTessel').returns(Promise.resolve());
+    this.deployScript = this.sandbox.stub(controller, 'deployScript').returns(Promise.resolve());
+    this.eraseScript = this.sandbox.stub(controller, 'eraseScript').returns(Promise.resolve());
+    this.listTessels = this.sandbox.stub(controller, 'listTessels').returns(Promise.resolve());
+    this.printAvailableNetworks = this.sandbox.stub(controller, 'printAvailableNetworks').returns(Promise.resolve());
+    this.connectToNetwork = this.sandbox.stub(controller, 'connectToNetwork').returns(Promise.resolve());
+    this.renameTessel = this.sandbox.stub(controller, 'renameTessel').returns(Promise.resolve());
+
+    this.init = this.sandbox.stub(controller, 'init');
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    logs.verbose = null;
 
     done();
   },
 
   tearDown: function(done) {
-    this.sinon.restore();
+    this.sandbox.restore();
+    logs.verbose = false;
+    done();
+  },
+
+  init: function(test) {
+    test.expect(2);
+
+    cli(['init', '--verbose']);
+    test.equal(logs.verbose, true);
+
+    logs.verbose = null;
+
+    cli(['init', '-v']);
+    test.equal(logs.verbose, true);
+
+    test.done();
+  },
+
+  list: function(test) {
+    test.expect(1);
+
+    var resolve = Promise.resolve();
+    this.listTessels.returns(resolve);
+
+    cli(['list', '--verbose']);
+
+    resolve.then(function() {
+      test.equal(logs.verbose, true);
+      test.done();
+    }.bind(this));
+  },
+
+  provision: function(test) {
+    test.expect(1);
+
+    var resolve = Promise.resolve();
+    this.provisionTessel.returns(resolve);
+
+    cli(['provision', '--verbose']);
+
+    resolve.then(function() {
+      test.equal(logs.verbose, true);
+      test.done();
+    }.bind(this));
+  },
+
+  rename: function(test) {
+    test.expect(1);
+
+    var resolve = Promise.resolve();
+    this.renameTessel.returns(resolve);
+
+    cli(['rename', '--verbose']);
+
+    resolve.then(function() {
+      test.equal(logs.verbose, true);
+      test.done();
+    }.bind(this));
+  },
+
+  run: function(test) {
+    test.expect(1);
+
+    var resolve = Promise.resolve();
+    this.deployScript.returns(resolve);
+
+    cli(['run', '--verbose']);
+
+    resolve.then(function() {
+      test.equal(logs.verbose, true);
+      test.done();
+    }.bind(this));
+  },
+
+  push: function(test) {
+    test.expect(1);
+
+    var resolve = Promise.resolve();
+    this.deployScript.returns(resolve);
+
+    cli(['push', '--verbose']);
+
+    resolve.then(function() {
+      test.equal(logs.verbose, true);
+      test.done();
+    }.bind(this));
+  },
+
+  erase: function(test) {
+    test.expect(1);
+
+    var resolve = Promise.resolve();
+    this.deployScript.returns(resolve);
+
+    cli(['erase', '--verbose']);
+
+    resolve.then(function() {
+      test.equal(logs.verbose, true);
+      test.done();
+    }.bind(this));
+  },
+
+  wifiList: function(test) {
+    test.expect(1);
+
+    var resolve = Promise.resolve();
+    this.printAvailableNetworks.returns(resolve);
+
+    cli(['wifi', '--verbose', '--list', ' ']);
+
+    resolve.then(function() {
+      test.equal(logs.verbose, true);
+      test.done();
+    }.bind(this));
+  },
+
+  wifiConnect: function(test) {
+    test.expect(1);
+
+    var resolve = Promise.resolve();
+    this.connectToNetwork.returns(resolve);
+
+    cli(['wifi', '--verbose', '--ssid', 'a', '--password', 'b']);
+
+    resolve.then(function() {
+      test.equal(logs.verbose, true);
+      test.done();
+    }.bind(this));
+  },
+};
+
+exports['Tessel (cli: provision)'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.provisionTessel = this.sandbox.stub(controller, 'provisionTessel').returns(Promise.resolve());
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
     done();
   },
 
@@ -53,17 +206,17 @@ exports['Tessel (cli: provision)'] = {
 
 exports['Tessel (cli: wifi)'] = {
   setUp: function(done) {
-    this.sinon = sinon.sandbox.create();
-    this.warn = this.sinon.stub(logs, 'warn');
-    this.printAvailableNetworks = this.sinon.stub(controller, 'printAvailableNetworks').returns(Promise.resolve());
-    this.connectToNetwork = this.sinon.stub(controller, 'connectToNetwork').returns(Promise.resolve());
-    this.processExit = this.sinon.stub(process, 'exit');
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.printAvailableNetworks = this.sandbox.stub(controller, 'printAvailableNetworks').returns(Promise.resolve());
+    this.connectToNetwork = this.sandbox.stub(controller, 'connectToNetwork').returns(Promise.resolve());
+    this.processExit = this.sandbox.stub(process, 'exit');
 
     done();
   },
 
   tearDown: function(done) {
-    this.sinon.restore();
+    this.sandbox.restore();
     done();
   },
 
