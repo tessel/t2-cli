@@ -111,14 +111,6 @@ exports['controller.provisionTessel'] = {
     done();
   },
 
-  refuse: function(test) {
-    test.expect(1);
-    this.provisionTessel().catch(function(error) {
-      test.equal(error, 'Keys already exist. Refusing to overwrite them.');
-      test.done();
-    }.bind(this));
-  },
-
   completeForced: function(test) {
     test.expect(4);
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
@@ -281,6 +273,10 @@ exports['Tessel.prototype.provision'] = {
 
     test.expect(1);
 
+    this.isProvisioned = sinon.stub(Tessel, 'isProvisioned', function() {
+      return false;
+    });
+
     // Create folders for the folder that we'd like to
     createKeyTestFolder(function(err) {
       if (err) {
@@ -291,6 +287,8 @@ exports['Tessel.prototype.provision'] = {
         .then(function() {
           // Make sure we wrote both keys
           test.equal(self.writeFileSpy.callCount, 2);
+
+          self.isProvisioned.restore();
           // End the test
           test.done();
         })
@@ -304,6 +302,10 @@ exports['Tessel.prototype.provision'] = {
     var self = this;
 
     test.expect(3);
+
+    this.isProvisioned = sinon.stub(Tessel, 'isProvisioned', function() {
+      return false;
+    });
 
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
     Tessel.TESSEL_AUTH_PATH = testPath;
@@ -322,6 +324,7 @@ exports['Tessel.prototype.provision'] = {
           test.equal(path.dirname(self.writeFileSpy.lastCall.args[0]), testPath);
 
           Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+          self.isProvisioned.restore();
           // End the test
           test.done();
         })
