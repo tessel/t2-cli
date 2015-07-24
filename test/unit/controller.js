@@ -161,7 +161,7 @@ exports['Tessel.list'] = {
     });
 
     Tessel.list({
-        timeout: 1
+        timeout: 0.01
       })
       .then(function() {
         test.equal(this.runHeuristics.callCount, 0);
@@ -183,7 +183,7 @@ exports['Tessel.list'] = {
     });
 
     Tessel.list({
-        timeout: 1
+        timeout: 0.01
       })
       .then(function() {
         test.equal(this.runHeuristics.callCount, 0);
@@ -212,7 +212,7 @@ exports['Tessel.list'] = {
     });
 
     Tessel.list({
-        timeout: 1
+        timeout: 0.01
       })
       .then(function() {
         test.equal(this.runHeuristics.callCount, 0);
@@ -243,7 +243,7 @@ exports['Tessel.list'] = {
     });
 
     Tessel.list({
-        timeout: 1
+        timeout: 0.01
       })
       .then(function() {
         test.equal(this.runHeuristics.callCount, 1);
@@ -305,7 +305,7 @@ exports['Tessel.get'] = {
     });
 
     Tessel.get({
-        timeout: 1,
+        timeout: 0.01,
         name: 'the_name'
       })
       .then(function() {
@@ -333,7 +333,7 @@ exports['Tessel.get'] = {
     });
 
     Tessel.get({
-        timeout: 1
+        timeout: 0.01
       })
       .then(function() {
         test.equal(this.reconcileTessels.callCount, 0);
@@ -366,7 +366,7 @@ exports['Tessel.get'] = {
     });
 
     Tessel.get({
-        timeout: 1
+        timeout: 0.01
       })
       .then(function() {
         test.equal(this.reconcileTessels.callCount, 1);

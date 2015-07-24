@@ -88,7 +88,7 @@ exports['Tessel (get)'] = {
   noTessels: function(test) {
     // Try to get Tessels but return none
     Tessel.get({
-        timeout: 1
+        timeout: 0.01
       })
       // If
       .then(function(tessels) {
@@ -105,7 +105,7 @@ exports['Tessel (get)'] = {
     var testName = 'testTessel';
     // Try to get Tessels but return none
     Tessel.get({
-        timeout: 1
+        timeout: 0.01
       })
       // If
       .then(function(tessel) {
@@ -129,7 +129,7 @@ exports['Tessel (get)'] = {
     test.expect(1);
     // Try to get Tessels but return none
     Tessel.get({
-        timeout: 0.1
+        timeout: 0.01
       })
       .catch(function() {
         test.equal(
@@ -165,7 +165,7 @@ exports['Tessel (get)'] = {
     test.expect(1);
 
     Tessel.get({
-        timeout: 0.1,
+        timeout: 0.01,
         name: 'a'
       })
       .then(function(tessel) {
@@ -203,7 +203,7 @@ exports['Tessel (get)'] = {
 
     // Try to get Tessels but return none
     Tessel.get({
-        timeout: 0.5,
+        timeout: 0.05,
       })
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
@@ -242,7 +242,7 @@ exports['Tessel (get)'] = {
     test.expect(2);
     // Try to get Tessels but return none
     Tessel.get({
-        timeout: 0.5,
+        timeout: 0.05,
       })
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
@@ -282,7 +282,7 @@ exports['Tessel (get)'] = {
 
     // Try to get Tessels but return none
     Tessel.get({
-        timeout: 0.5,
+        timeout: 0.05,
       })
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
@@ -320,7 +320,7 @@ exports['Tessel (get)'] = {
     test.expect(1);
     // Try to get Tessels but return none
     Tessel.get({
-        timeout: 0.1
+        timeout: 0.01
       })
       .catch(function() {
         test.equal(
@@ -358,7 +358,7 @@ exports['Tessel (get)'] = {
     test.expect(1);
 
     Tessel.get({
-        timeout: 0.1,
+        timeout: 0.01,
         name: 'a'
       })
       .then(function(tessel) {

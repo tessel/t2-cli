@@ -413,10 +413,10 @@ exports['Tessel.prototype.provision'] = {
               // Finish key copy process
               setTimeout(function() {
                 self.tessel._rps.emit('close');
-              }, 10);
-            }, 10);
-          }, 10);
-        }, 10);
+              }, 1);
+            }, 1);
+          }, 1);
+        }, 1);
       }
     });
   }
