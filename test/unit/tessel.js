@@ -134,7 +134,7 @@ exports['Tessel (get)'] = {
       .catch(function() {
         test.equal(
           this.logsInfo.lastCall.args[0],
-          'Please specify a Tessel by name'
+          'Please specify a Tessel by name [--name <tessel name>]'
         );
         a.close();
         b.close();
