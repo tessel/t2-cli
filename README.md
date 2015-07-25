@@ -50,7 +50,10 @@ Check out the [Virtual Machine repo](https://github.com/tessel/t2-vm) for instru
 
 ## Usage
 Specify which Tessel to use with the `--name <name>` option appended to any command.
-If `--name` is not specified, CLI will look for an environment variable, e.g. `export TESSEL=Bulbasaur`. If none of the above are specified and there is one Tessel connected over USB, this Tessel will be preferred. Finally, if there is only one Tessel available and none of the above are specified, CLI will choose that Tessel.
+If `--name` is not specified, CLI will resolve a Tessel based on the following, in order:
+
+1. If an environment variable called `TESSEL` exists, it will default to this value (e.g. `export TESSEL=Bulbasaur`)
+2. The first available Tessel will be chosen, with preference given to USB-connected Tessels
 
 ### Starting Projects
 * `t2 init` in the current directory, create a package.json and index.js with Hello World code. *Note that the index.js code doesn't yet work on Tessel 2*
