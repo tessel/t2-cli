@@ -32,7 +32,7 @@ exports['Tessel.isProvisioned()'] = {
 
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = 'tmp';
+    Tessel.TESSEL_AUTH_PATH = testPath;
     Tessel.isProvisioned();
 
     test.equal(this.existsSync.callCount, 2);
@@ -50,7 +50,7 @@ exports['Tessel.isProvisioned()'] = {
 
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = 'tmp';
+    Tessel.TESSEL_AUTH_PATH = testPath;
     Tessel.isProvisioned();
 
     test.equal(this.existsSync.callCount, 1);
@@ -75,7 +75,7 @@ exports['controller.provisionTessel'] = {
       }
     });
 
-    this.isProvisioned = sinon.stub(Tessel, 'isProvisioned').returns(true);
+    this.isProvisioned = sinon.stub(Tessel, 'isProvisioned');
 
     this.provisionTessel = sinon.spy(controller, 'provisionTessel');
 
@@ -106,20 +106,24 @@ exports['controller.provisionTessel'] = {
     this.getTessel.restore();
     this.logsWarn.restore();
     this.logsInfo.restore();
-
-    deleteKeyTestFolder();
-    done();
+    deleteKeyTestFolder(done);
   },
 
   completeForced: function(test) {
     test.expect(4);
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = 'tmp';
+    Tessel.TESSEL_AUTH_PATH = testPath;
+
+    // Say it's provisioned to make sure old folder gets deleted
+    this.isProvisioned.onFirstCall().returns(true);
+    // Make sure to mention that it is not provisioned after folder is deleted
+    this.isProvisioned.onSecondCall().returns(false);
 
     this.provisionTessel({
       force: true
-    }).then(function() {
+    })
+    .then(function() {
       test.equal(this.exec.callCount, 1);
       test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.TESSEL_AUTH_PATH);
       test.equal(this.provisionSpy.callCount, 1);
@@ -135,7 +139,7 @@ exports['controller.provisionTessel'] = {
     test.expect(2);
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = 'tmp';
+    Tessel.TESSEL_AUTH_PATH = testPath;
 
     this.isProvisioned.returns(false);
 
@@ -151,7 +155,7 @@ exports['controller.provisionTessel'] = {
     test.expect(2);
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = 'tmp';
+    Tessel.TESSEL_AUTH_PATH = testPath;
 
     this.isProvisioned.returns(false);
 
@@ -172,6 +176,8 @@ exports['controller.provisionTessel'] = {
     this.exec = sinon.stub(cp, 'exec', function(command, callback) {
       callback('some error');
     });
+
+    this.isProvisioned.returns(true);
 
     this.provisionTessel({
       force: true
