@@ -87,4 +87,16 @@ module.exports = function(grunt) {
   // Default task.
   grunt.registerTask('default', ['test']);
 
+
+  // Support running a single test suite
+  grunt.registerTask('nodeunit:only', 'Run a single test specified by a target; usage: "grunt nodeunit:only:<module-name>[.js]"', function(file) {
+    if (file) {
+      grunt.config('nodeunit.tests', [
+        'test/common/bootstrap.js',
+        'test/unit/' + file + '.js'
+      ]);
+    }
+
+    grunt.task.run('nodeunit');
+  });
 };
