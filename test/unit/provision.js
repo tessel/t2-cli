@@ -85,8 +85,6 @@ exports['controller.provisionTessel'] = {
 
     this.provisionSpy = sinon.spy(Tessel.prototype, 'provisionTessel');
 
-    this.writeSpy = sinon.spy(fs, 'writeFile');
-
     this.getTessel = sinon.stub(Tessel, 'get', function() {
       return new Promise(function(resolve) {
         resolve(self.tessel);
@@ -104,30 +102,11 @@ exports['controller.provisionTessel'] = {
     this.isProvisioned.restore();
     this.provisionTessel.restore();
     this.provisionSpy.restore();
-    this.writeSpy.restore();
     this.exec.restore();
     this.getTessel.restore();
     this.logsWarn.restore();
     this.logsInfo.restore();
     deleteKeyTestFolder(done);
-  },
-
-  completeProvisioned: function(test) {
-    var self = this;
-    test.expect(3);
-
-    this.provisionTessel().catch(function(error) {
-      test.ifError(error);
-    }.bind(this))
-    .then(function() {
-      // It should call into tessel provision
-      test.equal(self.provisionSpy.callCount, 1);
-      // It should not attempt to delete the folder
-      test.equal(self.exec.callCount, 0);
-      // It should not attempt to rewrite the keys
-      test.equal(self.writeSpy.callCount, 0);
-      test.done();
-    });
   },
 
   completeForced: function(test) {
