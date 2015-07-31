@@ -7,3 +7,4 @@ before_install:
   - sudo apt-get install pkg-config build-essential libusb-1.0-0-dev libudev-dev
 install: npm install
 script: grunt
+sudo: false
