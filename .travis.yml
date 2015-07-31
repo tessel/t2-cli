@@ -4,7 +4,6 @@ node_js:
 before_install:
   - npm install -g grunt-cli
 addons.apt.packages:
-  - pkg-config
   - build-essential
   - libusb-1.0-0-dev
   - libudev-dev
