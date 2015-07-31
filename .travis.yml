@@ -3,7 +3,8 @@ addons.apt.packages:
   - pkg-config
   - build-essential
   - libusb-1.0-0-dev
-  - libudev-devlanguage: node_js
+  - libudev-dev
+language: node_js
 node_js:
   - "0.12.0"
 before_install:
