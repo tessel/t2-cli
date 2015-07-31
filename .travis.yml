@@ -3,9 +3,7 @@ node_js:
   - "0.12.0"
 before_install:
   - npm install -g grunt-cli
-addons:
-  apt:
-    packages:
+addons.apt.packages:
   - pkg-config
   - build-essential
   - libusb-1.0-0-dev
