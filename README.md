@@ -5,7 +5,7 @@ Join the [conversation on Slack](https://tessel-slack.herokuapp.com/), our proje
 
 [![Slack](http://tessel-slack.herokuapp.com/badge.svg)](https://tessel-slack.herokuapp.com/)
 
-[![Build Status](https://travis-ci.org/Student007/t2-cli.svg?branch=master)](https://travis-ci.org/student007/t2-cli) 
+[![Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli) 
 
 ## Installation
 Prerequisites for installation: [Node.js](https://nodejs.org/) and [Git](https://git-scm.com/downloads).
