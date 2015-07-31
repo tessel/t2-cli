@@ -62,8 +62,12 @@
     "tessel": "git+https://github.com/tessel/cli#jon-export-v2",
     "usb": "^1.0.5",
     "usb-daemon-parser": "0.0.1",
+<<<<<<< HEAD
     "wrappy":"1.0.1",
     "terminal-menu": "^2.1.1"
+=======
+    "wrappy":">=1.0.1"
+>>>>>>> parent of 71a2820... first clean version of "t2 root"
   },
   "preferGlobal": true
 }
