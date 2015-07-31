@@ -12,4 +12,4 @@ addons:
   - libudev-dev
 install: npm install
 script: grunt
-sudo: false
+sudo: false 
