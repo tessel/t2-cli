@@ -220,7 +220,7 @@ parser.command('root')
     default: default_id_rsa,
     help: 'Private Key (Note: created by "t2 key generate")'
   })
-  .callback(function(opts){
+  .callback(function(opts) {
     controller.root(opts)
     .then(closeSuccessfulCommand,closeFailedCommand);
   })
