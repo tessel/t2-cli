@@ -212,8 +212,8 @@ root@192.168.128.124 #
 var default_id_rsa = '~/.tessel/id_rsa';
 var functional_msg = '\nGain SSH root access to one of your authorized tessels (menu listing if multiple targets)';
 parser.command('root')
-  .usage(functional_msg+"\n\nUsage: t2 root [-i PATH] [--help]\n\n-i PATH:   Optional targeting a different Private Key \n\n(Note: default target created by \"t2 key generate\" is "+default_id_rsa+")\n")
-  .option('path',{
+  .usage(functional_msg + '\n\nUsage: t2 root [-i PATH] [--help]\n\n-i PATH:   Optional targeting a different Private Key \n\n(Note: default target created by "t2 key generate" is ' + default_id_rsa + ')\n')
+  .option('path', {
     abbr: 'i',
     full: 'path',
     metavar: 'PATH',
