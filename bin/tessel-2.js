@@ -222,7 +222,7 @@ parser.command('root')
   })
   .callback(function(opts) {
     controller.root(opts)
-    .then(closeSuccessfulCommand,closeFailedCommand);
+      .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .help(functional_msg);
 
