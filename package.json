@@ -59,11 +59,11 @@
     "sprintf-js": "^1.0.2",
     "ssh-keygen": "^0.2.1",
     "ssh2": "^0.4.2",
+    "terminal-menu": "^2.1.1",
     "tessel": "git+https://github.com/tessel/cli#jon-export-v2",
     "usb": "^1.0.5",
     "usb-daemon-parser": "0.0.1",
-    "wrappy":"1.0.1",
-    "terminal-menu": "^2.1.1"
+    "wrapper": "^0.1.0"
   },
   "preferGlobal": true
 }
