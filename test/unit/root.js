@@ -205,14 +205,12 @@ exports['Tessel.seekTessels'] = {
         // because we do not runHeuristics callCount is expected to be 0
         test.equal(lan.close.callCount, 0);
 
-        // TODO: Because of the connections object of sameTessel isn't conjunct already this test has to be rewritten later 
         test.done();
       }.bind(this));
 
     this.activeSeeker.emit('tessel', usb);
     this.activeSeeker.emit('tessel', lan);
 
-    // TODO: here it needs to be one object with multiple connections !!
 
   },
 };
