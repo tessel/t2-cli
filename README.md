@@ -5,7 +5,15 @@ Join the [conversation on Slack](https://tessel-slack.herokuapp.com/), our proje
 
 [![Slack](http://tessel-slack.herokuapp.com/badge.svg)](https://tessel-slack.herokuapp.com/)
 
-[![Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli) 
+[![Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli)
+
+## Contents
+
+* [Installation](#installation)
+* [Updating Tessel](#updating-tessel-2-on-board-osfirmware)
+* [Setup](#setup)
+* [Usage/CLI commands](#usage)
+* [Development milestones](#development-milestones)
 
 ## Installation
 Prerequisites for installation: [Node.js](https://nodejs.org/) and [Git](https://git-scm.com/downloads).
