@@ -7,6 +7,8 @@ Join the [conversation on Slack](https://tessel-slack.herokuapp.com/), our proje
 
 [![Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli)
 
+See docs on T2 CLI usage [on the t2-docs repo](https://github.com/tessel/t2-docs/blob/master/cli.md).
+
 ## Contents
 
 * [Installation for development](#installation-for-development)
