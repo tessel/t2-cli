@@ -200,16 +200,19 @@ parser.command('update')
   .option('build', {
     abbr: 'b',
     required: false,
+    help: 'Select a specific build to update to.'
   })
   .option('list', {
     abbr: 'l',
     required: false,
-    flag: true
+    flag: true,
+    help: 'List the available builds.'
   })
   .option('force', {
     abbr: 'f',
     required: false,
-    flag: true
+    flag: true,
+    help: 'Update to the latest version regardless of current version.'
   })
   .option('timeout', timeoutOption)
   .option('name', nameOption)
