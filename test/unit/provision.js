@@ -121,18 +121,18 @@ exports['controller.provisionTessel'] = {
     this.isProvisioned.onSecondCall().returns(false);
 
     this.provisionTessel({
-      force: true
-    })
-    .then(function() {
-      test.equal(this.exec.callCount, 1);
-      test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.TESSEL_AUTH_PATH);
-      test.equal(this.provisionSpy.callCount, 1);
-      rimraf(path.join(process.cwd(), Tessel.TESSEL_AUTH_PATH), function(err) {
-        test.ifError(err);
-        Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
-        test.done();
-      });
-    }.bind(this));
+        force: true
+      })
+      .then(function() {
+        test.equal(this.exec.callCount, 1);
+        test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.TESSEL_AUTH_PATH);
+        test.equal(this.provisionSpy.callCount, 1);
+        rimraf(path.join(process.cwd(), Tessel.TESSEL_AUTH_PATH), function(err) {
+          test.ifError(err);
+          Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+          test.done();
+        });
+      }.bind(this));
   },
 
   completeUnprovisioned: function(test) {
