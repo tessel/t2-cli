@@ -123,6 +123,14 @@ parser.command('list')
     controller.listTessels(opts)
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
+  .option('lan', {
+    flag: true,
+    help: 'List by LAN connection'
+  })
+  .option('usb', {
+    flag: true,
+    help: 'List by USB connection'
+  })
   .option('timeout', timeoutOption)
   .help('Lists all connected Tessels and their authorization status.');
 
