@@ -36,6 +36,10 @@ exports['controller.update'] = {
       return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
     });
 
+    this.fetchBuildList = this.sandbox.stub(updates, 'fetchBuildList', function() {
+      return Promise.resolve(fetchBuildListSim);
+    });
+
     done();
   },
 
@@ -47,17 +51,13 @@ exports['controller.update'] = {
   listBuilds: function(test) {
     test.expect(3);
 
-    this.fetchBuilds = this.sandbox.stub(updates, 'fetchBuildList', function() {
-      return Promise.resolve(fetchBuildListSim);
-    });
-
     var opts = {
       list: true
     };
 
     controller.update(opts)
       .then(function() {
-        test.equal(this.fetchBuilds.callCount, 1);
+        test.equal(this.fetchBuildList.callCount, 1);
         // Print info that these are logs
         test.equal(this.logsInfo.callCount, 2);
         // Print each version out
@@ -75,7 +75,8 @@ exports['controller.update'] = {
 
     var errMessage = 'Could not fetch builds';
 
-    this.fetchBuilds = this.sandbox.stub(updates, 'fetchBuildList', function() {
+    this.fetchBuildList.restore();
+    this.fetchBuildList = this.sandbox.stub(updates, 'fetchBuildList', function() {
       return Promise.reject(new Error(errMessage));
     });
 
@@ -88,7 +89,7 @@ exports['controller.update'] = {
       })
       .catch(function(err) {
         // We tried to fetch the builds
-        test.equal(this.fetchBuilds.callCount, 1);
+        test.equal(this.fetchBuildList.callCount, 1);
         // But it failed with the error message we specified
         test.equal(err.message, errMessage);
         test.done();
@@ -97,14 +98,12 @@ exports['controller.update'] = {
 
   buildOptionValid: function(test) {
     test.expect(7);
-    this.fetchBuilds = this.sandbox.stub(updates, 'fetchBuildList', function() {
-      return Promise.resolve(fetchBuildListSim);
-    });
 
     var binaries = {
       firmware: new Buffer(0),
       openwrt: new Buffer(0)
     };
+
     this.fetchSpecificBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.resolve(binaries);
     });
@@ -115,8 +114,8 @@ exports['controller.update'] = {
 
     controller.update(opts)
       .then(function() {
-        // We don't currently fetch the entire build list when a specific build is requested
-        test.equal(this.fetchBuilds.callCount, 0);
+        // We have to fetch the build list to figure out what the sha is of this version
+        test.equal(this.fetchBuildList.callCount, 1);
         // We did fetch the specified build
         test.equal(this.fetchSpecificBuild.callCount, 1);
         // It was called with the correct args
@@ -204,9 +203,6 @@ exports['controller.update'] = {
       firmware: new Buffer(0),
       openwrt: new Buffer(0)
     };
-    this.fetchBuildList = this.sandbox.stub(updates, 'fetchBuildList', function() {
-      return Promise.resolve(fetchBuildListSim);
-    });
 
     this.fetchSpecificBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.resolve(binaries);
@@ -218,8 +214,9 @@ exports['controller.update'] = {
       .catch(function() {
         // Make sure we checked what the Tessel version is currently at
         test.equal(this.fetchCurrentTesselVersion.callCount, 1);
-        // We fetched the build list to verify the requested verion
-        test.equal(this.fetchBuildList.callCount, 1);
+        // We fetched the build list to convert our current sha to a version
+        // and to find the most current version to update the Tessel with
+        test.equal(this.fetchBuildList.callCount, 2);
         // We didn't fetch any builds because Tessel is already up to date
         test.equal(this.fetchSpecificBuild.callCount, 0);
         // Update Tessel was not called because it was already up to date
