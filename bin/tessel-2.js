@@ -51,7 +51,8 @@ parser.command('provision')
 
 parser.command('run')
   .callback(function(opts) {
-    controller.deployScript(opts, false)
+    opts.push = false;
+    controller.deployScript(opts)
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('name', nameOption)
@@ -78,8 +79,8 @@ parser.command('run')
 
 parser.command('push')
   .callback(function(opts) {
-    // true: push=true
-    controller.deployScript(opts, true)
+    opts.push = true;
+    controller.deployScript(opts)
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('name', nameOption)
