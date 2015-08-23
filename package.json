@@ -64,5 +64,10 @@
     "usb": "^1.0.5",
     "usb-daemon-parser": "0.0.1"
   },
-  "preferGlobal": true
+  "preferGlobal": true,
+  "engines" : { 
+    "node" : ">0.12.0",
+    "iojs": ">= 1.0.0"
+  },
+  "engine-strict" : true
 }
