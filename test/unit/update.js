@@ -5,18 +5,15 @@ var updates = require('../../lib/update-fetch');
 var Tessel = require('../../lib/tessel/tessel');
 var TesselSimulator = require('../common/tessel-simulator');
 
-var builds = [
-  {
-    sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
-    released: '2015-05-18T02:21:57.856Z',
-    version: '0.0.0'
-  },
-  {
-    sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
-    released: '2015-08-12T03:01:57.856Z',
-    version: '0.0.1'
-  }
-];
+var builds = [{
+  sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
+  released: '2015-05-18T02:21:57.856Z',
+  version: '0.0.0'
+}, {
+  sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
+  released: '2015-08-12T03:01:57.856Z',
+  version: '0.0.1'
+}];
 
 exports['controller.update'] = {
   setUp: function(done) {
@@ -213,7 +210,7 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function(data) {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.resolve(binaries);
     });
 
@@ -277,7 +274,6 @@ exports['controller.update'] = {
   buildLatestForce: function(test) {
     test.expect(5);
 
-    var version = '0.0.1';
     var binaries = {
       firmware: new Buffer(0),
       openwrt: new Buffer(0)
