@@ -206,10 +206,10 @@ parser.command('rename')
   .help('Change the name of a Tessel to something new.');
 
 parser.command('update')
-  .option('build', {
-    abbr: 'b',
+  .option('version', {
+    abbr: 'v',
     required: false,
-    help: 'Select a specific build to update to.'
+    help: 'Specify a build version.'
   })
   .option('list', {
     abbr: 'l',
