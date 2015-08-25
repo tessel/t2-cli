@@ -65,7 +65,6 @@ exports['controller.provisionTessel'] = {
   setUp: function(done) {
     var self = this;
     this.tessel = TesselSimulator();
-    this.tessel.connection.connectionType = 'USB';
 
     this.tessel._rps.on('newListener', function(event) {
       if (event === 'close') {
@@ -224,7 +223,7 @@ exports['Tessel.prototype.provision'] = {
 
     test.expect(2);
     // Set the connectionType to LAN so it will fail
-    this.tessel.connectionType = 'LAN';
+    this.tessel = new TesselSimulator('LAN');
 
     // Attempt to provision
     this.tessel.provisionTessel()
@@ -235,6 +234,7 @@ exports['Tessel.prototype.provision'] = {
         test.equal(err !== undefined, true);
         // Ensure we never tried to set up local keys
         test.equal(self.setupLocal.callCount, 0);
+        this.tessel = new TesselSimulator();
         // Finish the test
         test.done();
       });

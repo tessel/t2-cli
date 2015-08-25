@@ -1,7 +1,7 @@
 var RemoteProcessSimulator = require('./remote-process-simulator');
 var Tessel = require('../../lib/tessel/tessel');
 
-function TesselSimulator() {
+function TesselSimulator(connectionType) {
   var simConnection = {
     exec: function(command) {
       return new Promise(function(resolve) {
@@ -18,7 +18,8 @@ function TesselSimulator() {
       return new Promise(function(resolve) {
         resolve();
       });
-    }
+    },
+    connectionType: connectionType || 'USB',
   };
 
   var tessel = new Tessel(simConnection);

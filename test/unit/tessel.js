@@ -10,7 +10,8 @@ exports['Tessel (endConnection)'] = {
 
     this.mockConnection = {
       end: function() {},
-      close: function() {}
+      close: function() {},
+      connectionType: 'USB'
     };
 
     this.end = sinon.spy(this.mockConnection, 'end');
