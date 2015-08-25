@@ -39,12 +39,20 @@ exports['controller.update'] = {
       return Promise.resolve(builds);
     });
 
+    this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
+
+
     done();
   },
 
   tearDown: function(done) {
     this.sandbox.restore();
     this.tessel.mockClose();
+
+    // If builds were reversed, fix them.
+    if (builds[0].version === '0.0.1') {
+      builds.reverse();
+    }
     done();
   },
 
@@ -55,7 +63,7 @@ exports['controller.update'] = {
       list: true
     };
 
-    controller.update(opts)
+    controller.printAvailableUpdates(opts)
       .then(function() {
         test.equal(this.requestBuildList.callCount, 1);
         // Print info that these are logs
@@ -85,7 +93,7 @@ exports['controller.update'] = {
     var opts = {
       list: true
     };
-    controller.update(opts)
+    controller.printAvailableUpdates(opts)
       .then(function() {
         test.equal(true, false, 'Build fetch should have failed.');
       })
@@ -278,6 +286,7 @@ exports['controller.update'] = {
       firmware: new Buffer(0),
       openwrt: new Buffer(0)
     };
+
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.resolve(binaries);
     });
@@ -285,6 +294,7 @@ exports['controller.update'] = {
     var opts = {
       force: true
     };
+
     controller.update(opts)
       .then(function() {
         // We fetched only one build
@@ -302,5 +312,44 @@ exports['controller.update'] = {
       .catch(function(err) {
         test.ifError(err);
       });
+  },
+
+  explicitLatestDoesntImmediatelyUpdate: function(test) {
+    test.expect(1);
+
+    var binaries = {
+      firmware: new Buffer(0),
+      openwrt: new Buffer(0)
+    };
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+      return Promise.resolve(binaries);
+    });
+
+    var opts = {
+      version: 'latest'
+    };
+
+    controller.update(opts)
+      .then(function() {
+        test.equal(this.updateTesselWithVersion.callCount, 0);
+        test.done();
+      }.bind(this))
+      .catch(function(err) {
+        test.ifError(err);
+      });
+  },
+
+  noVerifiedVersion: function(test) {
+    test.expect(1);
+
+    var opts = {
+      version: 'x.x.x'
+    };
+    controller.update(opts)
+      .catch(function(message) {
+        test.equal(message, 'The requested build was not found. Please see the available builds with `tessel update -l`.');
+        test.done();
+      }.bind(this));
   }
 };

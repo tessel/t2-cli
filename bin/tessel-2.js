@@ -226,8 +226,13 @@ parser.command('update')
   .option('timeout', timeoutOption)
   .option('name', nameOption)
   .callback(function(opts) {
-    controller.update(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
+    if (opts.list) {
+      controller.printAvailableUpdates(opts)
+        .then(closeSuccessfulCommand, closeFailedCommand);
+    } else {
+      controller.update(opts)
+        .then(closeSuccessfulCommand, closeFailedCommand);
+    }
   })
   .help('Update the Tessel firmware and openWRT image');
 
