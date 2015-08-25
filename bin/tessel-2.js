@@ -206,10 +206,10 @@ parser.command('rename')
   .help('Change the name of a Tessel to something new.');
 
 parser.command('update')
-  .option('build', {
-    abbr: 'b',
+  .option('version', {
+    abbr: 'v',
     required: false,
-    help: 'Select a specific build to update to.'
+    help: 'Specify a build version.'
   })
   .option('list', {
     abbr: 'l',
@@ -226,8 +226,13 @@ parser.command('update')
   .option('timeout', timeoutOption)
   .option('name', nameOption)
   .callback(function(opts) {
-    controller.update(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
+    if (opts.list) {
+      controller.printAvailableUpdates(opts)
+        .then(closeSuccessfulCommand, closeFailedCommand);
+    } else {
+      controller.update(opts)
+        .then(closeSuccessfulCommand, closeFailedCommand);
+    }
   })
   .help('Update the Tessel firmware and openWRT image');
 

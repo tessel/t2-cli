@@ -5,16 +5,15 @@ var updates = require('../../lib/update-fetch');
 var Tessel = require('../../lib/tessel/tessel');
 var TesselSimulator = require('../common/tessel-simulator');
 
-var fetchBuildListSim = {
-  '9a85c84f5a03c715908921baaaa9e7397985bc7f': {
-    released: '2015-08-12T03:01:57.856Z',
-    version: '0.0.1'
-  },
-  'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29': {
-    released: '2015-05-18T02:21:57.856Z',
-    version: '0.0.0'
-  }
-};
+var builds = [{
+  sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
+  released: '2015-05-18T02:21:57.856Z',
+  version: '0.0.0'
+}, {
+  sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
+  released: '2015-08-12T03:01:57.856Z',
+  version: '0.0.1'
+}];
 
 exports['controller.update'] = {
   setUp: function(done) {
@@ -28,23 +27,32 @@ exports['controller.update'] = {
       return Promise.resolve(this.tessel);
     }.bind(this));
 
-    this.updateTessel = this.sandbox.stub(Tessel.prototype, 'update', function() {
+    this.update = this.sandbox.stub(Tessel.prototype, 'update', function() {
       return Promise.resolve();
     });
 
-    this.fetchCurrentTesselVersion = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
       return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
     });
 
-    this.fetchBuildList = this.sandbox.stub(updates, 'fetchBuildList', function() {
-      return Promise.resolve(fetchBuildListSim);
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', function() {
+      return Promise.resolve(builds);
     });
+
+    this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
+
 
     done();
   },
 
   tearDown: function(done) {
     this.sandbox.restore();
+    this.tessel.mockClose();
+
+    // If builds were reversed, fix them.
+    if (builds[0].version === '0.0.1') {
+      builds.reverse();
+    }
     done();
   },
 
@@ -55,12 +63,14 @@ exports['controller.update'] = {
       list: true
     };
 
-    controller.update(opts)
+    controller.printAvailableUpdates(opts)
       .then(function() {
-        test.equal(this.fetchBuildList.callCount, 1);
+        test.equal(this.requestBuildList.callCount, 1);
         // Print info that these are logs
-        test.equal(this.logsInfo.callCount, 2);
+        // 'Latest builds:'
+        test.equal(this.logsInfo.callCount, 1);
         // Print each version out
+        // '\t Version:', build.version, '\tPublished:', build.released.toLocaleString()
         test.equal(this.logsBasic.callCount, 2);
         // Finish
         test.done();
@@ -75,21 +85,21 @@ exports['controller.update'] = {
 
     var errMessage = 'Could not fetch builds';
 
-    this.fetchBuildList.restore();
-    this.fetchBuildList = this.sandbox.stub(updates, 'fetchBuildList', function() {
+    this.requestBuildList.restore();
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', function() {
       return Promise.reject(new Error(errMessage));
     });
 
     var opts = {
       list: true
     };
-    controller.update(opts)
+    controller.printAvailableUpdates(opts)
       .then(function() {
         test.equal(true, false, 'Build fetch should have failed.');
       })
       .catch(function(err) {
         // We tried to fetch the builds
-        test.equal(this.fetchBuildList.callCount, 1);
+        test.equal(this.requestBuildList.callCount, 1);
         // But it failed with the error message we specified
         test.equal(err.message, errMessage);
         test.done();
@@ -104,28 +114,31 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchSpecificBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.resolve(binaries);
     });
 
     var opts = {
-      build: '0.0.1'
+      version: '0.0.1'
     };
 
     controller.update(opts)
       .then(function() {
         // We have to fetch the build list to figure out what the sha is of this version
-        test.equal(this.fetchBuildList.callCount, 1);
+        test.equal(this.requestBuildList.callCount, 1);
         // We did fetch the specified build
-        test.equal(this.fetchSpecificBuild.callCount, 1);
+        test.equal(this.fetchBuild.callCount, 1);
         // It was called with the correct args
-        test.equal(this.fetchSpecificBuild.calledWith(opts.build), true);
+
+        var build = this.fetchBuild.lastCall.args[0];
+
+        test.deepEqual(build, builds[1]);
         // We fetched the Tessel to update
         test.equal(this.getTessel.callCount, 1);
         // The Tessel was updated
-        test.equal(this.updateTessel.callCount, 1);
+        test.equal(this.update.callCount, 1);
         // The update used the appropriate binaries
-        test.equal(this.updateTessel.calledWith(binaries), true);
+        test.equal(this.update.calledWith(binaries), true);
         // Then the Tessel was closed
         test.equal(this.tessel.closed, true);
         test.done();
@@ -140,17 +153,17 @@ exports['controller.update'] = {
 
     var errMessage = 'No such build exists';
 
-    this.fetchSpecificBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.reject(new Error(errMessage));
     });
 
     var opts = {
-      build: '0.0.1'
+      version: '0.0.1'
     };
     controller.update(opts)
       .catch(function(err) {
         // We attempted to fetch a build
-        test.equal(this.fetchSpecificBuild.callCount, 1);
+        test.equal(this.fetchBuild.callCount, 1);
         // But it failed with the error we specified
         test.equal(err.message, errMessage);
         test.done();
@@ -165,12 +178,12 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchSpecificBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.resolve(binaries);
     });
 
-    this.fetchCurrentTesselVersion.restore();
-    this.fetchCurrentTesselVersion = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
       return Promise.resolve('ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29');
     });
 
@@ -178,21 +191,22 @@ exports['controller.update'] = {
     controller.update(opts)
       .then(function() {
         // Make sure we checked what the Tessel version is currently at
-        test.equal(this.fetchCurrentTesselVersion.callCount, 1);
+        test.equal(this.fetchCurrentBuildInfo.callCount, 1);
         // We fetched only one build
-        test.equal(this.fetchSpecificBuild.callCount, 1);
+        test.equal(this.fetchBuild.callCount, 1);
         // It was the latest build
-        test.equal(this.fetchSpecificBuild.calledWith('0.0.1'), true);
+        test.equal(this.fetchBuild.calledWith(builds[1]), true);
         // Update Tessel was successfully called
-        test.equal(this.updateTessel.callCount, 1);
+        test.equal(this.update.callCount, 1);
         // It was provided the binaries
-        test.equal(this.updateTessel.calledWith(binaries), true);
+        test.equal(this.update.calledWith(binaries), true);
         // Then Tessel was closed
         test.equal(this.tessel.closed, true);
         test.done();
       }.bind(this))
       .catch(function(err) {
         test.ifError(err);
+        test.done();
       });
   },
 
@@ -204,23 +218,21 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchSpecificBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.resolve(binaries);
     });
 
     var opts = {};
     controller.update(opts)
-      .then(function() {})
-      .catch(function() {
+      .then(function() {
         // Make sure we checked what the Tessel version is currently at
-        test.equal(this.fetchCurrentTesselVersion.callCount, 1);
-        // We fetched the build list to convert our current sha to a version
-        // and to find the most current version to update the Tessel with
-        test.equal(this.fetchBuildList.callCount, 2);
+        test.equal(this.fetchCurrentBuildInfo.callCount, 1);
+        // We fetched the build list once
+        test.equal(this.requestBuildList.callCount, 1);
         // We didn't fetch any builds because Tessel is already up to date
-        test.equal(this.fetchSpecificBuild.callCount, 0);
+        test.equal(this.fetchBuild.callCount, 0);
         // Update Tessel was not called because it was already up to date
-        test.equal(this.updateTessel.callCount, 0);
+        test.equal(this.update.callCount, 0);
         // Then Tessel was closed
         test.equal(this.tessel.closed, true);
         test.done();
@@ -235,18 +247,18 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchSpecificBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.resolve(binaries);
     });
 
-    this.fetchCurrentTesselVersion.restore();
-    this.fetchCurrent = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
       return Promise.resolve('ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29');
     });
 
     var errMessage = 'Something absolutely dreadful happened. Your Tessel is bricked.';
-    this.updateTessel.restore();
-    this.updateTessel = this.sandbox.stub(Tessel.prototype, 'update', function() {
+    this.update.restore();
+    this.update = this.sandbox.stub(Tessel.prototype, 'update', function() {
       return Promise.reject(new Error(errMessage));
     }.bind(this));
 
@@ -254,11 +266,11 @@ exports['controller.update'] = {
     controller.update(opts)
       .catch(function(err) {
         // We fetched only one build
-        test.equal(this.fetchSpecificBuild.callCount, 1);
+        test.equal(this.fetchBuild.callCount, 1);
         // It was the latest build
-        test.equal(this.fetchSpecificBuild.calledWith('0.0.1'), true);
+        test.equal(this.fetchBuild.calledWith(builds[1]), true);
         // Update Tessel was not called because it was already up to date
-        test.equal(this.updateTessel.callCount, 1);
+        test.equal(this.update.callCount, 1);
         // The update failed with our error message
         test.equal(err.message, errMessage);
         // Then Tessel was closed
@@ -270,28 +282,29 @@ exports['controller.update'] = {
   buildLatestForce: function(test) {
     test.expect(5);
 
-    var version = '0.0.1';
     var binaries = {
       firmware: new Buffer(0),
       openwrt: new Buffer(0)
     };
-    this.fetchSpecificBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
       return Promise.resolve(binaries);
     });
 
     var opts = {
       force: true
     };
+
     controller.update(opts)
       .then(function() {
         // We fetched only one build
-        test.equal(this.fetchSpecificBuild.callCount, 1);
+        test.equal(this.fetchBuild.callCount, 1);
         // It was the latest build
-        test.equal(this.fetchSpecificBuild.calledWith(version), true);
+        test.equal(this.fetchBuild.calledWith(builds[1]), true);
         // Update Tessel was not called because it was already up to date
-        test.equal(this.updateTessel.callCount, 1);
+        test.equal(this.update.callCount, 1);
         // It was provided the binaries
-        test.equal(this.updateTessel.calledWith(binaries), true);
+        test.equal(this.update.calledWith(binaries), true);
         // Then Tessel was closed
         test.equal(this.tessel.closed, true);
         test.done();
@@ -299,5 +312,44 @@ exports['controller.update'] = {
       .catch(function(err) {
         test.ifError(err);
       });
+  },
+
+  explicitLatestDoesntImmediatelyUpdate: function(test) {
+    test.expect(1);
+
+    var binaries = {
+      firmware: new Buffer(0),
+      openwrt: new Buffer(0)
+    };
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+      return Promise.resolve(binaries);
+    });
+
+    var opts = {
+      version: 'latest'
+    };
+
+    controller.update(opts)
+      .then(function() {
+        test.equal(this.updateTesselWithVersion.callCount, 0);
+        test.done();
+      }.bind(this))
+      .catch(function(err) {
+        test.ifError(err);
+      });
+  },
+
+  noVerifiedVersion: function(test) {
+    test.expect(1);
+
+    var opts = {
+      version: 'x.x.x'
+    };
+    controller.update(opts)
+      .catch(function(message) {
+        test.equal(message, 'The requested build was not found. Please see the available builds with `tessel update -l`.');
+        test.done();
+      }.bind(this));
   }
 };
