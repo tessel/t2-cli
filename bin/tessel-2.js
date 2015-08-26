@@ -49,6 +49,26 @@ parser.command('provision')
   })
   .help('Authorize your computer to control the USB-connected Tessel');
 
+parser.command('restart')
+  .callback(function(opts) {
+    if (opts.type !== 'ram' && opts.type !== 'flash') {
+      closeFailedCommand('--type Invalid ');
+    }
+
+    controller.restartScript(opts)
+      .then(closeSuccessfulCommand, closeFailedCommand);
+  })
+  .option('entryPoint', {
+    position: 1,
+    required: true,
+    help: 'The entry point file to deploy to Tessel'
+  })
+  .option('type', {
+    default: 'ram',
+    help: 'Specify where in memory the script is located: `--type=flash` (push) or `--type=ram` (run)'
+  })
+  .help('Restart a script in RAM or Flash memory. (Does not rebundle)');
+
 parser.command('run')
   .callback(function(opts) {
     opts.push = false;
