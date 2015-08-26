@@ -58,6 +58,16 @@ parser.command('restart')
     controller.restartScript(opts)
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
+  .option('name', nameOption)
+  .option('timeout', timeoutOption)
+  .option('lan', {
+    flag: true,
+    help: 'Use LAN connection'
+  })
+  .option('usb', {
+    flag: true,
+    help: 'Use USB connection'
+  })
   .option('entryPoint', {
     position: 1,
     required: true,
@@ -67,7 +77,7 @@ parser.command('restart')
     default: 'ram',
     help: 'Specify where in memory the script is located: `--type=flash` (push) or `--type=ram` (run)'
   })
-  .help('Restart a script in RAM or Flash memory. (Does not rebundle)');
+  .help('Restart a previously deployed script in RAM or Flash memory. (Does not rebundle)');
 
 parser.command('run')
   .callback(function(opts) {
