@@ -157,6 +157,10 @@ exports['Tessel.prototype.restartScript'] = {
         test.equal(this.runScript.callCount, 1);
         test.done();
       }.bind(this));
+
+    setImmediate(function() {
+      this.tessel._rps.emit('close');
+    }.bind(this));
   },
 
   restartFromFlash: function(test) {
@@ -172,6 +176,29 @@ exports['Tessel.prototype.restartScript'] = {
         test.equal(this.startPushedScript.callCount, 1);
         test.done();
       }.bind(this));
+
+    setImmediate(function() {
+      this.tessel._rps.emit('close');
+    }.bind(this));
+  },
+
+  restartNonExistent: function(test) {
+    test.expect(1);
+    var opts = {
+      type: 'flash',
+      entryPoint: 'index.js',
+    };
+
+    this.tessel.restartScript(opts)
+      .catch(function(error) {
+        test.equal(error, '"index.js" not found on undefined');
+        test.done();
+      }.bind(this));
+
+    setImmediate(function() {
+      this.tessel._rps.stderr.emit('data', 'No such file or directory');
+      this.tessel._rps.emit('close');
+    }.bind(this));
   },
 };
 
