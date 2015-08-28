@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-var parser = require('nomnom'),
-  controller = require('../lib/controller'),
-  key = require('../lib/key'),
-  init = require('../lib/init'),
-  logs = require('../lib/logs');
+var path = require('path');
+var parser = require('nomnom');
+var controller = require('../lib/controller');
+var key = require('../lib/key');
+var init = require('../lib/init');
+var logs = require('../lib/logs');
 
 var nameOption = {
   metavar: 'NAME',
@@ -51,8 +52,18 @@ parser.command('provision')
 
 parser.command('restart')
   .callback(function(opts) {
+    var packageJson;
+
     if (opts.type !== 'ram' && opts.type !== 'flash') {
       closeFailedCommand('--type Invalid ');
+    }
+
+    if (opts.entryPoint === undefined) {
+      packageJson = require(path.resolve(process.cwd(), 'package.json'));
+
+      if (packageJson && packageJson.main) {
+        opts.entryPoint = packageJson.main;
+      }
     }
 
     controller.restartScript(opts)
@@ -70,7 +81,6 @@ parser.command('restart')
   })
   .option('entryPoint', {
     position: 1,
-    required: true,
     help: 'The entry point file to deploy to Tessel'
   })
   .option('type', {

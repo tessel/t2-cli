@@ -4,18 +4,65 @@ var controller = require('../../lib/controller');
 var logs = require('../../lib/logs');
 
 
-exports['Tessel (cli: provision)'] = {
+exports['Tessel (cli: restart)'] = {
   setUp: function(done) {
-    this.sinon = sinon.sandbox.create();
-    this.warn = this.sinon.stub(logs, 'warn');
-    this.provisionTessel = this.sinon.stub(controller, 'provisionTessel').returns(Promise.resolve());
-    this.processExit = this.sinon.stub(process, 'exit');
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.restartScript = this.sandbox.stub(controller, 'restartScript').returns(Promise.resolve());
+    this.processExit = this.sandbox.stub(process, 'exit');
 
     done();
   },
 
   tearDown: function(done) {
-    this.sinon.restore();
+    this.sandbox.restore();
+    done();
+  },
+
+  noError: function(test) {
+    test.expect(1);
+
+    cli(['restart']);
+
+    test.equal(this.restartScript.callCount, 1);
+
+    // We must wait for the command to complete
+    // or else the sandbox will be cleared to early
+    setImmediate(function() {
+      test.done();
+    });
+  },
+
+  exitCodeOne: function(test) {
+    test.expect(2);
+
+    var restartOp = Promise.reject();
+
+    this.restartScript.returns(restartOp);
+
+    cli(['restart']);
+
+    restartOp.catch(function() {
+      test.equal(this.restartScript.callCount, 1);
+      test.equal(this.processExit.lastCall.args[0], 1);
+      test.done();
+    }.bind(this));
+  },
+
+};
+
+exports['Tessel (cli: provision)'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.provisionTessel = this.sandbox.stub(controller, 'provisionTessel').returns(Promise.resolve());
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
     done();
   },
 
@@ -26,7 +73,7 @@ exports['Tessel (cli: provision)'] = {
 
     test.equal(this.provisionTessel.callCount, 1);
 
-    // We must wait for the command too complete
+    // We must wait for the command to complete
     // or else the sandbox will be cleared to early
     setImmediate(function() {
       test.done();
@@ -53,17 +100,17 @@ exports['Tessel (cli: provision)'] = {
 
 exports['Tessel (cli: wifi)'] = {
   setUp: function(done) {
-    this.sinon = sinon.sandbox.create();
-    this.warn = this.sinon.stub(logs, 'warn');
-    this.printAvailableNetworks = this.sinon.stub(controller, 'printAvailableNetworks').returns(Promise.resolve());
-    this.connectToNetwork = this.sinon.stub(controller, 'connectToNetwork').returns(Promise.resolve());
-    this.processExit = this.sinon.stub(process, 'exit');
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.printAvailableNetworks = this.sandbox.stub(controller, 'printAvailableNetworks').returns(Promise.resolve());
+    this.connectToNetwork = this.sandbox.stub(controller, 'connectToNetwork').returns(Promise.resolve());
+    this.processExit = this.sandbox.stub(process, 'exit');
 
     done();
   },
 
   tearDown: function(done) {
-    this.sinon.restore();
+    this.sandbox.restore();
     done();
   },
 
