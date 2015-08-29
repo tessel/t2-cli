@@ -113,6 +113,93 @@ exports['Tessel.prototype.deployScript'] = {
   },
 };
 
+exports['Tessel.prototype.restartScript'] = {
+  setUp: function(done) {
+    this.runScript = sandbox.stub(deploy, 'runScript', function() {
+      return Promise.resolve();
+    });
+    this.startPushedScript = sandbox.stub(deploy, 'startPushedScript', function() {
+      return Promise.resolve();
+    });
+
+    this.findProject = sandbox.stub(deploy, 'findProject', function(entryPoint) {
+      return Promise.resolve({
+        entryPoint: entryPoint
+      });
+    });
+
+    this.logsWarn = sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = sandbox.stub(logs, 'info', function() {});
+
+    this.tessel = TesselSimulator();
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.tessel.mockClose();
+
+    sandbox.restore();
+
+    done();
+  },
+
+  restartFromRam: function(test) {
+    test.expect(1);
+    var opts = {
+      type: 'ram',
+      entryPoint: 'index.js',
+    };
+
+    this.tessel.restartScript(opts)
+      .then(function() {
+        test.equal(this.runScript.callCount, 1);
+        test.done();
+      }.bind(this));
+
+    setImmediate(function() {
+      this.tessel._rps.emit('close');
+    }.bind(this));
+  },
+
+  restartFromFlash: function(test) {
+    test.expect(1);
+    var opts = {
+      type: 'flash',
+      entryPoint: 'index.js',
+    };
+
+    this.tessel.restartScript(opts)
+      .then(function() {
+        test.equal(this.startPushedScript.callCount, 1);
+        test.done();
+      }.bind(this));
+
+    setImmediate(function() {
+      this.tessel._rps.emit('close');
+    }.bind(this));
+  },
+
+  restartNonExistent: function(test) {
+    test.expect(1);
+    var opts = {
+      type: 'flash',
+      entryPoint: 'index.js',
+    };
+
+    this.tessel.restartScript(opts)
+      .catch(function(error) {
+        test.equal(error, '"index.js" not found on undefined');
+        test.done();
+      }.bind(this));
+
+    setImmediate(function() {
+      this.tessel._rps.stderr.emit('data', 'No such file or directory');
+      this.tessel._rps.emit('close');
+    }.bind(this));
+  },
+};
+
 var fixtures = {
   project: path.join(__dirname, 'fixtures/find-project'),
   explicit: path.join(__dirname, 'fixtures/find-project-explicit-main')

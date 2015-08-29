@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-var parser = require('nomnom'),
-  controller = require('../lib/controller'),
-  key = require('../lib/key'),
-  init = require('../lib/init'),
-  logs = require('../lib/logs');
+var path = require('path');
+var parser = require('nomnom');
+var controller = require('../lib/controller');
+var key = require('../lib/key');
+var init = require('../lib/init');
+var logs = require('../lib/logs');
 
 var nameOption = {
   metavar: 'NAME',
@@ -48,6 +49,45 @@ parser.command('provision')
     help: 'Delete existing .tessel authorization and reprovision.'
   })
   .help('Authorize your computer to control the USB-connected Tessel');
+
+parser.command('restart')
+  .callback(function(opts) {
+    var packageJson;
+
+    if (opts.type !== 'ram' && opts.type !== 'flash') {
+      closeFailedCommand('--type Invalid ');
+    }
+
+    if (opts.entryPoint === undefined) {
+      packageJson = require(path.resolve(process.cwd(), 'package.json'));
+
+      if (packageJson && packageJson.main) {
+        opts.entryPoint = packageJson.main;
+      }
+    }
+
+    controller.restartScript(opts)
+      .then(closeSuccessfulCommand, closeFailedCommand);
+  })
+  .option('name', nameOption)
+  .option('timeout', timeoutOption)
+  .option('lan', {
+    flag: true,
+    help: 'Use LAN connection'
+  })
+  .option('usb', {
+    flag: true,
+    help: 'Use USB connection'
+  })
+  .option('entryPoint', {
+    position: 1,
+    help: 'The entry point file to deploy to Tessel'
+  })
+  .option('type', {
+    default: 'ram',
+    help: 'Specify where in memory the script is located: `--type=flash` (push) or `--type=ram` (run)'
+  })
+  .help('Restart a previously deployed script in RAM or Flash memory. (Does not rebundle)');
 
 parser.command('run')
   .callback(function(opts) {
