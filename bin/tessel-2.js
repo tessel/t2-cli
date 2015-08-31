@@ -16,7 +16,7 @@ var timeoutOption = {
   abbr: 't',
   metavar: 'TIMEOUT',
   help: 'Set timeout in seconds for scanning for networked tessels',
-  default: 5
+  default: 2
 };
 
 function closeSuccessfulCommand() {
