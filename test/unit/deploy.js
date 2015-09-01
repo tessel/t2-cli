@@ -298,9 +298,22 @@ exports['deploy.findProject'] = {
       test.ok(error.indexOf('ENOENT') !== -1);
       test.done();
     });
-  }
-};
+  },
 
+  byFileInSubDirectory: function(test) {
+    test.expect(1);
+    var target = 'test/unit/fixtures/find-project/test/index.js';
+
+    deploy.findProject(target).then(function(project) {
+      test.deepEqual(project, {
+        pushdir: fixtures.project,
+        program: path.join(fixtures.project, 'test/index.js'),
+        entryPoint: 'test/index.js'
+      });
+      test.done();
+    });
+  },
+};
 
 function deployTestCode(tessel, test, push, callback) {
 
