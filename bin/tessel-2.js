@@ -194,6 +194,9 @@ parser.command('wifi')
       controller.connectToNetwork(opts)
         .then(closeSuccessfulCommand, closeFailedCommand);
     }
+    else {
+      logs.err('No arguments provided. Type `tessel wifi -h` for usage information.');
+    }
   })
   .option('name', nameOption)
   .option('list', {
