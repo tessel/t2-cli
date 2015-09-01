@@ -4,8 +4,9 @@ var Seeker = require('../../lib/discover.js');
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var logs = require('../../lib/logs');
-// Require this function so that the functions in the controller placed on the Tessel prototype
-require('../../lib/controller')
+// Require this function so that the functions in the 
+// controller placed on the Tessel prototype
+require('../../lib/controller');
 
 exports['Tessel (endConnection)'] = {
   setUp: function(done) {

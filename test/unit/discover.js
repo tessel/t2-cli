@@ -160,7 +160,7 @@ exports['TesselSeeker.prototype.stop'] = {
 
     test.done();
   }
-}
+};
 
 exports['TesselSeeker Scan Time'] = {
   setUp: function(done) {
@@ -195,19 +195,19 @@ exports['TesselSeeker Scan Time'] = {
     test.expect(1);
     // Scan for new connections for this period
     var scanTime = 100;
-   
+
     standardSeekerSetup(this.seeker, scanTime)
-    // When all Tessels have completed opening
-    .then(function(found) {
-      // Make sure we only have the one Tessel we created
-      test.equal(found.length, 1);
-      test.done();
-    });
+      // When all Tessels have completed opening
+      .then(function(found) {
+        // Make sure we only have the one Tessel we created
+        test.equal(found.length, 1);
+        test.done();
+      });
 
     // Create a Simulated LAN Tessel (Unathorized)
     var lan = TesselSimulater('LAN');
     // Give it a name
-    lan.connection.host = 'Tessel-Test_Subject'
+    lan.connection.host = 'Tessel-Test_Subject';
     // Create it's open function
     lan.connection.open = resolveOpenInMs.bind(this, scanTime * 2);
     // Once half of the scan time has elapsed, emit a new connection
@@ -219,10 +219,10 @@ exports['TesselSeeker Scan Time'] = {
     // Spy on the seeker stop
     this.seekerStop = this.sandbox.spy(TesselSeeker.prototype, 'stop');
 
-        // Give it a name
+    // Give it a name
     this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
       return new Promise(function(resolve) {
-        resolve('Tessel-Test_Subject')
+        resolve('Tessel-Test_Subject');
       });
     });
 
@@ -230,13 +230,13 @@ exports['TesselSeeker Scan Time'] = {
     var scanTime = 100;
     // When all Tessels have completed opening
     standardSeekerSetup(this.seeker, scanTime)
-    .then(function discoveryComplete(found) {
-      // Make sure we only have the one Tessel we created
-      test.equal(found.length, 1);
-      // The seeker was told to stop after the timeout ran down
-      test.equal(this.seekerStop.callCount, 1);
-      test.done();
-    }.bind(this));
+      .then(function discoveryComplete(found) {
+        // Make sure we only have the one Tessel we created
+        test.equal(found.length, 1);
+        // The seeker was told to stop after the timeout ran down
+        test.equal(this.seekerStop.callCount, 1);
+        test.done();
+      }.bind(this));
 
     // Create a Simulated LAN Tessel (Unathorized)
     var lan = TesselSimulater('LAN');
@@ -248,7 +248,7 @@ exports['TesselSeeker Scan Time'] = {
     lan.connection.open = resolveOpenInMs.bind(this, scanTime * 2);
 
     // Emit the connection halfway through the scan
-    emitConnectionInMs(this.seeker, lan.connection, scanTime / 2)
+    emitConnectionInMs(this.seeker, lan.connection, scanTime / 2);
   },
 
   oneAuthorizedLANPendingFails: function(test) {
@@ -263,12 +263,12 @@ exports['TesselSeeker Scan Time'] = {
 
     // Start scan
     standardSeekerSetup(this.seeker, scanTime)
-    // When all Tessels have completed opening
-    .then(function(found) {
-      // Make sure we don't find any Tessels
-      test.equal(found.length, 0);
-      test.done();
-    }.bind(this));
+      // When all Tessels have completed opening
+      .then(function(found) {
+        // Make sure we don't find any Tessels
+        test.equal(found.length, 0);
+        test.done();
+      }.bind(this));
 
     // Create a Simulated LAN Tessel (Unathorized)
     var lan = TesselSimulater('LAN');
@@ -293,14 +293,14 @@ exports['TesselSeeker Scan Time'] = {
     this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
       return Promise.resolve('Tessel-AndFriends');
     });
-    
+
     // When all Tessels have completed opening
     standardSeekerSetup(this.seeker, scanTime)
-    .then(function(found) {
-      // Make sure we only have the one Tessel we created
-      test.equal(found.length, 4);
-      test.done();
-    }.bind(this));
+      .then(function(found) {
+        // Make sure we only have the one Tessel we created
+        test.equal(found.length, 4);
+        test.done();
+      }.bind(this));
 
     // Create a simulated LAN Tessel (Unathorized)
     var lan1 = TesselSimulater('LAN');
@@ -314,7 +314,7 @@ exports['TesselSeeker Scan Time'] = {
     // complete but unauthorized opens before scan completes
     lan1.connection.open = resolveOpenInMs.bind(this, scanTime + 1);
     // Give it a name
-    lan1.connection.host = 'Tessel-TroubleMaker'
+    lan1.connection.host = 'Tessel-TroubleMaker';
     lan2.connection.open = resolveOpenInMs.bind(this, scanTime + 2);
 
     var usb1 = TesselSimulater('USB');
@@ -323,14 +323,14 @@ exports['TesselSeeker Scan Time'] = {
     usb1.connection.open = resolveOpenInMs.bind(this, scanTime + 3);
     usb2.connection.open = resolveOpenInMs.bind(this, scanTime + 4);
 
-   emitConnectionInMs(this.seeker, lan1.connection, scanTime / 4);
-   emitConnectionInMs(this.seeker, usb1.connection, scanTime / 3);
-   emitConnectionInMs(this.seeker, lan2.connection, scanTime / 2);
-   emitConnectionInMs(this.seeker, usb2.connection, scanTime / 1.1);
+    emitConnectionInMs(this.seeker, lan1.connection, scanTime / 4);
+    emitConnectionInMs(this.seeker, usb1.connection, scanTime / 3);
+    emitConnectionInMs(this.seeker, lan2.connection, scanTime / 2);
+    emitConnectionInMs(this.seeker, usb2.connection, scanTime / 1.1);
   },
 
   // A test where seeker.stop is explicitly called instead of waiting for timeout
-  explicitStop : function(test) {
+  explicitStop: function(test) {
     test.expect(1);
     // Scan for new connections for this period
     var scanTime = 100;
@@ -342,12 +342,12 @@ exports['TesselSeeker Scan Time'] = {
 
     // Start scan
     standardSeekerSetup(this.seeker, scanTime)
-    // When all Tessels have completed opening
-    .then(function(found) {
-      // Make sure we don't find any Tessels because we stopped the scan
-      test.equal(found.length, 0);
-      test.done();
-    }.bind(this));
+      // When all Tessels have completed opening
+      .then(function(found) {
+        // Make sure we don't find any Tessels because we stopped the scan
+        test.equal(found.length, 0);
+        test.done();
+      }.bind(this));
 
     // Create a Simulated LAN Tessel (Unathorized)
     var lan = TesselSimulater('LAN');
@@ -362,8 +362,8 @@ exports['TesselSeeker Scan Time'] = {
     emitConnectionInMs(this.seeker, lan.connection, scanTime / 2);
 
     setTimeout(function stopScan() {
-      this.seeker.stop()
-    }.bind(this), scanTime)
+      this.seeker.stop();
+    }.bind(this), scanTime);
   }
 };
 
