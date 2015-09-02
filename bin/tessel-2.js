@@ -87,7 +87,7 @@ parser.command('restart')
     default: 'ram',
     help: 'Specify where in memory the script is located: `--type=flash` (push) or `--type=ram` (run)'
   })
-  .help('Restart a previously deployed script in RAM or Flash memory. (Does not rebundle)');
+  .help('Restart a previously deployed script in RAM or Flash memory (does not rebundle)');
 
 parser.command('run')
   .callback(function(opts) {
@@ -244,7 +244,7 @@ parser.command('rename')
       .then(closeSuccessfulCommand, closeFailedCommand);
   })
   .option('timeout', timeoutOption)
-  .help('Change the name of a Tessel to something new.');
+  .help('Change the name of a Tessel to something new');
 
 parser.command('update')
   .option('version', {
