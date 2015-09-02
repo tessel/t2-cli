@@ -226,7 +226,8 @@ parser.command('key')
         logs.info('Key successfully generated.');
       })
       .then(closeSuccessfulCommand, closeFailedCommand);
-  });
+  })
+  .help('Generate a local SSH keypair for authenticating a Tessel VM');
 
 parser.command('rename')
   .option('newName', {
