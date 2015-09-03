@@ -7,6 +7,7 @@ var Seeker = require('../../lib/discover.js');
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var logs = require('../../lib/logs');
+var Menu = require('terminal-menu');
 
 // template for creating fake tessels
 function createFakeTessel(options) {
@@ -43,8 +44,8 @@ exports['Tessel.seekTessels'] = {
 
   setUp: function(done) {
     var self = this;
-    this.sandbox = sinon.sandbox.create();
-    this.processOn = this.sandbox.stub(process, 'on');
+    this.sandbox = sinon.sandbox.create(); // http://sinonjs.org/docs/#sinon-sandbox
+    this.processOn = this.sandbox.stub(process, 'on'); // set property 'process' to 'on'
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
       this.start = function() {
@@ -70,7 +71,7 @@ exports['Tessel.seekTessels'] = {
   },
 
   tearDown: function(done) {
-    this.sandbox.restore();
+    this.sandbox.restore(); // restores all fakes but also stubs because they are added to the internal collections of fakes in sandbox mode!
     done();
   },
 
@@ -218,9 +219,32 @@ exports['Tessel.seekTessels'] = {
 exports['controller.root'] = {
 
   setUp: function(done) {
-    //var self = this;
-    // creating fake methods
+    var self = this;
     this.sandbox = sinon.sandbox.create();
+    this.processOn = this.sandbox.stub(process, 'on');
+    self.activeMenu = undefined;
+    self.menuLines = undefined;
+    // no display output necessary so overriding write
+    this.rtm = new Menu({
+      width: 50,
+      x: 1,
+      y: 2,
+      bg: 'red'
+    });
+    this.sandbox.stub(this.rtm, 'write', function Menu() {
+      this.write = function(msg) {
+        self.menuLines = msg.split('\n');
+        return this;
+      };
+    });
+
+    // copy the Menu events 'select' and 'close' into the EventEmitter
+    util.inherits(this.rtm, EventEmitter);
+
+    // setting up fake system for logging
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
 
     //this.
     done();
@@ -229,17 +253,20 @@ exports['controller.root'] = {
     this.sandbox.restore();
     done();
   },
-  test1: function(test) {
-    test.expect(1);
-    test.ok(true, 'This shouldn\'t fail');
-    test.done();
-  },
-  test2: function(test) {
-    test.expect(1);
-    test.ok(1 === 1, 'This shouldn\'t fail');
-    // test.ok(false, 'This should fail');
+  addingMenuLine: function(test) {
+    // console.log('this: menu: ', this.rtm.items);
+    test.expect(3);
+
+    this.rtm.add('MenulineOne\n');
+    this.rtm.write();
+
+    test.equal(this.rtm.items.length, 1);
+    test.equal(this.rtm.x, 3);
+    test.equal(this.rtm.y, 4);
+
     test.done();
   }
+
 };
 // t2 root --help
 
