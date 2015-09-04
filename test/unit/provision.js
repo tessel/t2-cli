@@ -84,6 +84,12 @@ exports['controller.provisionTessel'] = {
 
     this.provisionSpy = sinon.spy(Tessel.prototype, 'provisionTessel');
 
+    this.getName = sinon.stub(Tessel.prototype, 'getName', function() {
+      return new Promise(function(resolve) {
+        resolve('Tessel-1');
+      });
+    });
+
     this.getTessel = sinon.stub(Tessel, 'get', function() {
       return new Promise(function(resolve) {
         resolve(self.tessel);
@@ -102,6 +108,7 @@ exports['controller.provisionTessel'] = {
     this.provisionTessel.restore();
     this.provisionSpy.restore();
     this.exec.restore();
+    this.getName.restore();
     this.getTessel.restore();
     this.logsWarn.restore();
     this.logsInfo.restore();
