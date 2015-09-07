@@ -8,6 +8,7 @@ exports['Tessel (cli: restart)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
     this.restartScript = this.sandbox.stub(controller, 'restartScript').returns(Promise.resolve());
     this.processExit = this.sandbox.stub(process, 'exit');
 
@@ -55,6 +56,7 @@ exports['Tessel (cli: provision)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
     this.provisionTessel = this.sandbox.stub(controller, 'provisionTessel').returns(Promise.resolve());
     this.processExit = this.sandbox.stub(process, 'exit');
 
@@ -102,8 +104,10 @@ exports['Tessel (cli: wifi)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
     this.printAvailableNetworks = this.sandbox.stub(controller, 'printAvailableNetworks').returns(Promise.resolve());
     this.connectToNetwork = this.sandbox.stub(controller, 'connectToNetwork').returns(Promise.resolve());
+    this.getWifiInfo = this.sandbox.stub(controller, 'getWifiInfo').returns(Promise.resolve());
     this.processExit = this.sandbox.stub(process, 'exit');
 
     done();
@@ -115,11 +119,14 @@ exports['Tessel (cli: wifi)'] = {
   },
 
   noOpts: function(test) {
-    test.expect(1);
+    test.expect(3);
 
     cli(['wifi']);
-
+    // We should not call either of these functions if no args were passed
     test.equal(this.printAvailableNetworks.callCount, 0);
+    test.equal(this.connectToNetwork.callCount, 0);
+    // It should call the getWiFiInfo function
+    test.equal(this.getWifiInfo.callCount, 1);
     test.done();
   },
 
