@@ -55,6 +55,7 @@
     "nomnom": "^1.8.1",
     "npm": "^2.7.1",
     "osenv": "^0.1.0",
+    "progress": "^1.1.8",
     "promzard": "^0.3.0",
     "request": "^2.60.0",
     "shell-escape": "^0.2.0",
@@ -62,16 +63,16 @@
     "ssh-keygen": "^0.2.1",
     "ssh2": "^0.4.2",
     "stream-to-buffer": "^0.1.0",
-    "tar-stream": "^1.2.1",
     "tar": "^2.1.1",
+    "tar-stream": "^1.2.1",
     "url-join": "0.0.1",
     "usb": "^1.0.5",
     "usb-daemon-parser": "0.0.1"
   },
   "preferGlobal": true,
-  "engines" : { 
-    "node" : ">0.12.0",
+  "engines": {
+    "node": ">0.12.0",
     "iojs": ">= 1.0.0"
   },
-  "engine-strict" : true
+  "engine-strict": true
 }
