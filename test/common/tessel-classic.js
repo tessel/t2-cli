@@ -13,7 +13,7 @@ module.exports = {
     if (dir === 'fail') {
       callback(new Error());
     } else {
-      callback(null, new Buffer('console.log("testing deploy");'));
+      callback(null, new Buffer('console.log(\'testing deploy\');'));
     }
   }
 };

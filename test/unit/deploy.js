@@ -9,7 +9,7 @@ var mkdirp = require('mkdirp');
 var path = require('path');
 var deployFolder = path.join(__dirname, 'tmp');
 var deployFile = path.join(deployFolder, 'app.js');
-var codeContents = 'console.log("testing deploy");';
+var codeContents = 'console.log(\'testing deploy\');';
 var rimraf = require('rimraf');
 
 exports['Tessel.prototype.deployScript'] = {

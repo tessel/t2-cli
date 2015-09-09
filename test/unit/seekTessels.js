@@ -1,13 +1,11 @@
-// unit test t2 root command
+// unit test t2 root - Tessel.seekTessels 
 var sinon = require('sinon');
-//var _ = require('lodash');
 var controller = require('../../lib/controller');
 var Tessel = require('../../lib/tessel/tessel');
 var Seeker = require('../../lib/discover.js');
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var logs = require('../../lib/logs');
-var Menu = require('terminal-menu');
 
 // template for creating fake tessels
 function createFakeTessel(options) {
@@ -15,9 +13,7 @@ function createFakeTessel(options) {
     connectionType: options.type || 'LAN',
     authorized: options.authorized !== undefined ? options.authorized : true,
     end: function() {
-      // returns a value, promize or thenable
       return Promise.resolve();
-      // https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve
     }
 
   });
@@ -31,7 +27,7 @@ function createFakeTessel(options) {
   }
   tessel.serialNumber = serialNumber(options);
   tessel.name = options.name || 'a';
-
+ 
   options.sandbox.stub(tessel, 'close', function() {
     return Promise.resolve();
   });
@@ -59,7 +55,6 @@ exports['Tessel.seekTessels'] = {
     // copy the seeker events into the EventEmitter
 
     util.inherits(this.seeker, EventEmitter);
-
     // setting up fake system for logging
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
@@ -77,7 +72,7 @@ exports['Tessel.seekTessels'] = {
 
   // Test is based on structure of controller.js Tessel.list tests (but documented!)
   oneAuthorizedLANTessel: function(test) {
-    test.expect(3);
+    test.expect(6);
     var a = createFakeTessel({
       sandbox: this.sandbox,
       authorized: true,
@@ -93,6 +88,11 @@ exports['Tessel.seekTessels'] = {
       test.equal(a.connections[0].authorized, true);
       // because we do not runHeuristics callCount is expected to be 0
       test.equal(a.close.callCount, 0);
+      // validate logs
+      test.equal(this.logsInfo.callCount, 1);
+      test.equal(this.logsWarn.callCount, 0);
+      test.equal(this.logsBasic.callCount, 0);
+
       a = null;
       test.done();
     }.bind(this));
@@ -101,7 +101,7 @@ exports['Tessel.seekTessels'] = {
     this.activeSeeker.emit('tessel', a);
   },
   oneNotAuthorizedLANTessel: function(test) {
-    test.expect(3);
+    test.expect(6);
     var a = createFakeTessel({
       sandbox: this.sandbox,
       authorized: false,
@@ -117,6 +117,11 @@ exports['Tessel.seekTessels'] = {
       test.equal(a.connections[0].authorized, false);
       // because we do not runHeuristics callCount is expected to be 0
       test.equal(a.close.callCount, 0);
+      // validate logs
+      test.equal(this.logsInfo.callCount, 1);
+      test.equal(this.logsWarn.callCount, 0);
+      test.equal(this.logsBasic.callCount, 0);
+
       test.done();
     }.bind(this));
 
@@ -124,7 +129,7 @@ exports['Tessel.seekTessels'] = {
     this.activeSeeker.emit('tessel', a);
   },
   oneTesselTwoConnections: function(test) {
-    test.expect(5);
+    test.expect(8);
 
     var a = createFakeTessel({
       sandbox: this.sandbox,
@@ -162,6 +167,10 @@ exports['Tessel.seekTessels'] = {
         test.equal(a.close.callCount, 0);
         // because we do not runHeuristics callCount is expected to be 0
         test.equal(lan.close.callCount, 0);
+        // validate logs
+        test.equal(this.logsInfo.callCount, 1);
+        test.equal(this.logsWarn.callCount, 0);
+        test.equal(this.logsBasic.callCount, 0);
 
         // TODO: Because of the connections object of sameTessel isn't conjunct already this test has to be rewritten later 
         test.done();
@@ -175,7 +184,7 @@ exports['Tessel.seekTessels'] = {
 
   },
   multipeDifferentTessels: function(test) {
-    test.expect(6);
+    test.expect(9);
 
     var usb = createFakeTessel({
       sandbox: this.sandbox,
@@ -205,6 +214,10 @@ exports['Tessel.seekTessels'] = {
         test.equal(usb.close.callCount, 0);
         // because we do not runHeuristics callCount is expected to be 0
         test.equal(lan.close.callCount, 0);
+        // validate logs
+        test.equal(this.logsInfo.callCount, 1);
+        test.equal(this.logsWarn.callCount, 0);
+        test.equal(this.logsBasic.callCount, 0);
 
         test.done();
       }.bind(this));
@@ -212,80 +225,5 @@ exports['Tessel.seekTessels'] = {
     this.activeSeeker.emit('tessel', usb);
     this.activeSeeker.emit('tessel', lan);
 
-
   },
 };
-
-exports['controller.root'] = {
-
-  setUp: function(done) {
-    var self = this;
-    this.sandbox = sinon.sandbox.create();
-    this.processOn = this.sandbox.stub(process, 'on');
-    self.activeMenu = undefined;
-    self.menuLines = undefined;
-    // no display output necessary so overriding write
-    this.rtm = new Menu({
-      width: 50,
-      x: 1,
-      y: 2,
-      bg: 'red'
-    });
-    this.sandbox.stub(this.rtm, 'write', function Menu() {
-      this.write = function(msg) {
-        self.menuLines = msg.split('\n');
-        return this;
-      };
-    });
-
-    // copy the Menu events 'select' and 'close' into the EventEmitter
-    util.inherits(this.rtm, EventEmitter);
-
-    // setting up fake system for logging
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
-
-    //this.
-    done();
-  },
-  tearDown: function(done) {
-    this.sandbox.restore();
-    done();
-  },
-  addingMenuLine: function(test) {
-    // console.log('this: menu: ', this.rtm.items);
-    test.expect(3);
-
-    this.rtm.add('MenulineOne\n');
-    this.rtm.write();
-
-    test.equal(this.rtm.items.length, 1);
-    test.equal(this.rtm.x, 3);
-    test.equal(this.rtm.y, 4);
-
-    test.done();
-  }
-
-};
-// t2 root --help
-
-// t2 root # only one tessel (authorized)
-
-// t2 root # only one tessel (not authorized)
-
-// t2 root # no tessel found
-
-// t2 root # two tessels (authorized)
-
-// t2 root # two tessels (not authorized)
-
-// t2 root # invalid id_rsa for authorized tessel ! (froud prevention)
-
-// t2 root # Accessing root...
-
-// t2 root --help # Usage: tessel root [-i <path>] [--help]
-
-// TODO: adding USB tests !
-
-// TODO: running tests on Windows 7 and try catch ssh exists
