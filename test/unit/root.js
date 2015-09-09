@@ -31,7 +31,7 @@ function createFakeTessel(options) {
   }
   tessel.serialNumber = serialNumber(options);
   tessel.name = options.name || 'a';
-  
+
   options.sandbox.stub(tessel, 'close', function() {
     return Promise.resolve();
   });
