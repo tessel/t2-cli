@@ -100,7 +100,7 @@ exports['USB.Connection.prototype._write'] = {
 exports['USB.Connection.prototype._receiveMessages'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.err = this.sandbox.stub(logs, 'err');
+    this.warn = this.sandbox.stub(logs, 'warn');
     this.processExit = this.sandbox.stub(process, 'exit');
     this.usbConnection = new USB.Connection({});
     this.usbConnection.epIn = new Emitter();
@@ -141,7 +141,7 @@ exports['USB.Connection.prototype._receiveMessages'] = {
 
     this.usbConnection.epIn.emit('error', 'oh no!');
 
-    test.equal(this.err.callCount, 1);
+    test.equal(this.warn.callCount, 1);
     test.equal(this.processExit.callCount, 1);
     test.done();
   },
@@ -155,7 +155,7 @@ exports['USB.Connection.prototype._receiveMessages'] = {
 
     // The immediate return prevents these from being
     // called from in the error handler
-    test.equal(this.err.callCount, 0);
+    test.equal(this.warn.callCount, 0);
     test.equal(this.processExit.callCount, 0);
     test.done();
   },
