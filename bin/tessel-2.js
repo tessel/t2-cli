@@ -41,7 +41,7 @@ if (!isRoot()) {
   }
 }
 
-controller.t2Init = init;
+controller.t2Init = init.initProject;
 
 controller.crashReporter = function(options) {
   var cr = Promise.resolve();
@@ -332,6 +332,12 @@ parser.command('init')
     flag: true,
     abbr: 'i',
     help: 'Run in interactive mode'
+  })
+  .option('lang', {
+    metavar: 'LANG',
+    abbr: 'l',
+    default: 'js',
+    help: 'The language to use <javascript|rust|js|rs>. Javascript by default'
   })
   .help('Initialize repository for your Tessel project');
 
