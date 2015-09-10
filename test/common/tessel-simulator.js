@@ -20,6 +20,11 @@ function TesselSimulator(options) {
         resolve();
       });
     },
+    close: function() {
+      return new Promise(function(resolve) {
+        resolve();
+      });
+    }
 
   };
   if (!options) {
