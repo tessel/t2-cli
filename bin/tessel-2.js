@@ -277,6 +277,23 @@ parser.command('update')
   })
   .help('Update the Tessel firmware and openWRT image');
 
+parser.command('version')
+  .option('timeout', timeoutOption)
+  .option('name', nameOption)
+  .option('lan', {
+    flag: true,
+    help: 'Use LAN connection'
+  })
+  .option('usb', {
+    flag: true,
+    help: 'Use USB connection'
+  })
+  .callback(function(opts) {
+    controller.tesselFirmwareVerion(opts)
+      .then(closeSuccessfulCommand, closeFailedCommand);
+  })
+  .help('Display Tessel\'s current firmware version');
+
 
 module.exports = function(args) {
   parser.parse(args);
