@@ -36,12 +36,6 @@ You may encounter the following error when executing `npm link` on windows:
 ```
 This error occurs because of windows folder permissions. To resolve this make sure you are running cmd or powershell as an administrator and that the permissions on the node_modules folder is set to full control for the user.
 
-## Updating Tessel 2 On-board OS/Firmware
-There are two components to the Tessel on-board software: The OpenWRT Linux image on the MediaTek processor and the firmware image that runs on the Atmel co-processor.
-
-### How do I know if I need to update my T2?
-Unfortunately, [we have an open PR](https://github.com/tessel/t2-cli/pull/130) to detect the version of code running on T2 but it hasn't merged yet! If you aren't seeing your Tessel 2 show up with `t2 list`, then you probably have an old version of firmware (because the USB VID/PID is out of date). If you see functionality in the [Tessel API](https://github.com/tessel/t2-firmware#t2-hardware-api) that isn't defined on your board, then you probably need to update.
-
 ### Updating
 If this is your first time updating, you may have to run `t2 update -f`, otherwise just run `t2 update` to make sure you are running the most recent build of OpenWRT and firmware.
 

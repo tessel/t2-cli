@@ -205,7 +205,10 @@ exports['TesselSeeker Scan Time'] = {
       });
 
     // Create a Simulated LAN Tessel (Unauthorized)
-    var lan = TesselSimulator({type: 'LAN', authorized: false});
+    var lan = TesselSimulator({
+      type: 'LAN',
+      authorized: false
+    });
     // Give it a name
     lan.connection.host = 'Tessel-Test_Subject';
     // Create it's open function
@@ -239,7 +242,10 @@ exports['TesselSeeker Scan Time'] = {
       }.bind(this));
 
     // Create a Simulated authorized, LAN Tessel
-    var lan = TesselSimulator({type: 'LAN', authorized: true});
+    var lan = TesselSimulator({
+      type: 'LAN',
+      authorized: true
+    });
 
     // Create it's open function
     lan.connection.open = resolveOpenInMs.bind(this, scanTime * 2);
@@ -268,7 +274,10 @@ exports['TesselSeeker Scan Time'] = {
       }.bind(this));
 
     // Create a Simulated authorized, LAN Tessel
-    var lan = TesselSimulator({ type: 'LAN', authorized: true });
+    var lan = TesselSimulator({
+      type: 'LAN',
+      authorized: true
+    });
 
     // Create it's open function
     lan.connection.open = resolveOpenInMs.bind(this, scanTime * 2);
@@ -297,9 +306,15 @@ exports['TesselSeeker Scan Time'] = {
       }.bind(this));
 
     // Create a simulated LAN Tessel (Unathorized)
-    var lan1 = TesselSimulator({ type: 'LAN', authorized: false });
+    var lan1 = TesselSimulator({
+      type: 'LAN',
+      authorized: false
+    });
     // Create a simulated LAN Tessel (authorized)
-    var lan2 = TesselSimulator({ type: 'LAN', authorized: true });
+    var lan2 = TesselSimulator({
+      type: 'LAN',
+      authorized: true
+    });
 
     // Create open functions authorized Tessel opens after scan has 
     // complete but unauthorized opens before scan completes
@@ -308,8 +323,12 @@ exports['TesselSeeker Scan Time'] = {
     lan1.connection.host = 'Tessel-TroubleMaker';
     lan2.connection.open = resolveOpenInMs.bind(this, scanTime + 2);
 
-    var usb1 = TesselSimulator({ type: 'USB' });
-    var usb2 = TesselSimulator({ type: 'USB' });
+    var usb1 = TesselSimulator({
+      type: 'USB'
+    });
+    var usb2 = TesselSimulator({
+      type: 'USB'
+    });
 
     usb1.connection.open = resolveOpenInMs.bind(this, scanTime + 3);
     usb2.connection.open = resolveOpenInMs.bind(this, scanTime + 4);
@@ -341,7 +360,10 @@ exports['TesselSeeker Scan Time'] = {
       }.bind(this));
 
     // Create a Simulated LAN Tessel (authorized)
-    var lan = TesselSimulator({type: 'LAN', authorized: true});
+    var lan = TesselSimulator({
+      type: 'LAN',
+      authorized: true
+    });
 
     // Create it's open function
     lan.connection.open = resolveOpenInMs.bind(this, scanTime * 2);
