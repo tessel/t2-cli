@@ -230,7 +230,9 @@ exports['Tessel.prototype.provision'] = {
 
     test.expect(2);
     // Set the connectionType to LAN so it will fail
-    this.tessel = new TesselSimulator('LAN');
+    this.tessel = new TesselSimulator({
+      type: 'LAN'
+    });
 
     // Attempt to provision
     this.tessel.provisionTessel()
