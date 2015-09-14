@@ -351,5 +351,102 @@ exports['controller.update'] = {
         test.equal(message, 'The requested build was not found. Please see the available builds with `tessel update -l`.');
         test.done();
       }.bind(this));
-  }
+  },
+
+  noVersionForcedUpdate: function(test) {
+    test.expect(2);
+
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+      return Promise.reject(new Error('[Error: cat: can\'t open \'/etc/tessel-version\': No such file or directory]'));
+    });
+
+    var binaries = {
+      firmware: new Buffer(0),
+      openwrt: new Buffer(0)
+    };
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+      return Promise.resolve(binaries);
+    });
+
+    var opts = {};
+    controller.update(opts)
+      .then(function() {
+        // It should attempt to fetch a build
+        test.equal(this.fetchBuild.callCount, 1);
+        // We should be requesting the latest build
+        test.equal(this.fetchBuild.calledWith(builds[1]), true);
+        test.done();
+      }.bind(this))
+      .catch(function() {
+        test.fail('It should force an update if the file version is not found');
+      });
+  },
+  noVersionRequestForceFalse: function(test) {
+    test.expect(2);
+    var noFileError = new Error('[Error: cat: can\'t open \'/etc/tessel-version\': No such file or directory]');
+
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+      return Promise.reject(noFileError);
+    });
+
+    var binaries = {
+      firmware: new Buffer(0),
+      openwrt: new Buffer(0)
+    };
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+      return Promise.resolve(binaries);
+    });
+
+    var opts = {
+      force: false
+    };
+    controller.update(opts)
+      .then(function() {
+        test.fail('It should throw an error if we could not get version');
+      })
+      .catch(function(err) {
+        // Make sure this error has the proper error message
+        test.equal(err.message, noFileError.message);
+        // It should not attempt to fetch any builds
+        test.equal(this.fetchBuild.callCount, 0);
+        test.done();
+      }.bind(this));
+  },
+
+  noVersionUnknownError: function(test) {
+    test.expect(2);
+
+    var unknownError = new Error('Something totally weird happened.');
+
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+      return Promise.reject(unknownError);
+    });
+
+    var binaries = {
+      firmware: new Buffer(0),
+      openwrt: new Buffer(0)
+    };
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+      return Promise.resolve(binaries);
+    });
+
+    var opts = {};
+    controller.update(opts)
+      .then(function() {
+        test.fail('It should throw an error if we get an unknown error');
+      })
+      .catch(function(err) {
+        // Make sure this error has the proper error message
+        test.equal(err.message, unknownError.message);
+        // It should not attempt to fetch any builds
+        test.equal(this.fetchBuild.callCount, 0);
+        test.done();
+      }.bind(this));
+  },
 };
