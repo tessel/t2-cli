@@ -7,6 +7,7 @@ var key = require('../lib/key');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
 
+
 var nameOption = {
   metavar: 'NAME',
   help: 'The name of the tessel on which the command will be executed'
@@ -174,6 +175,34 @@ parser.command('list')
   })
   .option('timeout', timeoutOption)
   .help('Lists all connected Tessels and their authorization status.');
+// accessing the root shell of your tessels
+// Fixes issue https://github.com/tessel/t2-cli/issues/80
+/**
+$ t2 root --help
+> Usage: tessel root [-i <path>] [--help]
+>  -i <path>:   provide a path to the desired ssh key
+$ 
+
+$ t2 root
+> Accessing root...
+root@192.168.128.124 # 
+*/
+var functional_msg = '\nGain SSH root access to one of your authorized tessels (menu listing if multiple targets)';
+parser.command('root')
+  .usage(functional_msg + '\n\nUsage: t2 root [-i PATH] [--help]\n\n-i PATH:   Optional targeting a different Private Key \n\n(Note: default target created by "t2 key generate" is ' + controller.TESSEL_AUTH_KEY + ')\n')
+  .option('path', {
+    abbr: 'i',
+    full: 'path',
+    metavar: 'PATH',
+    default: controller.TESSEL_AUTH_KEY,
+    help: 'Private Key (Note: created by "t2 key generate")'
+  })
+  .callback(function(opts) {
+    controller.root(opts)
+      .then(closeSuccessfulCommand, closeFailedCommand);
+  })
+  .help(functional_msg);
+
 
 parser.command('init')
   .callback(init)
