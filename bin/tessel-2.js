@@ -23,19 +23,12 @@ function closeSuccessfulCommand() {
   process.exit(0);
 }
 
-// Allow options to be partially applied
-function closeFailedCommand(opts, err) {
-  if (!err) {
-    err = opts;
-    opts = {};
-  }
-
+function closeFailedCommand(err) {
   if (err instanceof Error) {
     throw err;
   } else {
     // Print a stern warning by default
-    opts.type = opts.type || 'warn';
-    logs[opts.type](err);
+    logs.warn(err);
   }
   // NOTE: Exit code is non-zero
   process.exit(1);
@@ -201,11 +194,10 @@ parser.command('wifi')
         var msg = opts.ssid ?
           'Please provide a password with -p <password>' :
           'Please provide a network name (SSID) with -n <name>';
-        closeFailedCommand({
-          type: 'err'
-        }, msg);
+        closeFailedCommand(new Error(msg));
       }
     } else {
+      console.log(opts);
       controller.getWifiInfo(opts)
         .then(closeSuccessfulCommand, closeFailedCommand);
     }
