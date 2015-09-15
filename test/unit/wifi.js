@@ -1,10 +1,11 @@
+var _ = require('lodash');
 var sinon = require('sinon');
 var Tessel = require('../../lib/tessel/tessel');
 var commands = require('../../lib/tessel/commands');
 var logs = require('../../lib/logs');
 var TesselSimulator = require('../common/tessel-simulator');
 
-exports['Tessel.prototype.findAvailableNetworks'] = {
+module.exports['Tessel.prototype.findAvailableNetworks'] = {
   setUp: function(done) {
 
     this.findAvailableNetworks = sinon.spy(Tessel.prototype, 'findAvailableNetworks');
@@ -121,7 +122,6 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
 
 module.exports['Tessel.prototype.connectToNetwork'] = {
   setUp: function(done) {
-
     this.connectToNetwork = sinon.spy(Tessel.prototype, 'connectToNetwork');
     this.logsWarn = sinon.stub(logs, 'warn', function() {});
     this.logsInfo = sinon.stub(logs, 'info', function() {});
@@ -130,7 +130,6 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     this.commitWirelessCredentials = sinon.spy(commands, 'commitWirelessCredentials');
     this.reconnectWifi = sinon.spy(commands, 'reconnectWifi');
     this.tessel = TesselSimulator();
-
     done();
   },
   tearDown: function(done) {
@@ -200,5 +199,89 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
       .catch(function(error) {
         test.fail(error);
       });
+  }
+};
+
+module.exports['Tessel.prototype.getWifiInfo'] = {
+  setUp: function(done) {
+    this.getWifiInfo = sinon.spy(Tessel.prototype, 'getWifiInfo');
+    this.logsWarn = sinon.stub(logs, 'warn', _.noop);
+    this.logsInfo = sinon.stub(logs, 'info', _.noop);
+    this.logsErr = sinon.stub(logs, 'err', _.noop);
+    this.getWifiCmd = sinon.spy(commands, 'getWifiInfo');
+    this.getIPAddress = sinon.spy(commands, 'getIPAddress');
+    this.tessel = TesselSimulator();
+    done();
+  },
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    this.logsWarn.restore();
+    this.logsInfo.restore();
+    this.logsErr.restore();
+    this.getWifiInfo.restore();
+    done();
+  },
+  noWifi: function(test) {
+    test.expect(3);
+
+    var self = this;
+    this.tessel.getWifiInfo({
+        timeout: 5
+      })
+      .then(function() {
+        test.fail('getWifiInfo did not get rejected');
+      })
+      .catch(function(err) {
+        test.ok(err);
+        test.equal(self.getWifiCmd.callCount, 1);
+        test.equal(self.getIPAddress.callCount, 0);
+        test.done();
+      });
+
+    // Force Wifi down
+    this.tessel._rps.stdout.push('{}');
+    setImmediate(function() {
+      self.tessel._rps.emit('close');
+    });
+  },
+  success: function(test) {
+    test.expect(2);
+
+    var self = this;
+    this.tessel.getWifiInfo({
+        timeout: 5
+      })
+      .then(function(network) {
+        test.equal(network.ssid, 'piano');
+        test.equal(self.getWifiCmd.callCount, 1);
+        test.equal(self.getIPAddress.callCount, 1);
+        test.done();
+      })
+      .catch(function(err) {
+        test.fail(err);
+      });
+
+    // Force Wifi up
+    this.tessel._rps.stdout.push('{"ssid":"piano"}');
+    setImmediate(function() {
+      self.tessel._rps.emit('close');
+      // mock getIPAddress
+      setTimeout(function() {
+        /*jshint multistr: true */
+        self.tessel._rps.stdout.push(
+          'wlan0     Link encap:Ethernet  HWaddr 02:A3:E4:26:A9:75\
+            inet addr:10.0.0.2  Bcast:10.0.0.255  Mask:255.255.255.0\
+            inet6 addr: fe80::a3:e4ff:fe26:a975/64 Scope:Link\
+            UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1\
+            RX packets:19697 errors:0 dropped:0 overruns:0 frame:0\
+            TX packets:2248 errors:0 dropped:0 overruns:0 carrier:0\
+            collisions:0 txqueuelen:1000\
+            RX bytes:2225847 (2.1 MiB)  TX bytes:503558 (491.7 KiB)'
+        );
+        setImmediate(function() {
+          self.tessel._rps.emit('close');
+        });
+      }, 1000);
+    });
   }
 };

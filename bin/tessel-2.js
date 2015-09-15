@@ -13,17 +13,13 @@ function closeSuccessfulCommand() {
 }
 
 function closeFailedCommand(err) {
-  // If the returned value is an error
   if (err instanceof Error) {
-    // Throw it
     throw err;
-  }
-  // Otherwise
-  else {
-    // Print a stern warning
+  } else {
+    // Print a stern warning by default
     logs.warn(err);
   }
-  // Exit with non-zero code
+  // NOTE: Exit code is non-zero
   process.exit(1);
 }
 
@@ -166,12 +162,22 @@ parser.command('init')
 
 makeCommand('wifi')
   .callback(function(opts) {
-    //TODO: Refactor switch case into controller.wifi
+    // TODO: Refactor switch case into controller.wifi
     if (opts.list) {
       controller.printAvailableNetworks(opts)
         .then(closeSuccessfulCommand, closeFailedCommand);
-    } else if (opts.ssid && opts.password) {
-      controller.connectToNetwork(opts)
+    } else if (opts.ssid || opts.password) {
+      if (opts.ssid && opts.password) {
+        controller.connectToNetwork(opts)
+          .then(closeSuccessfulCommand, closeFailedCommand);
+      } else {
+        var msg = opts.ssid ?
+          'Please provide a password with -p <password>' :
+          'Please provide a network name (SSID) with -n <name>';
+        closeFailedCommand(new Error(msg));
+      }
+    } else {
+      controller.getWifiInfo(opts)
         .then(closeSuccessfulCommand, closeFailedCommand);
     }
   })
