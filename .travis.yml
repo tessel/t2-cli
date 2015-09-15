@@ -1,9 +1,9 @@
 language: node_js
+sudo: false
 node_js:
   - "0.12.0"
 before_install:
   - npm install -g grunt-cli
-  - sudo apt-get update -qq
-  - sudo apt-get install pkg-config build-essential libusb-1.0-0-dev libudev-dev
+  - apt-get install pkg-config build-essential libusb-1.0-0-dev libudev-dev
 install: npm install
 script: grunt
