@@ -1,7 +1,14 @@
 var RemoteProcessSimulator = require('./remote-process-simulator');
 var Tessel = require('../../lib/tessel/tessel');
 
-function TesselSimulator(connectionType) {
+function TesselSimulator(options) {
+
+  // If options weren't provided
+  if (!options) {
+    // create a default
+    options = {};
+  }
+
   var simConnection = {
     exec: function(command) {
       return new Promise(function(resolve) {
@@ -14,16 +21,42 @@ function TesselSimulator(connectionType) {
         resolve(tessel._rps);
       });
     },
+
     end: function() {
-      return new Promise(function(resolve) {
-        resolve();
-      });
+      return Promise.resolve();
     },
-    connectionType: connectionType || 'USB',
+
+
+    close: function() {
+      return Promise.resolve();
+    },
+
+    connectionType: options.type || 'USB',
+
   };
 
   var tessel = new Tessel(simConnection);
   tessel._rps = new RemoteProcessSimulator();
+
+  // If a name was provided, set the Tessel name
+  if (options.name) {
+    tessel.name = options.name;
+  }
+
+  // If a serial number was provided and this is a USB connection
+  if (options.serialNumber && options.type === 'USB') {
+    // Set the serialNumber
+    tessel.serialNumber = options.serialNumber;
+  }
+
+  // If options specifies authorized, make this Tessel authorized
+  if (options.type === 'LAN') {
+    if (options.authorized !== true) {
+      simConnection.authorized = options.authorized || false;
+    } else {
+      simConnection.authorized = options.authorized;
+    }
+  }
 
   return tessel;
 }
