@@ -197,7 +197,6 @@ parser.command('wifi')
         closeFailedCommand(new Error(msg));
       }
     } else {
-      console.log(opts);
       controller.getWifiInfo(opts)
         .then(closeSuccessfulCommand, closeFailedCommand);
     }
