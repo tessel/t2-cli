@@ -49,11 +49,19 @@ function makeCommand(commandName) {
     });
 }
 
+function callControllerWith(methodName, opts) {
+  return controller[methodName](opts)
+    .then(closeSuccessfulCommand, closeFailedCommand);
+}
+
+function callControllerCallback(methodName) {
+  return function(opts) {
+    return callControllerWith(methodName, opts);
+  };
+}
+
 parser.command('provision')
-  .callback(function(opts) {
-    controller.provisionTessel(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
-  })
+  .callback(callControllerCallback('provisionTessel'))
   .option('force', {
     abbr: 'f',
     flag: true,
@@ -77,8 +85,7 @@ makeCommand('restart')
       }
     }
 
-    controller.restartScript(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
+    callControllerWith('restartScript', opts);
   })
   .option('entryPoint', {
     position: 1,
@@ -93,8 +100,7 @@ makeCommand('restart')
 makeCommand('run')
   .callback(function(opts) {
     opts.push = false;
-    controller.deployScript(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
+    callControllerWith('deployScript', opts);
   })
   .option('entryPoint', {
     position: 1,
@@ -116,8 +122,7 @@ makeCommand('run')
 makeCommand('push')
   .callback(function(opts) {
     opts.push = true;
-    controller.deployScript(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
+    callControllerWith('deployScript', opts);
   })
   .option('entryPoint', {
     position: 1,
@@ -137,10 +142,7 @@ makeCommand('push')
   .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
 makeCommand('erase')
-  .callback(function(opts) {
-    controller.eraseScript(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
-  })
+  .callback(callControllerCallback('eraseScript'))
   .option('verbose', {
     flag: true,
     abbr: 'v',
@@ -149,10 +151,7 @@ makeCommand('erase')
   .help('Erases files pushed to Flash using the tessel push command');
 
 makeCommand('list')
-  .callback(function(opts) {
-    controller.listTessels(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
-  })
+  .callback(callControllerCallback('listTessels'))
   .help('Lists all connected Tessels and their authorization status.');
 
 parser.command('init')
@@ -168,11 +167,9 @@ makeCommand('wifi')
   .callback(function(opts) {
     //TODO: Refactor switch case into controller.wifi
     if (opts.list) {
-      controller.printAvailableNetworks(opts)
-        .then(closeSuccessfulCommand, closeFailedCommand);
+      callControllerWith('printAvailableNetworks', opts);
     } else if (opts.ssid && opts.password) {
-      controller.connectToNetwork(opts)
-        .then(closeSuccessfulCommand, closeFailedCommand);
+      callControllerWith('connectToNetwork', opts);
     }
   })
   .option('list', {
@@ -216,10 +213,7 @@ makeCommand('rename')
     abbr: 'r',
     flag: true
   })
-  .callback(function(opts) {
-    controller.renameTessel(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
-  })
+  .callback(callControllerCallback('renameTessel'))
   .help('Change the name of a Tessel to something new');
 
 makeCommand('update')
@@ -242,21 +236,15 @@ makeCommand('update')
   })
   .callback(function(opts) {
     if (opts.list) {
-      controller.printAvailableUpdates(opts)
-        .then(closeSuccessfulCommand, closeFailedCommand);
+      callControllerCallback('printAvailableUpdates');
     } else {
-      controller.update(opts)
-        .then(closeSuccessfulCommand, closeFailedCommand);
+      callControllerCallback('update');
     }
   })
   .help('Update the Tessel firmware and openWRT image');
 
-
 makeCommand('version')
-  .callback(function(opts) {
-    controller.tesselFirmwareVerion(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
-  })
+  .callback(callControllerCallback('tesselFirmwareVerion'))
   .help('Display Tessel\'s current firmware version');
 
 
