@@ -110,7 +110,7 @@ makeCommand('run')
   .option('single', {
     flag: true,
     abbr: 's',
-    help: 'Push only the entryPoint'
+    help: 'Run only the specified entry point file'
   })
   .option('verbose', {
     flag: true,
@@ -132,7 +132,7 @@ makeCommand('push')
   .option('single', {
     flag: true,
     abbr: 's',
-    help: 'Push only the entryPoint'
+    help: 'Push only the specified entry point file'
   })
   .option('verbose', {
     flag: true,
