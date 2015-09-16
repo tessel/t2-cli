@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var path = require('path');
-var parser = require('nomnom');
+var parser = require('nomnom').script('t2');
 var controller = require('../lib/controller');
 var key = require('../lib/key');
 var init = require('../lib/init');
