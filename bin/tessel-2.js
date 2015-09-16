@@ -107,6 +107,11 @@ makeCommand('run')
     required: true,
     help: 'The entry point file to deploy to Tessel'
   })
+  .option('single', {
+    flag: true,
+    abbr: 's',
+    help: 'Push only the entryPoint'
+  })
   .option('verbose', {
     flag: true,
     abbr: 'v',
@@ -123,6 +128,11 @@ makeCommand('push')
     position: 1,
     required: true,
     help: 'The entry point file to deploy to Tessel'
+  })
+  .option('single', {
+    flag: true,
+    abbr: 's',
+    help: 'Push only the entryPoint'
   })
   .option('verbose', {
     flag: true,
