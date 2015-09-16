@@ -194,17 +194,18 @@ exports['controller.provisionTessel'] = {
   }
 };
 
-exports['Tessel.prototype.provision'] = {
+exports['Tessel.prototype.provisionTessel'] = {
 
   setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
 
-    this.provision = sinon.spy(Tessel.prototype, 'provisionTessel');
-    this.logsWarn = sinon.stub(logs, 'warn', function() {});
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
-    this.setupLocal = sinon.spy(provision, 'setupLocal');
-    this.writeFileSpy = sinon.spy(fs, 'writeFile');
-    this.fileExistsSpy = sinon.spy(commands, 'ensureFileExists');
-    this.appendStdinToFile = sinon.spy(commands, 'appendStdinToFile');
+    this.provision = this.sandbox.spy(Tessel.prototype, 'provisionTessel');
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.setupLocal = this.sandbox.spy(provision, 'setupLocal');
+    this.writeFileSpy = this.sandbox.spy(fs, 'writeFile');
+    this.fileExistsSpy = this.sandbox.spy(commands, 'ensureFileExists');
+    this.appendStdinToFile = this.sandbox.spy(commands, 'appendStdinToFile');
 
     this.tessel = TesselSimulator();
 
@@ -215,14 +216,32 @@ exports['Tessel.prototype.provision'] = {
 
   tearDown: function(done) {
     this.tessel.mockClose();
-    this.provision.restore();
-    this.setupLocal.restore();
-    this.writeFileSpy.restore();
-    this.fileExistsSpy.restore();
-    this.appendStdinToFile.restore();
-    this.logsWarn.restore();
-    this.logsInfo.restore();
+    this.sandbox.restore();
     deleteKeyTestFolder(done);
+  },
+
+  alreadyAuthedError: function(test) {
+    test.expect(1);
+
+    this.setupLocal.restore();
+
+    this.setupLocal = this.sandbox.stub(provision, 'setupLocal', function() {
+      return Promise.resolve();
+    });
+    this.authTessel = this.sandbox.stub(provision, 'authTessel', function() {
+      return Promise.reject(new provision.AlreadyAuthenticatedError());
+    });
+
+    this.tessel.provisionTessel()
+      .then(function() {
+        test.equal(this.logsInfo.lastCall.args[0], 'Tessel is already authenticated with this computer.');
+        test.done();
+      }.bind(this))
+      .catch(function() {
+        test.fail('The AlreadyAuthenticatedError will resolve, not reject.');
+        test.done();
+      });
+
   },
 
   requestFromLANTessel: function(test) {
