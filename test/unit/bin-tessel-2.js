@@ -4,6 +4,71 @@ var controller = require('../../lib/controller');
 var logs = require('../../lib/logs');
 
 
+// If the defaults are intentionally changed in bin-tessel-2,
+// then they must be changed here as well. This ensures that the
+// expected default command options are protected from regressions.
+// This should be used as a guide for reviewing new tessel-centric
+// additions to the cli command set.
+var defaults = {
+  timeout: {
+    abbr: 't',
+    metavar: 'TIMEOUT',
+    help: 'Set timeout in seconds for scanning for networked tessels',
+    default: 5,
+    name: 'timeout',
+  },
+  name: {
+    metavar: 'NAME',
+    help: 'The name of the tessel on which the command will be executed',
+    name: 'name',
+  },
+  lan: {
+    flag: true,
+    help: 'Use LAN connection',
+    name: 'lan',
+    string: '--lan',
+  },
+  usb: {
+    flag: true,
+    help: 'Use USB connection',
+    name: 'usb',
+    string: '--usb',
+  }
+};
+
+exports['Tessel (cli: makeCommand)'] = {
+  any: function(test) {
+    test.expect(16);
+
+    cli.makeCommand('any')
+      .callback(function() {
+        test.equal(this.specs.timeout.abbr, defaults.timeout.abbr);
+        test.equal(this.specs.timeout.default, defaults.timeout.default);
+        test.equal(this.specs.timeout.help, defaults.timeout.help);
+        test.equal(this.specs.timeout.metavar, defaults.timeout.metavar);
+        test.equal(this.specs.timeout.name, defaults.timeout.name);
+
+        test.equal(this.specs.name.help, defaults.name.help);
+        test.equal(this.specs.name.metavar, defaults.name.metavar);
+        test.equal(this.specs.name.name, defaults.name.name);
+
+        test.equal(this.specs.lan.flag, defaults.lan.flag);
+        test.equal(this.specs.lan.help, defaults.lan.help);
+        test.equal(this.specs.lan.string, defaults.lan.string);
+        test.equal(this.specs.lan.name, defaults.lan.name);
+
+        test.equal(this.specs.usb.flag, defaults.usb.flag);
+        test.equal(this.specs.usb.help, defaults.usb.help);
+        test.equal(this.specs.usb.string, defaults.usb.string);
+        test.equal(this.specs.usb.name, defaults.usb.name);
+
+        test.done();
+      });
+
+    cli(['any']);
+  }
+};
+
 exports['Tessel (cli: restart)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();

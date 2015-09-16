@@ -245,3 +245,7 @@ module.exports = function(args) {
 if (require.main === module) {
   module.exports(process.argv.slice(2));
 }
+
+if (global.IS_TEST_ENV) {
+  module.exports.makeCommand = makeCommand;
+}
