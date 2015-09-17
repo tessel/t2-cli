@@ -107,12 +107,12 @@ exports['LAN.Scanner.prototype.start'] = {
 
     // Order of calls is intentional!!
     // 1
-    this.scanner.browser.emit('ready');
-    // 2
     this.scanner.on('error', function(error) {
       test.equal(error.message, 'get outta here!');
       test.done();
     });
+    // 2
+    this.scanner.browser.emit('ready');
   },
 
   updateDiscovered: function(test) {
@@ -154,13 +154,14 @@ exports['LAN.Scanner.prototype.start'] = {
 
     // Order of calls is intentional!!
     // 1
-    this.scanner.browser.emit('update', {
-      fullname: 'Test Unit'
-    });
-    // 2
     this.scanner.on('error', function(error) {
       test.equal(error.message, 'get outta here!');
       test.done();
+    });
+
+    // 2
+    this.scanner.browser.emit('update', {
+      fullname: 'Test Unit'
     });
   },
 };
