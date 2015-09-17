@@ -8,6 +8,7 @@ var fs = require('fs');
 var mkdirp = require('mkdirp');
 var path = require('path');
 var rimraf = require('rimraf');
+var Ignore = require('fstream-ignore');
 var deployFolder = path.join(__dirname, 'tmp');
 var deployFile = path.join(deployFolder, 'app.js');
 var codeContents = 'console.log("testing deploy");';
@@ -59,7 +60,9 @@ exports['Tessel.prototype.deployScript'] = {
     this.tarBundle.restore();
 
     createTemporaryDeployCode().then(function() {
-      deploy.tarBundle(deployFolder).then(function(bundle) {
+      deploy.tarBundle({
+        target: deployFolder
+      }).then(function(bundle) {
         /*
           $ t2 run app.js
           INFO Looking for your Tessel...
@@ -108,6 +111,50 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.setExecutablePermissions.callCount, 1);
       test.equal(this.startPushedScript.callCount, 1);
       test.equal(this.end.callCount, 1);
+      test.done();
+    }.bind(this));
+  },
+};
+
+exports['tarBundle'] = {
+  setUp: function(done) {
+    this.addIgnoreRules = sandbox.spy(Ignore.prototype, 'addIgnoreRules');
+    done();
+  },
+
+  tearDown: function(done) {
+    sandbox.restore();
+    done();
+  },
+
+  project: function(test) {
+    test.expect(2);
+
+    var target = 'test/unit/fixtures/bundling';
+
+    deploy.tarBundle({
+      target: target
+    }).then(function(bundle) {
+      test.equal(this.addIgnoreRules.callCount, 0);
+      test.equal(bundle.length, 3072);
+      test.done();
+    }.bind(this));
+  },
+
+  single: function(test) {
+    test.expect(3);
+
+    var target = 'test/unit/fixtures/bundling';
+    var entryPoint = 'index.js';
+
+    deploy.tarBundle({
+      target: target,
+      entryPoint: entryPoint,
+      single: true
+    }).then(function(bundle) {
+      test.equal(this.addIgnoreRules.callCount, 1);
+      test.deepEqual(this.addIgnoreRules.lastCall.args[0], ['*', '!index.js']);
+      test.equal(bundle.length, 2048);
       test.done();
     }.bind(this));
   },
@@ -241,14 +288,18 @@ exports['deploy.findProject'] = {
       test.done();
     });
 
-    deploy.findProject('~/foo/');
+    deploy.findProject({
+      entryPoint: '~/foo/'
+    });
   },
 
   byFile: function(test) {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/index.js';
 
-    deploy.findProject(target).then(function(project) {
+    deploy.findProject({
+      entryPoint: target
+    }).then(function(project) {
       test.deepEqual(project, {
         pushdir: fixtures.project,
         program: path.join(fixtures.project, 'index.js'),
@@ -262,7 +313,9 @@ exports['deploy.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/';
 
-    deploy.findProject(target).then(function(project) {
+    deploy.findProject({
+      entryPoint: target
+    }).then(function(project) {
       test.deepEqual(project, {
         pushdir: fixtures.project,
         program: path.join(fixtures.project, 'index.js'),
@@ -276,7 +329,9 @@ exports['deploy.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project-explicit-main/';
 
-    deploy.findProject(target).then(function(project) {
+    deploy.findProject({
+      entryPoint: target
+    }).then(function(project) {
       test.deepEqual(project, {
         pushdir: fixtures.explicit,
         program: path.join(fixtures.explicit, 'app.js'),
@@ -291,7 +346,9 @@ exports['deploy.findProject'] = {
 
     var target = 'test/unit/fixtures/find-project-no-index/index.js';
 
-    deploy.findProject(target).then(function() {
+    deploy.findProject({
+      entryPoint: target
+    }).then(function() {
       test.ok(false, 'findProject should not find a valid project here');
       test.done();
     }).catch(function(error) {
@@ -304,7 +361,9 @@ exports['deploy.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/test/index.js';
 
-    deploy.findProject(target).then(function(project) {
+    deploy.findProject({
+      entryPoint: target
+    }).then(function(project) {
       test.deepEqual(project, {
         pushdir: fixtures.project,
         program: path.join(fixtures.project, 'test/index.js'),
