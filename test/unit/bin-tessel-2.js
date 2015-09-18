@@ -116,6 +116,78 @@ exports['Tessel (cli: restart)'] = {
 
 };
 
+exports['Tessel (cli: update)'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.printAvailableUpdates = this.sandbox.stub(controller, 'printAvailableUpdates').returns(Promise.resolve());
+    this.update = this.sandbox.stub(controller, 'update').returns(Promise.resolve());
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  optsForwarding: function(test) {
+    test.expect(4);
+
+    cli(['update', '--version', '42']);
+    test.equal(this.update.callCount, 1);
+    test.deepEqual(this.update.lastCall.args[0], {
+      0: 'update',
+      version: 42,
+      _: [ 'update' ],
+      timeout: 5
+    });
+
+    cli(['update', '--list', ' ']);
+    // controller.update is not called for --list,
+    // so callCount remains 1
+    test.equal(this.update.callCount, 1);
+    test.equal(this.printAvailableUpdates.callCount, 1);
+
+    // We must wait for the command to complete
+    // or else the sandbox will be cleared to early
+    setImmediate(function() {
+      test.done();
+    });
+  },
+
+  noError: function(test) {
+    test.expect(1);
+
+    cli(['update']);
+
+    test.equal(this.update.callCount, 1);
+
+    // We must wait for the command to complete
+    // or else the sandbox will be cleared to early
+    setImmediate(function() {
+      test.done();
+    });
+  },
+
+  exitCodeOne: function(test) {
+    test.expect(2);
+
+    var updateOp = Promise.reject();
+
+    this.update.returns(updateOp);
+
+    cli(['update']);
+
+    updateOp.catch(function() {
+      test.equal(this.update.callCount, 1);
+      test.equal(this.processExit.lastCall.args[0], 1);
+      test.done();
+    }.bind(this));
+  },
+};
+
 exports['Tessel (cli: provision)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();

@@ -236,7 +236,7 @@ makeCommand('update')
   })
   .callback(function(opts) {
     if (opts.list) {
-      callControllerWith('printAvailableUpdates', opts);
+      callControllerWith('printAvailableUpdates');
     } else {
       callControllerWith('update', opts);
     }
