@@ -182,7 +182,7 @@ exports['tarBundle'] = {
       target: target
     }).then(function(bundle) {
       test.equal(this.addIgnoreRules.callCount, 0);
-      test.equal(bundle.length, 3072);
+      test.equal(bundle.length, 4608);
       test.done();
     }.bind(this));
   },
@@ -196,11 +196,31 @@ exports['tarBundle'] = {
     deploy.tarBundle({
       target: target,
       entryPoint: entryPoint,
+      resolvedEntryPoint: entryPoint,
       single: true
     }).then(function(bundle) {
       test.equal(this.addIgnoreRules.callCount, 1);
       test.deepEqual(this.addIgnoreRules.lastCall.args[0], ['*', '!index.js']);
       test.equal(bundle.length, 2048);
+      test.done();
+    }.bind(this));
+  },
+
+  singleNested: function(test) {
+    test.expect(3);
+
+    var target = 'test/unit/fixtures/bundling';
+    var entryPoint = 'another.js';
+
+    deploy.tarBundle({
+      target: target,
+      entryPoint: entryPoint,
+      resolvedEntryPoint: 'nested/' + entryPoint,
+      single: true
+    }).then(function(bundle) {
+      test.equal(this.addIgnoreRules.callCount, 1);
+      test.deepEqual(this.addIgnoreRules.lastCall.args[0], ['*', '!nested/another.js']);
+      test.equal(bundle.length, 2560);
       test.done();
     }.bind(this));
   },
