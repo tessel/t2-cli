@@ -83,7 +83,10 @@ exports['Tessel.prototype.deployScript'] = {
 
   runScript: function(test) {
     test.expect(10);
-    deployTestCode(this.tessel, test, false, function deployed(err) {
+    deployTestCode(this.tessel, test, {
+      push: false,
+      single: false
+    }, function deployed(err) {
       test.ifError(err);
       test.equal(this.stopRunningScript.callCount, 1);
       test.equal(this.deleteFolder.callCount, 1);
@@ -98,12 +101,55 @@ exports['Tessel.prototype.deployScript'] = {
     }.bind(this));
   },
 
+  runScriptSingle: function(test) {
+    test.expect(10);
+    deployTestCode(this.tessel, test, {
+      push: false,
+      single: true
+    }, function deployed(err) {
+      test.ifError(err);
+      test.equal(this.stopRunningScript.callCount, 1);
+      test.equal(this.deleteFolder.callCount, 0);
+      test.equal(this.createFolder.callCount, 1);
+      test.equal(this.untarStdin.callCount, 1);
+      test.equal(this.runScript.callCount, 1);
+      test.equal(this.openStdinToFile.callCount, 0);
+      test.equal(this.setExecutablePermissions.callCount, 0);
+      test.equal(this.startPushedScript.callCount, 0);
+      test.equal(this.end.callCount, 1);
+      test.done();
+    }.bind(this));
+  },
+
   pushScript: function(test) {
     test.expect(10);
-    deployTestCode(this.tessel, test, true, function deployed(err) {
+    deployTestCode(this.tessel, test, {
+      push: true,
+      single: false
+    }, function deployed(err) {
       test.ifError(err);
       test.equal(this.stopRunningScript.callCount, 1);
       test.equal(this.deleteFolder.callCount, 1);
+      test.equal(this.createFolder.callCount, 1);
+      test.equal(this.untarStdin.callCount, 1);
+      test.equal(this.runScript.callCount, 0);
+      test.equal(this.openStdinToFile.callCount, 1);
+      test.equal(this.setExecutablePermissions.callCount, 1);
+      test.equal(this.startPushedScript.callCount, 1);
+      test.equal(this.end.callCount, 1);
+      test.done();
+    }.bind(this));
+  },
+
+  pushScriptSingle: function(test) {
+    test.expect(10);
+    deployTestCode(this.tessel, test, {
+      push: true,
+      single: true
+    }, function deployed(err) {
+      test.ifError(err);
+      test.equal(this.stopRunningScript.callCount, 1);
+      test.equal(this.deleteFolder.callCount, 0);
       test.equal(this.createFolder.callCount, 1);
       test.equal(this.untarStdin.callCount, 1);
       test.equal(this.runScript.callCount, 0);
@@ -374,8 +420,7 @@ exports['deploy.findProject'] = {
   },
 };
 
-function deployTestCode(tessel, test, push, callback) {
-
+function deployTestCode(tessel, test, opts, callback) {
   // Create the temporary folder with example code
   createTemporaryDeployCode()
     .then(function deploy() {
@@ -395,7 +440,8 @@ function deployTestCode(tessel, test, push, callback) {
       // Actually deploy the script
       tessel.deployScript({
           entryPoint: path.relative(process.cwd(), deployFile),
-          push: push
+          push: opts.push,
+          single: opts.single
         })
         // If it finishes, it was successful
         .then(function success() {
