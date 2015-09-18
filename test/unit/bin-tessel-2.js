@@ -140,7 +140,7 @@ exports['Tessel (cli: update)'] = {
     test.deepEqual(this.update.lastCall.args[0], {
       0: 'update',
       version: 42,
-      _: [ 'update' ],
+      _: ['update'],
       timeout: 5
     });
 
