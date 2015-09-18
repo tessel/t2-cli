@@ -226,9 +226,9 @@ makeCommand('update')
   })
   .callback(function(opts) {
     if (opts.list) {
-      callControllerCallback('printAvailableUpdates');
+      callControllerWith('printAvailableUpdates', opts);
     } else {
-      callControllerCallback('update');
+      callControllerWith('update', opts);
     }
   })
   .help('Update the Tessel firmware and openWRT image');
