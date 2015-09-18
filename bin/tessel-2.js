@@ -93,7 +93,7 @@ parser.command('reboot')
     required: false,
     help: 'Do not sync'
   })
-  .option('name', {
+  .option('name',   {
     required: true,
     metavar: 'TESSEL',
     help: 'Tessels name or IP'
