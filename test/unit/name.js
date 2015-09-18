@@ -9,26 +9,29 @@ exports['Tessel.prototype.rename'] = {
   setUp: function(done) {
     var self = this;
 
-    this.getName = sinon.stub(Tessel.prototype, 'getName', function() {
-      return new Promise(function(resolve) {
-        resolve('TheFakeName');
-      });
-    });
-    this._getMACAddress = sinon.stub(Tessel.prototype, '_getMACAddress', function() {
-      return new Promise(function(resolve) {
-        resolve('TheFakeMACAddress');
-      });
-    });
+    this.sandbox = sinon.sandbox.create();
 
-    this.isValidName = sinon.spy(Tessel, 'isValidName');
-    this.renameTessel = sinon.spy(controller, 'renameTessel');
-    this.setName = sinon.spy(Tessel.prototype, 'setName');
-    this.setHostname = sinon.spy(commands, 'setHostname');
-    this.getHostname = sinon.spy(commands, 'getHostname');
-    this.logsWarn = sinon.stub(logs, 'warn', function() {});
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+      return Promise.resolve('TheFakeName');
+    });
+    this._getMACAddress = this.sandbox.stub(Tessel.prototype, '_getMACAddress', function() {
+      return Promise.resolve('TheFakeMACAddress');
+    });
+    this.resetMDNS = this.sandbox.stub(Tessel.prototype, 'resetMDNS', function() {
+      return Promise.resolve();
+    });
+    this.setName = this.sandbox.spy(Tessel.prototype, 'setName');
+
+    this.isValidName = this.sandbox.spy(Tessel, 'isValidName');
+    this.renameTessel = this.sandbox.spy(controller, 'renameTessel');
+    this.commitHostname = this.sandbox.spy(commands, 'commitHostname');
+    this.openStdinToFile = this.sandbox.spy(commands, 'openStdinToFile');
+    this.setHostname = this.sandbox.spy(commands, 'setHostname');
+    this.getHostname = this.sandbox.spy(commands, 'getHostname');
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
     this.tessel = TesselSimulator();
-    this.exec = sinon.spy(this.tessel.connection, 'exec');
+    this.exec = this.sandbox.spy(this.tessel.connection, 'exec');
 
     function closeAdvance(event) {
       if (event === 'close') {
@@ -47,16 +50,8 @@ exports['Tessel.prototype.rename'] = {
 
   tearDown: function(done) {
     this.tessel.mockClose();
-    this.isValidName.restore();
-    this.renameTessel.restore();
-    this.getName.restore();
-    this.setName.restore();
-    this._getMACAddress.restore();
-    this.setHostname.restore();
-    this.getHostname.restore();
-    this.logsWarn.restore();
-    this.logsInfo.restore();
     this.tessel._rps.removeAllListeners('newListener');
+    this.sandbox.restore();
     done();
   },
 
@@ -92,9 +87,7 @@ exports['Tessel.prototype.rename'] = {
   },
 
   resetName: function(test) {
-    test.expect(6);
-
-    var self = this;
+    test.expect(7);
 
     this.tessel.rename({
         reset: true
@@ -104,22 +97,23 @@ exports['Tessel.prototype.rename'] = {
         // - the mac address is requested
         // - setName is called
         // - the connection executes the setHostName command
-        test.equal(self._getMACAddress.callCount, 1);
-        test.equal(self.setName.callCount, 1);
-        test.equal(self.exec.callCount, 5);
-        test.equal(self.setHostname.callCount, 1);
-        test.ok(self.setHostname.lastCall.calledWith('Tessel-TheFakeMACAddress'));
+        test.equal(this._getMACAddress.callCount, 1);
+        test.equal(this.setName.callCount, 1);
+        test.equal(this.setHostname.callCount, 1);
+        test.equal(this.commitHostname.callCount, 1);
+        test.equal(this.openStdinToFile.callCount, 1);
+
+        test.ok(this.setHostname.lastCall.calledWith('Tessel-TheFakeMACAddress'));
 
         // getName is _not_ called.
-        test.equal(self.getName.callCount, 0);
+        test.equal(this.getName.callCount, 0);
 
         test.done();
-      });
+      }.bind(this));
   },
 
   validRename: function(test) {
-    var self = this;
-    test.expect(5);
+    test.expect(6);
 
     this.tessel.rename({
         newName: 'ValidAndUnique'
@@ -129,14 +123,15 @@ exports['Tessel.prototype.rename'] = {
         // - getName is called
         // - setName is called
         // - the connection executes the setHostName command
-        test.equal(self.getName.callCount, 1);
-        test.equal(self.setName.callCount, 1);
-        test.equal(self.exec.callCount, 5);
-        test.equal(self.setHostname.callCount, 1);
-        test.ok(self.setHostname.lastCall.calledWith('ValidAndUnique'));
+        test.equal(this.getName.callCount, 1);
+        test.equal(this.setName.callCount, 1);
+        test.equal(this.setHostname.callCount, 1);
+        test.equal(this.commitHostname.callCount, 1);
+        test.equal(this.openStdinToFile.callCount, 1);
+        test.ok(this.setHostname.lastCall.calledWith('ValidAndUnique'));
 
         test.done();
-      });
+      }.bind(this));
   },
 
   validRenameSameAsCurrent: function(test) {
