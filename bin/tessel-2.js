@@ -86,7 +86,7 @@ parser.command('reboot')
   .option('force', {
     abbr: 'f',
     required: false,
-    help: 'don\'t go through init'
+    help: 'Do not go through init'
   })
   .option('nosync', {
     abbr: 'n',
@@ -94,9 +94,14 @@ parser.command('reboot')
     help: 'Do not sync'
   })
   .option('name',   {
-    required: true,
+    required: false,
     metavar: 'TESSEL',
-    help: 'Tessels name or IP'
+    help: 'Tessels name'
+  })
+  .option('ip', {
+    required: false,
+    metavar: 'IP-ADDRESS',
+    help: 'Tessels IP-ADDRESS (no authorization check!)'
   })
   .option('key', {
     abbr: 'i',
