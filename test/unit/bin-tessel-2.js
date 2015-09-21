@@ -2,6 +2,11 @@ var sinon = require('sinon');
 var cli = require('../../bin/tessel-2');
 var controller = require('../../lib/controller');
 var logs = require('../../lib/logs');
+var path = require('path');
+var osenv = require('osenv');
+var directory = path.join(osenv.home(), '.tessel');
+var filename = 'id_rsa';
+var filepath = path.join(directory, filename);
 
 
 // If the defaults are intentionally changed in bin-tessel-2,
@@ -141,7 +146,8 @@ exports['Tessel (cli: update)'] = {
       0: 'update',
       version: 42,
       _: ['update'],
-      timeout: 5
+      timeout: 5,
+      key: filepath
     });
 
     cli(['update', '--list', ' ']);

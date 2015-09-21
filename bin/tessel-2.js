@@ -6,7 +6,7 @@ var controller = require('../lib/controller');
 var key = require('../lib/key');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
-
+var TESSEL_AUTH_KEY = require('../lib/tessel/provision.js').TESSEL_AUTH_KEY;
 
 function closeSuccessfulCommand() {
   process.exit(0);
@@ -38,6 +38,13 @@ function makeCommand(commandName) {
     .option('name', {
       metavar: 'NAME',
       help: 'The name of the tessel on which the command will be executed'
+    })
+    .option('key', {
+      required: false,
+      metavar: 'PRIVATEKEY',
+      abbr: 'i',
+      default: TESSEL_AUTH_KEY,
+      help: 'RSA key for authorization with your Tessel'
     })
     .option('lan', {
       flag: true,
