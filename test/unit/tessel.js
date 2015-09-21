@@ -4,13 +4,17 @@ var Seeker = require('../../lib/discover.js');
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var logs = require('../../lib/logs');
+// Require this function so that the functions in the
+// controller placed on the Tessel prototype
+require('../../lib/controller');
 
 exports['Tessel (endConnection)'] = {
   setUp: function(done) {
 
     this.mockConnection = {
       end: function() {},
-      close: function() {}
+      close: function() {},
+      connectionType: 'USB'
     };
 
     this.end = sinon.spy(this.mockConnection, 'end');
@@ -65,11 +69,13 @@ exports['Tessel (get)'] = {
     // This is necessary to prevent an EventEmitter memory leak warning
     this.processOn = this.sandbox.stub(process, 'on');
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
-      this.start = function() {
+      this.start = function(timeout) {
         self.activeSeeker = this;
+        setTimeout(this.stop.bind(this), timeout);
         return this;
       };
       this.stop = function() {
+        this.emit('end');
         return this;
       };
     });
@@ -83,6 +89,17 @@ exports['Tessel (get)'] = {
   tearDown: function(done) {
     this.sandbox.restore();
     done();
+  },
+
+  infoOutput: function(test) {
+    test.expect(1);
+    Tessel.get({
+        timeout: 0.01
+      })
+      .catch(function() {
+        test.equal(this.logsInfo.firstCall.args[0], 'Looking for your Tessel...');
+        test.done();
+      }.bind(this));
   },
 
   noTessels: function(test) {

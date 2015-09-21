@@ -126,13 +126,17 @@ exports['Tessel.list'] = {
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
-      this.start = function() {
+      this.start = function(timeout) {
         self.activeSeeker = this;
+        if (timeout && typeof timeout === 'number') {
+          setTimeout(this.stop, timeout);
+        }
         return this;
       };
       this.stop = function() {
+        this.emit('end');
         return this;
-      };
+      }.bind(this);
     });
     util.inherits(this.seeker, EventEmitter);
 
@@ -266,13 +270,17 @@ exports['Tessel.get'] = {
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
-      this.start = function() {
+      this.start = function(timeout) {
         self.activeSeeker = this;
+        if (timeout && typeof timeout === 'number') {
+          setTimeout(this.stop, timeout);
+        }
         return this;
       };
       this.stop = function() {
+        this.emit('end');
         return this;
-      };
+      }.bind(this);
     });
     util.inherits(this.seeker, EventEmitter);
 

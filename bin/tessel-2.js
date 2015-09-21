@@ -1,22 +1,12 @@
 #!/usr/bin/env node
 
-var parser = require('nomnom'),
-  controller = require('../lib/controller'),
-  key = require('../lib/key'),
-  init = require('../lib/init'),
-  logs = require('../lib/logs');
+var path = require('path');
+var parser = require('nomnom').script('t2');
+var controller = require('../lib/controller');
+var key = require('../lib/key');
+var init = require('../lib/init');
+var logs = require('../lib/logs');
 
-var nameOption = {
-  metavar: 'NAME',
-  help: 'The name of the tessel on which the command will be executed'
-};
-
-var timeoutOption = {
-  abbr: 't',
-  metavar: 'TIMEOUT',
-  help: 'Set timeout in seconds for scanning for networked tessels',
-  default: 5
-};
 
 function closeSuccessfulCommand() {
   process.exit(0);
@@ -37,11 +27,41 @@ function closeFailedCommand(err) {
   process.exit(1);
 }
 
+function makeCommand(commandName) {
+  return parser.command(commandName)
+    .option('timeout', {
+      abbr: 't',
+      metavar: 'TIMEOUT',
+      help: 'Set timeout in seconds for scanning for networked tessels',
+      default: 5
+    })
+    .option('name', {
+      metavar: 'NAME',
+      help: 'The name of the tessel on which the command will be executed'
+    })
+    .option('lan', {
+      flag: true,
+      help: 'Use LAN connection'
+    })
+    .option('usb', {
+      flag: true,
+      help: 'Use USB connection'
+    });
+}
+
+function callControllerWith(methodName, opts) {
+  return controller[methodName](opts)
+    .then(closeSuccessfulCommand, closeFailedCommand);
+}
+
+function callControllerCallback(methodName) {
+  return function(opts) {
+    return callControllerWith(methodName, opts);
+  };
+}
+
 parser.command('provision')
-  .callback(function(opts) {
-    controller.provisionTessel(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
-  })
+  .callback(callControllerCallback('provisionTessel'))
   .option('force', {
     abbr: 'f',
     flag: true,
@@ -49,81 +69,89 @@ parser.command('provision')
   })
   .help('Authorize your computer to control the USB-connected Tessel');
 
-parser.command('run')
+makeCommand('restart')
   .callback(function(opts) {
-    controller.deployScript(opts, false)
-      .then(closeSuccessfulCommand, closeFailedCommand);
+    var packageJson;
+
+    if (opts.type !== 'ram' && opts.type !== 'flash') {
+      closeFailedCommand('--type Invalid ');
+    }
+
+    if (opts.entryPoint === undefined) {
+      packageJson = require(path.resolve(process.cwd(), 'package.json'));
+
+      if (packageJson && packageJson.main) {
+        opts.entryPoint = packageJson.main;
+      }
+    }
+
+    callControllerWith('restartScript', opts);
   })
-  .option('name', nameOption)
-  .option('lan', {
-    flag: true,
-    help: 'Use LAN connection'
+  .option('entryPoint', {
+    position: 1,
+    help: 'The entry point file to deploy to Tessel'
   })
-  .option('usb', {
-    flag: true,
-    help: 'Use USB connection'
+  .option('type', {
+    default: 'ram',
+    help: 'Specify where in memory the script is located: `--type=flash` (push) or `--type=ram` (run)'
+  })
+  .help('Restart a previously deployed script in RAM or Flash memory (does not rebundle)');
+
+makeCommand('run')
+  .callback(function(opts) {
+    opts.push = false;
+    callControllerWith('deployScript', opts);
   })
   .option('entryPoint', {
     position: 1,
     required: true,
     help: 'The entry point file to deploy to Tessel'
   })
+  .option('single', {
+    flag: true,
+    abbr: 's',
+    help: 'Run only the specified entry point file'
+  })
   .option('verbose', {
     flag: true,
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
-  .option('timeout', timeoutOption)
   .help('Deploy a script to Tessel and run it with Node');
 
-parser.command('push')
+makeCommand('push')
   .callback(function(opts) {
-    // true: push=true
-    controller.deployScript(opts, true)
-      .then(closeSuccessfulCommand, closeFailedCommand);
-  })
-  .option('name', nameOption)
-  .option('lan', {
-    flag: true,
-    help: 'Use LAN connection'
-  })
-  .option('usb', {
-    flag: true,
-    help: 'Use USB connection'
+    opts.push = true;
+    callControllerWith('deployScript', opts);
   })
   .option('entryPoint', {
     position: 1,
     required: true,
     help: 'The entry point file to deploy to Tessel'
   })
+  .option('single', {
+    flag: true,
+    abbr: 's',
+    help: 'Push only the specified entry point file'
+  })
   .option('verbose', {
     flag: true,
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
-  .option('timeout', timeoutOption)
   .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
-parser.command('erase')
-  .callback(function(opts) {
-    controller.eraseScript(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
-  })
-  .option('name', nameOption)
+makeCommand('erase')
+  .callback(callControllerCallback('eraseScript'))
   .option('verbose', {
     flag: true,
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
-  .option('timeout', timeoutOption)
   .help('Erases files pushed to Flash using the tessel push command');
 
-parser.command('list')
-  .callback(function(opts) {
-    controller.listTessels(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
-  })
-  .option('timeout', timeoutOption)
+makeCommand('list')
+  .callback(callControllerCallback('listTessels'))
   .help('Lists all connected Tessels and their authorization status.');
 
 parser.command('init')
@@ -135,18 +163,15 @@ parser.command('init')
   })
   .help('Initialize repository for your Tessel project');
 
-parser.command('wifi')
+makeCommand('wifi')
   .callback(function(opts) {
     //TODO: Refactor switch case into controller.wifi
     if (opts.list) {
-      controller.printAvailableNetworks(opts)
-        .then(closeSuccessfulCommand, closeFailedCommand);
+      callControllerWith('printAvailableNetworks', opts);
     } else if (opts.ssid && opts.password) {
-      controller.connectToNetwork(opts)
-        .then(closeSuccessfulCommand, closeFailedCommand);
+      callControllerWith('connectToNetwork', opts);
     }
   })
-  .option('name', nameOption)
   .option('list', {
     abbr: 'l',
     flag: true,
@@ -162,7 +187,6 @@ parser.command('wifi')
     metavar: 'PASSWORD',
     help: 'Set the password of the network to connect to'
   })
-  .option('timeout', timeoutOption)
   .help('Configure the wireless connection');
 
 parser.command('key')
@@ -177,24 +201,51 @@ parser.command('key')
         logs.info('Key successfully generated.');
       })
       .then(closeSuccessfulCommand, closeFailedCommand);
-  });
+  })
+  .help('Generate a local SSH keypair for authenticating a Tessel VM');
 
-parser.command('rename')
+makeCommand('rename')
   .option('newName', {
     help: 'The new name for the selected Tessel',
     position: 1,
   })
-  .option('name', nameOption)
   .option('reset', {
     abbr: 'r',
     flag: true
   })
-  .callback(function(opts) {
-    controller.renameTessel(opts)
-      .then(closeSuccessfulCommand, closeFailedCommand);
+  .callback(callControllerCallback('renameTessel'))
+  .help('Change the name of a Tessel to something new');
+
+makeCommand('update')
+  .option('version', {
+    abbr: 'v',
+    required: false,
+    help: 'Specify a build version.'
   })
-  .option('timeout', timeoutOption)
-  .help('Change the name of a Tessel to something new.');
+  .option('list', {
+    abbr: 'l',
+    required: false,
+    flag: true,
+    help: 'List the available builds.'
+  })
+  .option('force', {
+    abbr: 'f',
+    required: false,
+    flag: true,
+    help: 'Update to the latest version regardless of current version.'
+  })
+  .callback(function(opts) {
+    if (opts.list) {
+      callControllerWith('printAvailableUpdates');
+    } else {
+      callControllerWith('update', opts);
+    }
+  })
+  .help('Update the Tessel firmware and openWRT image');
+
+makeCommand('version')
+  .callback(callControllerCallback('tesselFirmwareVerion'))
+  .help('Display Tessel\'s current firmware version');
 
 
 module.exports = function(args) {
@@ -203,4 +254,8 @@ module.exports = function(args) {
 
 if (require.main === module) {
   module.exports(process.argv.slice(2));
+}
+
+if (global.IS_TEST_ENV) {
+  module.exports.makeCommand = makeCommand;
 }
