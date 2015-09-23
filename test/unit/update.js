@@ -59,11 +59,7 @@ exports['controller.update'] = {
   listBuilds: function(test) {
     test.expect(3);
 
-    var opts = {
-      list: true
-    };
-
-    controller.printAvailableUpdates(opts)
+    controller.printAvailableUpdates()
       .then(function() {
         test.equal(this.requestBuildList.callCount, 1);
         // Print info that these are logs
@@ -90,10 +86,7 @@ exports['controller.update'] = {
       return Promise.reject(new Error(errMessage));
     });
 
-    var opts = {
-      list: true
-    };
-    controller.printAvailableUpdates(opts)
+    controller.printAvailableUpdates()
       .then(function() {
         test.equal(true, false, 'Build fetch should have failed.');
       })

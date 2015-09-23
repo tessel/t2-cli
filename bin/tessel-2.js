@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var path = require('path');
-var parser = require('nomnom');
+var parser = require('nomnom').script('t2');
 var controller = require('../lib/controller');
 var key = require('../lib/key');
 var init = require('../lib/init');
@@ -110,7 +110,7 @@ makeCommand('run')
   .option('single', {
     flag: true,
     abbr: 's',
-    help: 'Push only the entryPoint'
+    help: 'Run only the specified entry point file'
   })
   .option('verbose', {
     flag: true,
@@ -132,7 +132,7 @@ makeCommand('push')
   .option('single', {
     flag: true,
     abbr: 's',
-    help: 'Push only the entryPoint'
+    help: 'Push only the specified entry point file'
   })
   .option('verbose', {
     flag: true,
@@ -236,9 +236,9 @@ makeCommand('update')
   })
   .callback(function(opts) {
     if (opts.list) {
-      callControllerCallback('printAvailableUpdates');
+      callControllerWith('printAvailableUpdates');
     } else {
-      callControllerCallback('update');
+      callControllerWith('update', opts);
     }
   })
   .help('Update the Tessel firmware and openWRT image');
@@ -254,4 +254,8 @@ module.exports = function(args) {
 
 if (require.main === module) {
   module.exports(process.argv.slice(2));
+}
+
+if (global.IS_TEST_ENV) {
+  module.exports.makeCommand = makeCommand;
 }

@@ -4,7 +4,7 @@ var Seeker = require('../../lib/discover.js');
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var logs = require('../../lib/logs');
-// Require this function so that the functions in the 
+// Require this function so that the functions in the
 // controller placed on the Tessel prototype
 require('../../lib/controller');
 
@@ -89,6 +89,17 @@ exports['Tessel (get)'] = {
   tearDown: function(done) {
     this.sandbox.restore();
     done();
+  },
+
+  infoOutput: function(test) {
+    test.expect(1);
+    Tessel.get({
+        timeout: 0.01
+      })
+      .catch(function() {
+        test.equal(this.logsInfo.firstCall.args[0], 'Looking for your Tessel...');
+        test.done();
+      }.bind(this));
   },
 
   noTessels: function(test) {
