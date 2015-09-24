@@ -160,6 +160,57 @@ exports['Tessel.prototype.deployScript'] = {
       test.done();
     }.bind(this));
   },
+
+  processCompletionOrder: function(test) {
+
+    var self = this;
+
+    // Array of processes we've started but haven't completed yet
+    var processesAwaitingCompletion = [];
+    self.tessel._rps.on('control', function(data) {
+      // Push new commands into the queue
+      processesAwaitingCompletion.push(data);
+    });
+
+    // Create the temporary folder with example code
+    createTemporaryDeployCode()
+      .then(function deploy() {
+
+        function closeAdvance(event) {
+          // If we get an event listener for the close event of a process
+          if (event === 'close') {
+            // Wait some time before actually closing it
+            setTimeout(function() {
+              // We should only have one process waiting for completion
+              test.equal(processesAwaitingCompletion.length, 1);
+              // Pop that process off
+              processesAwaitingCompletion.shift();
+              // Emit the close event to keep it going
+              self.tessel._rps.emit('close');
+            }, 200);
+          }
+        }
+
+        // When we get a listener that the Tessel process needs to close before advancing
+        self.tessel._rps.on('newListener', closeAdvance);
+
+        // Actually deploy the script
+        self.tessel.deployScript({
+            entryPoint: path.relative(process.cwd(), deployFile),
+            push: false,
+            single: false
+          })
+          // If it finishes, it was successful
+          .then(function success() {
+            self.tessel._rps.removeListener('newListener', closeAdvance);
+            test.done();
+          })
+          // If not, there was an issue
+          .catch(function(err) {
+            test.equal(err, undefined, 'We hit a catch statement that we should not have.');
+          });
+      });
+  }
 };
 
 exports['tarBundle'] = {
