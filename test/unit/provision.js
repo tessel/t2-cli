@@ -99,7 +99,7 @@ exports['controller.provisionTessel'] = {
     this.logsWarn = sinon.stub(logs, 'warn', function() {});
     this.logsInfo = sinon.stub(logs, 'info', function() {});
 
-    this.closeTesselConnections = sinon.stub(controller, 'closeTesselConnections');
+    this.closeTesselConnections = sinon.spy(controller, 'closeTesselConnections');
 
     done();
   },

@@ -8,58 +8,6 @@ var logs = require('../../lib/logs');
 // controller placed on the Tessel prototype
 require('../../lib/controller');
 
-exports['Tessel (endConnection)'] = {
-  setUp: function(done) {
-
-    this.mockConnection = {
-      end: function() {},
-      close: function() {},
-      connectionType: 'USB'
-    };
-
-    this.end = sinon.spy(this.mockConnection, 'end');
-
-    done();
-  },
-
-  tearDown: function(done) {
-    this.end.restore();
-    done();
-  },
-
-  sigintConnection: function(test) {
-    test.expect(1);
-
-    var processOnce = sinon.stub(process, 'once');
-
-    new Tessel(this.mockConnection);
-
-    var endConnection = processOnce.lastCall.args[1];
-
-    endConnection();
-
-    test.equal(this.end.callCount, 1);
-
-    processOnce.restore();
-    test.done();
-  },
-
-  closeConnection: function(test) {
-    test.expect(2);
-
-    var processremoveListener = sinon.stub(process, 'removeListener');
-    var tessel = new Tessel(this.mockConnection);
-
-    tessel.close();
-
-    test.equal(processremoveListener.callCount, 1);
-    test.equal(this.end.callCount, 1);
-
-    processremoveListener.restore();
-    test.done();
-  },
-};
-
 exports['Tessel (get)'] = {
 
   setUp: function(done) {
@@ -128,7 +76,6 @@ exports['Tessel (get)'] = {
       .then(function(tessel) {
         test.equal(tessel.name, testName);
         test.equal(tessel.connection.connectionType, testConnectionType);
-        tessel.close();
         test.done();
       })
       .catch(function(err) {
@@ -153,8 +100,6 @@ exports['Tessel (get)'] = {
           this.logsInfo.lastCall.args[0],
           'Please specify a Tessel by name [--name <tessel name>]'
         );
-        a.close();
-        b.close();
         test.done();
       }.bind(this));
 
@@ -187,8 +132,6 @@ exports['Tessel (get)'] = {
       })
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
-        a.close();
-        b.close();
         test.done();
       })
       .catch(function() {
