@@ -395,4 +395,129 @@ exports['Tessel.get'] = {
     this.activeSeeker.emit('tessel', usb);
     this.activeSeeker.emit('tessel', lan);
   },
+
+  standardCommandNoTessels: function(test) {
+    test.expect(2);
+
+    var opts = {
+      timeout: 0.01
+    };
+    controller.standardTesselCommand(opts, function() {
+        // Doesn't matter what this function does b/c Tessel.get will fail
+        return Promise.resolve();
+      })
+      .catch(function(err) {
+        // We don't need to close any connections because none were found
+        test.equal(this.closeTesselConnections.callCount, 0);
+        test.equal(typeof err, 'string');
+        test.done();
+      }.bind(this));
+  },
+
+  standardCommandSuccess: function(test) {
+    test.expect(4);
+
+    controller.closeTesselConnections.returns(Promise.resolve());
+    var optionalValue = 'testValue';
+    var opts = {
+      timeout: 0.01
+    };
+    controller.standardTesselCommand(opts, function(tessel) {
+        // Make sure we have been given the tessel that was emitted
+        test.deepEqual(tessel, usb);
+        // Finish the command
+        return Promise.resolve(optionalValue);
+      })
+      .then(function(returnedValue) {
+        // We need to close the connection of the Tessel we found
+        // We close once at the end of Tessel.get and again after the standard command
+        test.equal(this.closeTesselConnections.callCount, 2);
+        // Make sure we closed the connection of the exact Tessel we emitted
+        test.equal(this.closeTesselConnections.args[1][0][0], usb);
+        // Ensure we got the optional returned value
+        test.equal(optionalValue, returnedValue);
+        test.done();
+      }.bind(this))
+      .catch(test.fail);
+
+    var usb = newTessel({
+      sandbox: this.sandbox,
+      type: 'USB',
+      name: 'USBTessel'
+    });
+
+    this.activeSeeker.emit('tessel', usb);
+  },
+
+  standardCommandFailed: function(test) {
+    test.expect(4);
+
+    controller.closeTesselConnections.returns(Promise.resolve());
+
+    var opts = {
+      timeout: 0.01
+    };
+
+    var errMessage = 'This command failed';
+
+    controller.standardTesselCommand(opts, function(tessel) {
+        // Make sure we have been given the tessel that was emitted
+        test.deepEqual(tessel, usb);
+        // Finish the command
+        return Promise.reject(errMessage);
+      })
+      .then(test.fail)
+      .catch(function(err) {
+        // Make sure the error messages are passed through properly
+        test.equal(errMessage, err);
+        // We need to close the connection of the Tessel we found
+        // We close once at the end of Tessel.get and again after the standard command
+        test.equal(this.closeTesselConnections.callCount, 2);
+        // Make sure we closed the connection of the exact Tessel we emitted
+        test.equal(this.closeTesselConnections.args[1][0][0], usb);
+        test.done();
+      }.bind(this));
+
+    var usb = newTessel({
+      sandbox: this.sandbox,
+      type: 'USB',
+      name: 'USBTessel'
+    });
+
+    this.activeSeeker.emit('tessel', usb);
+  },
+
+  standardCommandSigInt: function(test) {
+    test.expect(2);
+
+    controller.closeTesselConnections.returns(Promise.resolve());
+
+    var opts = {
+      timeout: 0.01
+    };
+
+    controller.standardTesselCommand(opts, function() {
+        // This command doesn't do anything. It won't resolve so if we do get
+        // to the next clause, it's due to the sigint
+      })
+      .then(function() {
+        // We need to close the connection of the Tessel we found
+        // We close once at the end of Tessel.get and again after the standard command
+        test.equal(this.closeTesselConnections.callCount, 2);
+        // Make sure we closed the connection of the exact Tessel we emitted
+        test.equal(this.closeTesselConnections.args[1][0][0], usb);
+        test.done();
+      }.bind(this))
+      .catch(test.fail);
+
+    var usb = newTessel({
+      sandbox: this.sandbox,
+      type: 'USB',
+      name: 'USBTessel'
+    });
+
+    this.activeSeeker.emit('tessel', usb);
+
+    process.emit('SIGINT');
+  },
 };

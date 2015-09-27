@@ -160,8 +160,8 @@ exports['controller.update'] = {
         test.equal(this.fetchBuild.callCount, 1);
         // But it failed with the error we specified
         test.equal(err.message, errMessage);
-        // We didn't need to close all open Tessel connections
-        test.equal(this.closeTesselConnections.callCount, 0);
+        // We need to close all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
         test.done();
       }.bind(this));
   },
@@ -365,8 +365,8 @@ exports['controller.update'] = {
     controller.update(opts)
       .catch(function(message) {
         test.equal(message, 'The requested build was not found. Please see the available builds with `tessel update -l`.');
-        // We didn't need to close all open Tessel connections
-        test.equal(this.closeTesselConnections.callCount, 0);
+        // We need to close all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
         test.done();
       }.bind(this));
   },
