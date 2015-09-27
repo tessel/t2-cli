@@ -69,6 +69,49 @@ parser.command('provision')
   })
   .help('Authorize your computer to control the USB-connected Tessel');
 
+parser.command('reboot')
+  .callback(callControllerCallback('reboot'))
+  .option('time', {
+    abbr: 't',
+    metavar: 'SEC',
+    required: false,
+    help: 'Delay interval until reboot (cannot be stopped!)'
+  })
+  .option('delay', {
+    abbr: 'd',
+    metavar: 'SEC',
+    required: false,
+    help: 'Same as --time'
+  })
+  .option('force', {
+    abbr: 'f',
+    required: false,
+    help: 'Do not go through init'
+  })
+  .option('nosync', {
+    abbr: 'n',
+    required: false,
+    help: 'Do not sync'
+  })
+  .option('name',   {
+    required: false,
+    metavar: 'TESSEL',
+    help: 'Tessels name'
+  })
+  .option('ip', {
+    required: false,
+    metavar: 'IP-ADDRESS',
+    help: 'Tessels IP-ADDRESS (no authorization check!)'
+  })
+  .option('key', {
+    abbr: 'i',
+    default: '~/.tessel/id_rsa', // TODO: replace this by global var
+    required: false,
+    metavar: 'PATH',
+    help: 'SSH-Key to login into your Tessel. Default is:'
+  })
+  .help('Reboot your Tessel immediately or with delay');
+
 makeCommand('restart')
   .callback(function(opts) {
     var packageJson;
