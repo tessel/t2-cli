@@ -98,6 +98,9 @@ exports['controller.provisionTessel'] = {
 
     this.logsWarn = sinon.stub(logs, 'warn', function() {});
     this.logsInfo = sinon.stub(logs, 'info', function() {});
+
+    this.closeTesselConnections = sinon.stub(controller, 'closeTesselConnections');
+
     done();
   },
 
@@ -112,11 +115,12 @@ exports['controller.provisionTessel'] = {
     this.getTessel.restore();
     this.logsWarn.restore();
     this.logsInfo.restore();
+    this.closeTesselConnections.restore();
     deleteKeyTestFolder(done);
   },
 
   completeForced: function(test) {
-    test.expect(4);
+    test.expect(6);
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
     Tessel.TESSEL_AUTH_PATH = testPath;
@@ -133,6 +137,8 @@ exports['controller.provisionTessel'] = {
         test.equal(this.exec.callCount, 1);
         test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.TESSEL_AUTH_PATH);
         test.equal(this.provisionSpy.callCount, 1);
+        test.equal(this.closeTesselConnections.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         rimraf(path.join(process.cwd(), Tessel.TESSEL_AUTH_PATH), function(err) {
           test.ifError(err);
           Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
@@ -142,7 +148,7 @@ exports['controller.provisionTessel'] = {
   },
 
   completeUnprovisioned: function(test) {
-    test.expect(2);
+    test.expect(4);
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
     Tessel.TESSEL_AUTH_PATH = testPath;
@@ -152,13 +158,15 @@ exports['controller.provisionTessel'] = {
     this.provisionTessel().then(function() {
       test.equal(this.exec.callCount, 0);
       test.equal(this.provisionSpy.callCount, 1);
+      test.equal(this.closeTesselConnections.callCount, 1);
+      test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
       Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
       test.done();
     }.bind(this));
   },
 
   completeUnprovisionedForced: function(test) {
-    test.expect(2);
+    test.expect(4);
     var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
 
     Tessel.TESSEL_AUTH_PATH = testPath;
@@ -170,13 +178,15 @@ exports['controller.provisionTessel'] = {
     }).then(function() {
       test.equal(this.exec.callCount, 0);
       test.equal(this.provisionSpy.callCount, 1);
+      test.equal(this.closeTesselConnections.callCount, 1);
+      test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
       Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
       test.done();
     }.bind(this));
   },
 
   reportFailure: function(test) {
-    test.expect(1);
+    test.expect(2);
 
     this.exec.restore();
     this.exec = sinon.stub(cp, 'exec', function(command, callback) {
@@ -189,8 +199,9 @@ exports['controller.provisionTessel'] = {
       force: true
     }).catch(function(error) {
       test.equal(error, 'some error');
+      test.equal(this.closeTesselConnections.callCount, 0);
       test.done();
-    });
+    }.bind(this));
   }
 };
 

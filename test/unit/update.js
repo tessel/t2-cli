@@ -40,7 +40,7 @@ exports['controller.update'] = {
     });
 
     this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
-
+    this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
 
     done();
   },
@@ -100,7 +100,7 @@ exports['controller.update'] = {
   },
 
   buildOptionValid: function(test) {
-    test.expect(7);
+    test.expect(9);
 
     var binaries = {
       firmware: new Buffer(0),
@@ -122,10 +122,7 @@ exports['controller.update'] = {
         // We did fetch the specified build
         test.equal(this.fetchBuild.callCount, 1);
         // It was called with the correct args
-
-        var build = this.fetchBuild.lastCall.args[0];
-
-        test.deepEqual(build, builds[1]);
+        test.deepEqual(this.fetchBuild.lastCall.args[0], builds[1]);
         // We fetched the Tessel to update
         test.equal(this.getTessel.callCount, 1);
         // The Tessel was updated
@@ -134,6 +131,10 @@ exports['controller.update'] = {
         test.equal(this.update.calledWith(binaries), true);
         // Then the Tessel was closed
         test.equal(this.tessel.closed, true);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this))
       .catch(function(err) {
@@ -142,7 +143,7 @@ exports['controller.update'] = {
   },
 
   buildOptionInvalid: function(test) {
-    test.expect(2);
+    test.expect(3);
 
     var errMessage = 'No such build exists';
 
@@ -159,12 +160,14 @@ exports['controller.update'] = {
         test.equal(this.fetchBuild.callCount, 1);
         // But it failed with the error we specified
         test.equal(err.message, errMessage);
+        // We didn't need to close all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 0);
         test.done();
       }.bind(this));
   },
 
   buildLatest: function(test) {
-    test.expect(6);
+    test.expect(8);
 
     var binaries = {
       firmware: new Buffer(0),
@@ -195,6 +198,10 @@ exports['controller.update'] = {
         test.equal(this.update.calledWith(binaries), true);
         // Then Tessel was closed
         test.equal(this.tessel.closed, true);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this))
       .catch(function(err) {
@@ -204,7 +211,7 @@ exports['controller.update'] = {
   },
 
   buildLatestAlreadyCurrent: function(test) {
-    test.expect(5);
+    test.expect(7);
 
     var binaries = {
       firmware: new Buffer(0),
@@ -228,12 +235,16 @@ exports['controller.update'] = {
         test.equal(this.update.callCount, 0);
         // Then Tessel was closed
         test.equal(this.tessel.closed, true);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this));
   },
 
   buildLatestUpdateFailed: function(test) {
-    test.expect(5);
+    test.expect(7);
 
     var binaries = {
       firmware: new Buffer(0),
@@ -268,12 +279,16 @@ exports['controller.update'] = {
         test.equal(err.message, errMessage);
         // Then Tessel was closed
         test.equal(this.tessel.closed, true);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this));
   },
 
   buildLatestForce: function(test) {
-    test.expect(5);
+    test.expect(7);
 
     var binaries = {
       firmware: new Buffer(0),
@@ -300,6 +315,10 @@ exports['controller.update'] = {
         test.equal(this.update.calledWith(binaries), true);
         // Then Tessel was closed
         test.equal(this.tessel.closed, true);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this))
       .catch(function(err) {
@@ -308,7 +327,7 @@ exports['controller.update'] = {
   },
 
   explicitLatestDoesntImmediatelyUpdate: function(test) {
-    test.expect(1);
+    test.expect(3);
 
     var binaries = {
       firmware: new Buffer(0),
@@ -326,6 +345,10 @@ exports['controller.update'] = {
     controller.update(opts)
       .then(function() {
         test.equal(this.updateTesselWithVersion.callCount, 0);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this))
       .catch(function(err) {
@@ -334,7 +357,7 @@ exports['controller.update'] = {
   },
 
   noVerifiedVersion: function(test) {
-    test.expect(1);
+    test.expect(2);
 
     var opts = {
       version: 'x.x.x'
@@ -342,12 +365,14 @@ exports['controller.update'] = {
     controller.update(opts)
       .catch(function(message) {
         test.equal(message, 'The requested build was not found. Please see the available builds with `tessel update -l`.');
+        // We didn't need to close all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 0);
         test.done();
       }.bind(this));
   },
 
   noVersionForcedUpdate: function(test) {
-    test.expect(2);
+    test.expect(4);
 
     this.fetchCurrentBuildInfo.restore();
     this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
@@ -370,48 +395,19 @@ exports['controller.update'] = {
         test.equal(this.fetchBuild.callCount, 1);
         // We should be requesting the latest build
         test.equal(this.fetchBuild.calledWith(builds[1]), true);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this))
       .catch(function() {
         test.fail('It should force an update if the file version is not found');
       });
   },
-  noVersionRequestForceFalse: function(test) {
-    test.expect(2);
-    var noFileError = new Error('[Error: cat: can\'t open \'/etc/tessel-version\': No such file or directory]');
-
-    this.fetchCurrentBuildInfo.restore();
-    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
-      return Promise.reject(noFileError);
-    });
-
-    var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
-    };
-
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
-      return Promise.resolve(binaries);
-    });
-
-    var opts = {
-      force: false
-    };
-    controller.update(opts)
-      .then(function() {
-        test.fail('It should throw an error if we could not get version');
-      })
-      .catch(function(err) {
-        // Make sure this error has the proper error message
-        test.equal(err.message, noFileError.message);
-        // It should not attempt to fetch any builds
-        test.equal(this.fetchBuild.callCount, 0);
-        test.done();
-      }.bind(this));
-  },
 
   noVersionUnknownError: function(test) {
-    test.expect(2);
+    test.expect(4);
 
     var unknownError = new Error('Something totally weird happened.');
 
@@ -439,6 +435,10 @@ exports['controller.update'] = {
         test.equal(err.message, unknownError.message);
         // It should not attempt to fetch any builds
         test.equal(this.fetchBuild.callCount, 0);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this));
   },

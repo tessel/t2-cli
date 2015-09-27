@@ -156,7 +156,7 @@ exports['Tessel.list'] = {
   },
 
   oneUSBTessel: function(test) {
-    test.expect(3);
+    test.expect(4);
 
     var a = newTessel({
       sandbox: this.sandbox,
@@ -171,6 +171,7 @@ exports['Tessel.list'] = {
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(a.close.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this));
 
@@ -178,7 +179,7 @@ exports['Tessel.list'] = {
   },
 
   oneLANTessel: function(test) {
-    test.expect(3);
+    test.expect(4);
 
     var a = newTessel({
       sandbox: this.sandbox,
@@ -193,6 +194,7 @@ exports['Tessel.list'] = {
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(a.close.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this));
 
@@ -200,7 +202,7 @@ exports['Tessel.list'] = {
   },
 
   oneTesselTwoConnections: function(test) {
-    test.expect(4);
+    test.expect(5);
 
     var usb = newTessel({
       sandbox: this.sandbox,
@@ -223,6 +225,7 @@ exports['Tessel.list'] = {
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(usb.close.callCount, 1);
         test.equal(lan.close.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       }.bind(this));
 
@@ -231,7 +234,7 @@ exports['Tessel.list'] = {
   },
 
   multipleDifferentTessels: function(test) {
-    test.expect(4);
+    test.expect(5);
 
     var usb = newTessel({
       sandbox: this.sandbox,
@@ -252,6 +255,7 @@ exports['Tessel.list'] = {
       .then(function() {
         test.equal(this.runHeuristics.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.equal(usb.close.callCount, 1);
         test.equal(lan.close.callCount, 1);
         test.done();
@@ -301,7 +305,7 @@ exports['Tessel.get'] = {
   },
 
   oneNamedTessel: function(test) {
-    test.expect(5);
+    test.expect(6);
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
@@ -320,6 +324,7 @@ exports['Tessel.get'] = {
         test.equal(this.reconcileTessels.callCount, 0);
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.equal(this.logsInfo.callCount, 2);
         test.equal(_.contains(this.logsInfo.lastCall.args[0], 'the_name'), true);
         test.done();
@@ -329,7 +334,7 @@ exports['Tessel.get'] = {
   },
 
   oneUnNamedTessel: function(test) {
-    test.expect(5);
+    test.expect(6);
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
@@ -347,6 +352,7 @@ exports['Tessel.get'] = {
         test.equal(this.reconcileTessels.callCount, 0);
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.equal(this.logsInfo.callCount, 2);
         test.equal(_.contains(this.logsInfo.lastCall.args[0], 'the_name'), true);
         test.done();
@@ -356,7 +362,7 @@ exports['Tessel.get'] = {
   },
 
   oneUnamedTesselTwoConnections: function(test) {
-    test.expect(5);
+    test.expect(6);
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
@@ -380,6 +386,7 @@ exports['Tessel.get'] = {
         test.equal(this.reconcileTessels.callCount, 1);
         test.equal(this.runHeuristics.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.equal(this.logsInfo.callCount, 2);
         test.equal(_.contains(this.logsInfo.lastCall.args[0], 'samesies'), true);
         test.done();
