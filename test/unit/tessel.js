@@ -107,6 +107,25 @@ exports['Tessel (get)'] = {
     Tessel.get({
         timeout: 0.01
       })
+      // If Tessels were returned, this test should fail because we're
+      // not emitting any Tessels to the seeker
+      .then(function(tessels) {
+        test.equal(tessels, false, 'Somehow Tessels were returned');
+      })
+      .catch(function(err) {
+        test.equal(typeof err, 'string', 'No error thrown');
+        test.done();
+      });
+  },
+
+  noTesselWithName: function(test) {
+    var testConnectionType = 'USB';
+    var testName = 'Does_Exist';
+    // Try to get Tessels but return none
+    Tessel.get({
+        name: 'Does_Not_Exist',
+        timeout: 0.01
+      })
       // If
       .then(function(tessels) {
         test.equal(tessels, false, 'Somehow Tessels were returned');
@@ -115,6 +134,13 @@ exports['Tessel (get)'] = {
         test.equal(typeof err, 'string', 'No error thrown');
         test.done();
       });
+
+    var tessel = new Tessel({
+      connectionType: testConnectionType
+    });
+    tessel.name = testName;
+
+    this.activeSeeker.emit('tessel', tessel);
   },
 
   oneUSB: function(test) {
