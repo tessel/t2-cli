@@ -6,7 +6,7 @@ var controller = require('../lib/controller');
 var key = require('../lib/key');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
-
+var TESSEL_AUTH_KEY = require('../lib/tessel/provision.js').TESSEL_AUTH_KEY;
 
 function closeSuccessfulCommand() {
   process.exit(0);
@@ -34,6 +34,13 @@ function makeCommand(commandName) {
       metavar: 'TIMEOUT',
       help: 'Set timeout in seconds for scanning for networked tessels',
       default: 5
+    })
+    .option('key', {
+      required: false,
+      metavar: 'PRIVATEKEY',
+      abbr: 'i',
+      default: TESSEL_AUTH_KEY,
+      help: 'RSA key for authorization with your Tessel'
     })
     .option('name', {
       metavar: 'NAME',
