@@ -6,7 +6,7 @@ var EventEmitter = require('events').EventEmitter;
 var logs = require('../../lib/logs');
 // Require this function so that the functions in the
 // controller placed on the Tessel prototype
-require('../../lib/controller');
+var controller = require('../../lib/controller');
 
 exports['Tessel (get)'] = {
 
@@ -30,6 +30,10 @@ exports['Tessel (get)'] = {
     util.inherits(this.seeker, EventEmitter);
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+
+    this.menuCreate = this.sandbox.stub(controller.menu, 'create', function() {
+      return Promise.resolve();
+    });
 
     done();
   },
