@@ -2,11 +2,11 @@ var sinon = require('sinon');
 var controller = require('../../lib/controller');
 var logs = require('../../lib/logs');
 var TesselSimulator = require('../common/tessel-simulator');
+var inquirer = require('inquirer');
 
-exports['controller.menu.create'] = {
+exports['controller.menu'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.sandbox.spy(controller.menu, 'create');
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
     this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
@@ -17,72 +17,88 @@ exports['controller.menu.create'] = {
     this.sandbox.restore();
     done();
   },
-  createMenu: function(test) {
+  selectItem: function(test) {
     test.expect(2);
     var a = new TesselSimulator({
       type: 'LAN',
-      name: 'Tessel-123',
+      name: 'Tessel-A',
       authorized: true
     });
     var b = new TesselSimulator({
       type: 'LAN',
-      name: 'Tessel-123',
+      name: 'Tessel-B',
       serialNumber: '1234'
     });
-    var tessels = [];
-    var opts = {};
-    var title = 'My Menu';
-    tessels.push(a, b);
-    controller.menu.create(tessels, opts, title).then(function() {
-      test.equal(controller.menu.create.called, true);
-      test.equal(1, 1);
+    var tessels = [a, b];
+    var map = {};
+
+    this.prompt = this.sandbox.stub(inquirer, 'prompt', function(questions, callback) {
+      // This matches the inquirer.prompt return value. Do not change.
+      callback({
+        selected: questions[0].choices[0]
+      });
+    });
+
+    controller.menu({
+      prompt: {
+        name: 'selected',
+        type: 'list',
+        message: 'Pick one',
+        choices: tessels.map(function(tessel, i) {
+          map[tessel.name] = i;
+          return tessel.name;
+        })
+      },
+      translate: function(answer) {
+        test.ok(true);
+        return tessels[map[answer.selected]];
+      }
+    }).then(function(tessel) {
+      test.equal(tessel, a);
       test.done();
-    }.bind(this)).catch(function(e) {
-      console.log('error: ', e);
+    });
+  },
+
+  noSelectedItem: function(test) {
+    test.expect(2);
+    var a = new TesselSimulator({
+      type: 'LAN',
+      name: 'Tessel-A',
+      authorized: true
+    });
+    var b = new TesselSimulator({
+      type: 'LAN',
+      name: 'Tessel-B',
+      serialNumber: '1234'
+    });
+    var tessels = [a, b];
+    var map = {};
+
+    this.prompt = this.sandbox.stub(inquirer, 'prompt', function(questions, callback) {
+      // This matches the inquirer.prompt return value. Do not change.
+      // controller.menu adds an "Exit" choice
+      callback({
+        selected: questions[0].choices[2]
+      });
+    });
+
+    controller.menu({
+      prompt: {
+        name: 'selected',
+        type: 'list',
+        message: 'Pick one',
+        choices: tessels.map(function(tessel, i) {
+          map[tessel.name] = i;
+          return tessel.name;
+        })
+      },
+      translate: function(answer) {
+        test.equal(answer.selected, 'Exit');
+        return tessels[map[answer.selected]];
+      }
+    }).then(function(tessel) {
+      test.equal(tessels.indexOf(tessel), -1);
+      test.done();
     });
   }
 };
-/*
-exports['controller.menu.make'] = {
-  setUp: function(done) {
-    this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
-
-    done();
-  },
-  tearDown: function(done) {
-    this.sandbox.restore();
-    done();
-  }
-};
-exports['controller.menu.show'] = {
-  setUp: function(done) {
-    this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
-
-    done();
-  },
-  tearDown: function(done) {
-    this.sandbox.restore();
-    done();
-  }
-};
-exports['controller.menu.clear'] = {
-  setUp: function(done) {
-    this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
-
-    done();
-  },
-  tearDown: function(done) {
-    this.sandbox.restore();
-    done();
-  }
-};
-*/
