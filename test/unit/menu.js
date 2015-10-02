@@ -93,7 +93,7 @@ exports['controller.menu'] = {
         })
       },
       translate: function(answer) {
-        test.equal(answer.selected, 'Exit');
+        test.equal(answer.selected, '\tExit');
         return tessels[map[answer.selected]];
       }
     }).then(function(tessel) {
