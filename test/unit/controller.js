@@ -126,10 +126,10 @@ exports['Tessel.list'] = {
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
-      this.start = function(timeout) {
+      this.start = function(opts) {
         self.activeSeeker = this;
-        if (timeout && typeof timeout === 'number') {
-          setTimeout(this.stop, timeout);
+        if (opts.timeout && typeof opts.timeout === 'number') {
+          setTimeout(this.stop, opts.timeout);
         }
         return this;
       };
@@ -274,10 +274,10 @@ exports['Tessel.get'] = {
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
-      this.start = function(timeout) {
+      this.start = function(opts) {
         self.activeSeeker = this;
-        if (timeout && typeof timeout === 'number') {
-          setTimeout(this.stop, timeout);
+        if (opts.timeout && typeof opts.timeout === 'number') {
+          setTimeout(this.stop, opts.timeout);
         }
         return this;
       };
