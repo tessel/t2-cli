@@ -27,20 +27,27 @@ exports['Tessel.prototype.erase'] = {
   eraseAsUsual: function(test) {
     var self = this;
 
-    test.expect(3);
+    test.expect(10);
+
+    var expected = [commands.stopRunningScript(), commands.disablePushedScript(), commands.deleteFolder(Tessel.PUSH_PATH)];
+    var commandNumber = 0;
 
     // Test that we received the proper command
-    self.tessel._rps.once('control', function(command) {
+    self.tessel._rps.on('control', function(command) {
       var receivedCommands = command.toString().split(' ');
-      var expected = commands.stopRunningScript();
       // Test that the command has the proper number of args
-      test.equal(receivedCommands.length, expected.length);
+      test.equal(receivedCommands.length, expected[commandNumber].length);
 
       // And the proper args in each place
       for (var i = 0; i < receivedCommands.length; i++) {
-        test.equal(receivedCommands[i], expected[i]);
+        test.equal(receivedCommands[i], expected[commandNumber][i]);
       }
 
+      commandNumber++;
+
+      setImmediate(function() {
+        self.tessel._rps.emit('close');
+      });
     });
 
     self.tessel.eraseScript()
@@ -51,10 +58,6 @@ exports['Tessel.prototype.erase'] = {
       .catch(function() {
         test.fail('Error thrown on proper flash erase');
       });
-
-    setImmediate(function() {
-      self.tessel._rps.emit('close');
-    });
   },
 
   noCodeInFlash: function(test) {
