@@ -31,7 +31,7 @@ exports['Tessel (get)'] = {
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
 
-    this.menuCreate = this.sandbox.stub(controller.menu, 'create', function() {
+    this.menu = this.sandbox.stub(controller, 'menu', function() {
       return Promise.resolve();
     });
 
@@ -120,16 +120,14 @@ exports['Tessel (get)'] = {
   },
 
   multipleUSBNoName: function(test) {
-    test.expect(1);
+    test.expect(2);
     // Try to get Tessels but return none
     Tessel.get({
         timeout: 0.01
       })
-      .catch(function() {
-        test.equal(
-          this.logsInfo.lastCall.args[0],
-          'Please specify a Tessel by name [--name <tessel name>]'
-        );
+      .catch(function(reason) {
+        test.equal(reason, 'No Tessel selected, mission aborted!');
+        test.equal(this.menu.calledOnce, 1);
         test.done();
       }.bind(this));
 
@@ -307,16 +305,14 @@ exports['Tessel (get)'] = {
   },
 
   multipleLANNoName: function(test) {
-    test.expect(1);
+    test.expect(2);
     // Try to get Tessels but return none
     Tessel.get({
         timeout: 0.01
       })
-      .catch(function() {
-        test.equal(
-          this.logsInfo.lastCall.args[0],
-          'Please specify a Tessel by name [--name <tessel name>]'
-        );
+      .catch(function(reason) {
+        test.equal(reason, 'No Tessel selected, mission aborted!');
+        test.equal(this.menu.calledOnce, 1);
         a.close();
         b.close();
         test.done();
