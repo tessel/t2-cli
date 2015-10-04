@@ -57,6 +57,7 @@
     "npm": "^2.7.1",
     "osenv": "^0.1.0",
     "progress": "^1.1.8",
+    "progress-stream": "^1.1.1",
     "promzard": "^0.3.0",
     "request": "^2.60.0",
     "shell-escape": "^0.2.0",
