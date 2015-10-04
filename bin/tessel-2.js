@@ -7,26 +7,6 @@ var key = require('../lib/key');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
 
-
-function closeSuccessfulCommand() {
-  process.exit(0);
-}
-
-function closeFailedCommand(err) {
-  // If the returned value is an error
-  if (err instanceof Error) {
-    // Throw it
-    throw err;
-  }
-  // Otherwise
-  else {
-    // Print a stern warning
-    logs.warn(err);
-  }
-  // Exit with non-zero code
-  process.exit(1);
-}
-
 function makeCommand(commandName) {
   return parser.command(commandName)
     .option('timeout', {
@@ -51,7 +31,7 @@ function makeCommand(commandName) {
 
 function callControllerWith(methodName, opts) {
   return controller[methodName](opts)
-    .then(closeSuccessfulCommand, closeFailedCommand);
+    .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
 }
 
 function callControllerCallback(methodName) {
@@ -74,7 +54,7 @@ makeCommand('restart')
     var packageJson;
 
     if (opts.type !== 'ram' && opts.type !== 'flash') {
-      closeFailedCommand('--type Invalid ');
+      return module.exports.closeFailedCommand('--type Invalid ');
     }
 
     if (opts.entryPoint === undefined) {
@@ -165,11 +145,13 @@ parser.command('init')
 
 makeCommand('wifi')
   .callback(function(opts) {
-    //TODO: Refactor switch case into controller.wifi
+    // TODO: Refactor switch case into controller.wifi
     if (opts.list) {
       callControllerWith('printAvailableNetworks', opts);
     } else if (opts.ssid && opts.password) {
       callControllerWith('connectToNetwork', opts);
+    } else {
+      callControllerWith('getWifiInfo', opts);
     }
   })
   .option('list', {
@@ -200,7 +182,7 @@ parser.command('key')
       .then(function() {
         logs.info('Key successfully generated.');
       })
-      .then(closeSuccessfulCommand, closeFailedCommand);
+      .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
   })
   .help('Generate a local SSH keypair for authenticating a Tessel VM');
 
@@ -251,6 +233,28 @@ makeCommand('version')
 module.exports = function(args) {
   parser.parse(args);
 };
+
+module.exports.closeSuccessfulCommand = function() {
+  process.exit(0);
+};
+
+// Allow options to be partially applied
+module.exports.closeFailedCommand = function(opts, err) {
+  if (!err) {
+    err = opts;
+    opts = {};
+  }
+  if (err instanceof Error) {
+    throw err;
+  } else {
+    // Print a stern warning by default
+    opts.type = opts.type || 'warn';
+    logs[opts.type](err);
+  }
+  // NOTE: Exit code is non-zero
+  process.exit(1);
+};
+
 
 if (require.main === module) {
   module.exports(process.argv.slice(2));

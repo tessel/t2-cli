@@ -73,6 +73,7 @@ exports['Tessel (cli: restart)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
     this.restartScript = this.sandbox.stub(controller, 'restartScript').returns(Promise.resolve());
     this.processExit = this.sandbox.stub(process, 'exit');
 
@@ -87,12 +88,11 @@ exports['Tessel (cli: restart)'] = {
   noError: function(test) {
     test.expect(1);
 
-    cli(['restart']);
+    cli(['restart', '--type=ram']);
 
     test.equal(this.restartScript.callCount, 1);
-
     // We must wait for the command to complete
-    // or else the sandbox will be cleared to early
+    // or else the sandbox will be cleared too early
     setImmediate(function() {
       test.done();
     });
@@ -105,7 +105,7 @@ exports['Tessel (cli: restart)'] = {
 
     this.restartScript.returns(restartOp);
 
-    cli(['restart']);
+    cli(['restart', '--type=ram']);
 
     restartOp.catch(function() {
       test.equal(this.restartScript.callCount, 1);
@@ -152,9 +152,7 @@ exports['Tessel (cli: update)'] = {
 
     // We must wait for the command to complete
     // or else the sandbox will be cleared to early
-    setImmediate(function() {
-      test.done();
-    });
+    setImmediate(test.done);
   },
 
   noError: function(test) {
@@ -192,6 +190,7 @@ exports['Tessel (cli: provision)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
     this.provisionTessel = this.sandbox.stub(controller, 'provisionTessel').returns(Promise.resolve());
     this.processExit = this.sandbox.stub(process, 'exit');
 
@@ -239,9 +238,12 @@ exports['Tessel (cli: wifi)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
     this.printAvailableNetworks = this.sandbox.stub(controller, 'printAvailableNetworks').returns(Promise.resolve());
     this.connectToNetwork = this.sandbox.stub(controller, 'connectToNetwork').returns(Promise.resolve());
-    this.processExit = this.sandbox.stub(process, 'exit');
+    this.getWifiInfo = this.sandbox.stub(controller, 'getWifiInfo').returns(Promise.resolve());
+    this.successfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
+    this.failedCommand = this.sandbox.stub(cli, 'closeFailedCommand');
 
     done();
   },
@@ -252,11 +254,13 @@ exports['Tessel (cli: wifi)'] = {
   },
 
   noOpts: function(test) {
-    test.expect(1);
-
+    test.expect(3);
     cli(['wifi']);
-
+    // We should not call either of these functions if no args were passed
     test.equal(this.printAvailableNetworks.callCount, 0);
+    test.equal(this.connectToNetwork.callCount, 0);
+    // It should call the getWiFiInfo function
+    test.equal(this.getWifiInfo.callCount, 1);
     test.done();
   },
 
@@ -269,7 +273,7 @@ exports['Tessel (cli: wifi)'] = {
     cli(['wifi', '--list', ' ']);
 
     resolve.then(function() {
-      test.equal(this.processExit.lastCall.args[0], 0);
+      test.equal(this.successfulCommand.callCount, 1);
       test.done();
     }.bind(this));
   },
@@ -285,7 +289,7 @@ exports['Tessel (cli: wifi)'] = {
     reject.catch(function() {
       throw 'Without this, the catch in the test is invoked before the catch in the cli program.';
     }).catch(function() {
-      test.equal(this.processExit.lastCall.args[0], 1);
+      test.equal(this.failedCommand.callCount, 1);
       test.done();
     }.bind(this));
   },
@@ -299,7 +303,7 @@ exports['Tessel (cli: wifi)'] = {
     cli(['wifi', '--ssid', 'a', '--password', 'b']);
 
     resolve.then(function() {
-      test.equal(this.processExit.lastCall.args[0], 0);
+      test.equal(this.successfulCommand.callCount, 1);
       test.done();
     }.bind(this));
   },
@@ -315,7 +319,7 @@ exports['Tessel (cli: wifi)'] = {
     reject.catch(function() {
       throw 'Without this, the catch in the test is invoked before the catch in the cli program.';
     }).catch(function() {
-      test.equal(this.processExit.lastCall.args[0], 1);
+      test.equal(this.failedCommand.callCount, 1);
       test.done();
     }.bind(this));
   },
