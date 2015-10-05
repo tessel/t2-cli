@@ -117,6 +117,245 @@ exports['controller.closeTesselConnections'] = {
   },
 };
 
+exports['controller.runHeuristics'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.processOn = this.sandbox.stub(process, 'on');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  oneUSBDevice: function(test) {
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    controller.runHeuristics({}, [a])
+      .then(function(tessel) {
+        test.deepEqual(a, tessel);
+        test.done();
+      });
+  },
+
+  oneLANDevice: function(test) {
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    controller.runHeuristics({}, [a])
+      .then(function(tessel) {
+        test.deepEqual(a, tessel);
+        test.done();
+      });
+  },
+
+  USBAndLANDevices: function(test) {
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    controller.runHeuristics({}, [a, b])
+      .then(function(tessel) {
+        test.deepEqual(b, tessel);
+        test.done();
+      });
+  },
+
+  bothConnectionsAndLAN: function(test) {
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    b.addConnection({
+      connectionType: 'LAN',
+      authorized: true
+    });
+
+    controller.runHeuristics({}, [a, b])
+      .then(function(tessel) {
+        test.deepEqual(b, tessel);
+        test.done();
+      });
+  },
+
+  bothConnectionsAndMultipleLAN: function(test) {
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    var c = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    c.addConnection({
+      connectionType: 'LAN',
+      authorized: true
+    });
+
+    controller.runHeuristics({}, [a, b, c])
+      .then(function(tessel) {
+        test.deepEqual(c, tessel);
+        test.done();
+      });
+  },
+
+  USBAndLANDevicesWithNameOption: function(test) {
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    a.name = 'Me!';
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    b.name = 'Not Me!';
+
+    controller.runHeuristics({
+        name: a.name
+      }, [a, b])
+      .then(function(tessel) {
+        test.deepEqual(a, tessel);
+        test.done();
+      });
+  },
+
+  USBAndLANDevicesWithEnvVariable: function(test) {
+    test.expect(1);
+
+    var winningName = 'Me!';
+    process.env['Tessel'] = winningName;
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    a.name = winningName;
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    b.name = 'Not ' + winningName;
+
+    controller.runHeuristics({
+        name: a.name
+      }, [a, b])
+      .then(function(tessel) {
+        test.deepEqual(a, tessel);
+        process.env['Tessel'] = undefined;
+        test.done();
+      });
+  },
+
+  catchAmbiguityTwoLAN: function(test) {
+
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    controller.runHeuristics({}, [a, b])
+      .then(function() {
+        test.fail('Should have thrown an error');
+      })
+      .catch(function(err) {
+        test.equal(err instanceof controller.HeuristicAmbiguityError, true);
+        test.done();
+      });
+  },
+
+  catchAmbiguityTwoUSB: function(test) {
+
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    controller.runHeuristics({}, [a, b])
+      .then(function() {
+        test.fail('Should have thrown an error');
+      })
+      .catch(function(err) {
+        test.equal(err instanceof controller.HeuristicAmbiguityError, true);
+        test.done();
+      });
+  }
+};
+
 
 exports['Tessel.list'] = {
 
