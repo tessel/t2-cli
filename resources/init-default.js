@@ -135,7 +135,7 @@ module.exports = {
     try {
       var gitConfig = fs.readFileSync('.git/config', 'utf8');
     } catch (e) {
-      gitConfig = null;
+      return 'www.github.com/tessel/t2-cli';
     }
 
     if (gitConfig) {
@@ -159,5 +159,6 @@ module.exports = {
     "email": config['init.author.email'],
     "url": config['init.author.url']
   } : undefined,
-  "license": 'MIT'
+  "license": 'MIT',
+  "readme" : "A bare bones Tessel 2 blinky script."
 }
