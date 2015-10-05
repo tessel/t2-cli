@@ -302,6 +302,58 @@ exports['controller.runHeuristics'] = {
         test.done();
       });
   },
+
+  catchAmbiguityTwoLAN: function(test) {
+
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    controller.runHeuristics({}, [a, b])
+      .then(function() {
+        test.fail('Should have thrown an error');
+      })
+      .catch(function(err) {
+        test.equal(err instanceof controller.HeuristicAmbiguityError, true);
+        test.done();
+      });
+  },
+
+  catchAmbiguityTwoUSB: function(test) {
+
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'USB'
+    });
+
+    controller.runHeuristics({}, [a, b])
+      .then(function() {
+        test.fail('Should have thrown an error');
+      })
+      .catch(function(err) {
+        test.equal(err instanceof controller.HeuristicAmbiguityError, true);
+        test.done();
+      });
+  }
 };
 
 
