@@ -26,8 +26,11 @@ function TesselSimulator(options) {
       return Promise.resolve();
     },
 
-
     close: function() {
+      return Promise.resolve();
+    },
+
+    open: function() {
       return Promise.resolve();
     },
 
