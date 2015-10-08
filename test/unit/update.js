@@ -364,7 +364,7 @@ exports['controller.update'] = {
     };
     controller.update(opts)
       .catch(function(message) {
-        test.equal(message, 'The requested build was not found. Please see the available builds with `tessel update -l`.');
+        test.equal(message, 'The requested build was not found. Please see the available builds with `t2 update -l`.');
         // We need to close all open Tessel connections
         test.equal(this.closeTesselConnections.callCount, 1);
         test.done();
