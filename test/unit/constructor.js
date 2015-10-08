@@ -24,10 +24,12 @@ exports['Tessel'] = {
     });
 
     test.deepEqual(usb.usbConnection, {
-      connectionType: 'USB'
+      connectionType: 'USB',
+      authorized: true,
     });
     test.deepEqual(usb.connection, {
-      connectionType: 'USB'
+      connectionType: 'USB',
+      authorized: true,
     });
     test.equal(usb.lanConnection, undefined);
 
