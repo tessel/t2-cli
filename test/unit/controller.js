@@ -367,6 +367,10 @@ exports['Tessel.list'] = {
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
       this.start = function(opts) {
         self.activeSeeker = this;
+        this.msg = {
+          noAuth: 'No Authorized Tessels Found.',
+          auth: 'No Tessels Found.'
+        };
         if (opts.timeout && typeof opts.timeout === 'number') {
           setTimeout(this.stop, opts.timeout);
         }
@@ -515,6 +519,10 @@ exports['Tessel.get'] = {
     this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
       this.start = function(opts) {
         self.activeSeeker = this;
+        this.msg = {
+          noAuth: 'No Authorized Tessels Found.',
+          auth: 'No Tessels Found.'
+        };
         if (opts.timeout && typeof opts.timeout === 'number') {
           setTimeout(this.stop, opts.timeout);
         }

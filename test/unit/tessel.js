@@ -22,6 +22,10 @@ exports['Tessel (get)'] = {
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
       this.start = function(options) {
         self.activeSeeker = this;
+        this.msg = {
+          noAuth: 'No Authorized Tessels Found.',
+          auth: 'No Tessels Found.'
+        };
         setTimeout(this.stop.bind(this), options.timeout);
         return this;
       };
