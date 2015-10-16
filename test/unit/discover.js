@@ -44,14 +44,17 @@ exports['TesselSeeker'] = {
 exports['TesselSeeker.prototype.start'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.stop = this.sandbox.spy(FakeScanner.prototype, 'stop');
+
     this.usbStartScan = this.sandbox.stub(usb, 'startScan', function() {
       return new FakeScanner();
     });
     this.lanStartScan = this.sandbox.stub(lan, 'startScan', function() {
       return new FakeScanner();
     });
-
     this.seeker = new TesselSeeker();
+    // The default amount of time to scan for connections
+    this.scanTime = 100;
 
     done();
   },
@@ -70,6 +73,44 @@ exports['TesselSeeker.prototype.start'] = {
     test.equal(this.lanStartScan.callCount, 1);
 
     test.done();
+  },
+
+  onlyFindUSBConnectionNoAlternative: function(test) {
+    test.expect(2);
+    // Scan for new connections for this period
+    var seekerOpts = {
+      timeout: this.scanTime,
+      usb: true
+    };
+
+    // Error on name fetch
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+      return Promise.resolve('Frank');
+    });
+
+    // Start scan
+    standardSeekerSetup(this.seeker, seekerOpts)
+      // When all Tessels have completed opening
+      .then(function(found) {
+        // Make sure we don't find any Tessels because we stopped the scan
+        test.equal(found.length, 1);
+        test.equal(found[0].connection.connectionType, 'USB');
+        test.done();
+      }.bind(this));
+
+    var usb = TesselSimulator({
+      type: 'USB'
+    });
+
+    // Make the open function resolve immediately
+    usb.connection.open = function() {
+      return Promise.resolve();
+    };
+
+    // Emit the connections immediately
+    if (this.seeker.usbScan) {
+      this.seeker.usbScan.emit('connection', usb.connection);
+    }
   },
 };
 
@@ -323,7 +364,7 @@ exports['TesselSeeker Scan Time'] = {
       authorized: true
     });
 
-    // Create open functions authorized Tessel opens after scan has 
+    // Create open functions authorized Tessel opens after scan has
     // complete but unauthorized opens before scan completes
     lan1.connection.open = resolveOpenInMs.bind(this, this.scanTime + 1);
     // Give it a name
