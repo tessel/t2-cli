@@ -102,6 +102,21 @@ exports['controller.update'] = {
   buildOptionValid: function(test) {
     test.expect(9);
 
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {}
+    });
+
     var binaries = {
       firmware: new Buffer(0),
       openwrt: new Buffer(0)
@@ -142,8 +157,39 @@ exports['controller.update'] = {
       });
   },
 
+  buildWillNotUpdateOverUSB: function(test) {
+    test.expect(1);
+
+    var opts = {
+      version: '0.0.1'
+    };
+
+    controller.update(opts)
+      .catch(function(error) {
+        test.equal(error, 'No LAN connection found. USB-only updates do not work yet. Please ensure Tessel is connected to wifi and try again');
+        test.done();
+      });
+  },
+
   buildOptionInvalid: function(test) {
     test.expect(3);
+
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
 
     var errMessage = 'No such build exists';
 
@@ -168,6 +214,21 @@ exports['controller.update'] = {
 
   buildLatest: function(test) {
     test.expect(8);
+
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {}
+    });
 
     var binaries = {
       firmware: new Buffer(0),
@@ -213,6 +274,23 @@ exports['controller.update'] = {
   buildLatestAlreadyCurrent: function(test) {
     test.expect(7);
 
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+
     var binaries = {
       firmware: new Buffer(0),
       openwrt: new Buffer(0)
@@ -245,6 +323,23 @@ exports['controller.update'] = {
 
   buildLatestUpdateFailed: function(test) {
     test.expect(7);
+
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
 
     var binaries = {
       firmware: new Buffer(0),
@@ -290,6 +385,23 @@ exports['controller.update'] = {
   buildLatestForce: function(test) {
     test.expect(7);
 
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+
     var binaries = {
       firmware: new Buffer(0),
       openwrt: new Buffer(0)
@@ -329,6 +441,23 @@ exports['controller.update'] = {
   explicitLatestDoesntImmediatelyUpdate: function(test) {
     test.expect(3);
 
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+
     var binaries = {
       firmware: new Buffer(0),
       openwrt: new Buffer(0)
@@ -359,6 +488,23 @@ exports['controller.update'] = {
   noVerifiedVersion: function(test) {
     test.expect(2);
 
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+
     var opts = {
       version: 'x.x.x'
     };
@@ -373,6 +519,23 @@ exports['controller.update'] = {
 
   noVersionForcedUpdate: function(test) {
     test.expect(4);
+
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
 
     this.fetchCurrentBuildInfo.restore();
     this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
@@ -408,6 +571,23 @@ exports['controller.update'] = {
 
   noVersionUnknownError: function(test) {
     test.expect(4);
+
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
 
     var unknownError = new Error('Something totally weird happened.');
 
