@@ -97,6 +97,10 @@ makeCommand('run')
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
+  .option('slim', {
+    flag: true,
+    help: 'Bundle only the required modules'
+  })
   .help('Deploy a script to Tessel and run it with Node');
 
 makeCommand('push')
