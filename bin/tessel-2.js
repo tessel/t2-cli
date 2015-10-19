@@ -6,6 +6,7 @@ var controller = require('../lib/controller');
 var key = require('../lib/key');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
+var usb = require('../lib/usb_connection');
 
 function makeCommand(commandName) {
   return parser.command(commandName)
@@ -235,7 +236,10 @@ module.exports = function(args) {
 };
 
 module.exports.closeSuccessfulCommand = function() {
-  process.exit(0);
+  usb.terminateConnections()
+  .then(function () {
+    process.exit(0);
+  });
 };
 
 // Allow options to be partially applied
@@ -252,7 +256,10 @@ module.exports.closeFailedCommand = function(opts, err) {
     logs[opts.type](err);
   }
   // NOTE: Exit code is non-zero
-  process.exit(1);
+  usb.terminateConnections()
+  .then(function () {
+    process.exit(1);
+  });
 };
 
 
