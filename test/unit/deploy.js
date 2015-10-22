@@ -9,11 +9,120 @@ var mkdirp = require('mkdirp');
 var path = require('path');
 var rimraf = require('rimraf');
 var Ignore = require('fstream-ignore');
+var meminfo = fs.readFileSync('test/unit/fixtures/proc-meminfo', 'utf8');
 var deployFolder = path.join(__dirname, 'tmp');
 var deployFile = path.join(deployFolder, 'app.js');
 var codeContents = 'console.log("testing deploy");';
 var reference = new Buffer(codeContents);
 var sandbox = sinon.sandbox.create();
+
+exports['Tessel.prototype.memoryInfo'] = {
+  setUp: function(done) {
+    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', function() {
+      return new Promise(function(resolve) {
+        resolve(meminfo);
+      });
+    });
+
+    this.logsWarn = sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = sandbox.stub(logs, 'info', function() {});
+
+    this.tessel = TesselSimulator();
+
+    // This is what the result of processing output from
+    // `cat /proc/meminfo` must look like.
+    this.expect = {
+      MemTotal: 61488000,
+      MemFree: 28660000,
+      MemAvailable: 43112000,
+      Buffers: 4224000,
+      Cached: 11860000,
+      SwapCached: 0,
+      Active: 10936000,
+      Inactive: 8244000,
+      Active_anon: 3128000,
+      Inactive_anon: 52000,
+      Active_file: 7808000,
+      Inactive_file: 8192000,
+      Unevictable: 0,
+      Mlocked: 0,
+      SwapTotal: 0,
+      SwapFree: 0,
+      Dirty: 0,
+      Writeback: 0,
+      AnonPages: 3112000,
+      Mapped: 5260000,
+      Shmem: 84000,
+      Slab: 7460000,
+      SReclaimable: 1832000,
+      SUnreclaim: 5628000,
+      KernelStack: 352000,
+      PageTables: 348000,
+      NFS_Unstable: 0,
+      Bounce: 0,
+      WritebackTmp: 0,
+      CommitLimit: 30744000,
+      Committed_AS: 7072000,
+      VmallocTotal: 1048372000,
+      VmallocUsed: 1320000,
+      VmallocChunk: 1040404000
+    };
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    sandbox.restore();
+    done();
+  },
+
+  meminfo: function(test) {
+    test.expect(4);
+    this.tessel.memoryInfo().then(function(memory) {
+      test.equal(this.execRemoteCommand.callCount, 1);
+      test.equal(this.execRemoteCommand.lastCall.args[0], this.tessel);
+      test.equal(this.execRemoteCommand.lastCall.args[1], 'getMemoryInfo');
+      test.deepEqual(memory, this.expect);
+      test.done();
+    }.bind(this));
+  },
+
+  failureNoResponse: function(test) {
+    test.expect(1);
+
+    this.execRemoteCommand.restore();
+
+    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', function() {
+      return new Promise(function(resolve) {
+        resolve();
+      });
+    });
+
+    this.tessel.memoryInfo().catch(function(error) {
+      test.equal(error, 'Could not read device memory information.');
+      test.done();
+    }.bind(this));
+  },
+
+  failureEmptyResponse: function(test) {
+    test.expect(1);
+
+    this.execRemoteCommand.restore();
+
+    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', function() {
+      return new Promise(function(resolve) {
+        resolve('');
+      });
+    });
+
+    this.tessel.memoryInfo().catch(function(error) {
+      test.equal(error, 'Could not read device memory information.');
+      test.done();
+    }.bind(this));
+  },
+
+};
 
 exports['Tessel.prototype.deployScript'] = {
   setUp: function(done) {
