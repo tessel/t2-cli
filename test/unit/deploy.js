@@ -9,7 +9,10 @@ var mkdirp = require('mkdirp');
 var path = require('path');
 var rimraf = require('rimraf');
 var Ignore = require('fstream-ignore');
+var browserify = require('browserify');
+var uglify = require('uglify-js');
 var meminfo = fs.readFileSync('test/unit/fixtures/proc-meminfo', 'utf8');
+
 var deployFolder = path.join(__dirname, 'tmp');
 var deployFile = path.join(deployFolder, 'app.js');
 var codeContents = 'console.log("testing deploy");';
@@ -325,6 +328,9 @@ exports['Tessel.prototype.deployScript'] = {
 exports['tarBundle'] = {
   setUp: function(done) {
     this.addIgnoreRules = sandbox.spy(Ignore.prototype, 'addIgnoreRules');
+    this.logsWarn = sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = sandbox.stub(logs, 'info', function() {});
+
     done();
   },
 
@@ -343,6 +349,92 @@ exports['tarBundle'] = {
     }).then(function(bundle) {
       test.equal(this.addIgnoreRules.callCount, 0);
       test.equal(bundle.length, 4608);
+      test.done();
+    }.bind(this));
+  },
+
+  slim: function(test) {
+    test.expect(21);
+
+    var target = 'test/unit/fixtures/slim';
+    var entryPoint = 'index.js';
+    var tesselignore = path.join(target, '.tesselignore');
+    var fileToIgnore = path.join(target, 'mock-foo.js');
+    var slimPath = path.join(target, 'bundle.js');
+
+    this.glob = sandbox.stub(deploy, 'glob', function(pattern, options, callback) {
+      test.equal(options.dot, true);
+      process.nextTick(function() {
+        callback(null, [tesselignore]);
+      });
+    });
+
+    // This is necessary because the path in which the tests are being run might
+    // not be the same path that this operation occurs within.
+    this.globSync = sandbox.stub(deploy.glob, 'sync', function() {
+      return [fileToIgnore];
+    });
+
+    this.exclude = sandbox.spy(browserify.prototype, 'exclude');
+    this.browserify = sandbox.spy(deploy, 'browserify');
+
+    this.minify = sandbox.spy(uglify, 'minify');
+    this.compress = sandbox.spy(deploy, 'compress');
+
+    this.writeFileSync = sandbox.spy(fs, 'writeFileSync');
+    this.unlinkSync = sandbox.spy(fs, 'unlinkSync');
+
+    deploy.tarBundle({
+      target: target,
+      resolvedEntryPoint: path.join(target, entryPoint),
+      slimPath: slimPath,
+      slim: true,
+    }).then(function() {
+      test.equal(this.glob.callCount, 1);
+      test.equal(this.globSync.callCount, 1);
+
+      test.equal(this.browserify.callCount, 1);
+      test.equal(this.browserify.lastCall.args[0], path.join(target, entryPoint));
+
+      // These options are extrememly important. Without them,
+      // the bundles will have node.js built-ins shimmed!!
+      test.deepEqual(this.browserify.lastCall.args[1], {
+        builtins: false,
+        commondir: false,
+        browserField: false,
+        detectGlobals: false,
+        ignoreMissing: true
+      });
+
+      test.equal(this.exclude.callCount, 1);
+      test.equal(this.exclude.lastCall.args[0], 'test/unit/fixtures/slim/mock-foo.js');
+
+      test.equal(this.compress.callCount, 1);
+      test.equal(Buffer.isBuffer(this.compress.lastCall.args[0]), true);
+
+      var minified = this.compress.lastCall.returnValue;
+
+      test.equal(minified.indexOf('!!mock foo!!'), -1);
+
+      test.equal(this.minify.callCount, 1);
+      test.equal(typeof this.minify.lastCall.args[0], 'string');
+
+      // Cannot deepEqual because uglify.minify(..., options) will
+      // mutate the options reference. No need to keep track of that.
+      test.equal(this.minify.lastCall.args[1].fromString, true);
+
+      // Creates up bundle.js
+      test.equal(this.writeFileSync.callCount, 1);
+      test.equal(this.writeFileSync.lastCall.args[0], slimPath);
+      test.equal(this.writeFileSync.lastCall.args[1], minified);
+
+      test.equal(this.addIgnoreRules.callCount, 1);
+      test.deepEqual(this.addIgnoreRules.lastCall.args[0], ['*', '!' + slimPath]);
+
+      // Cleaned up bundle.js
+      test.equal(this.unlinkSync.callCount, 1);
+      test.equal(this.unlinkSync.lastCall.args[0], slimPath);
+
       test.done();
     }.bind(this));
   },
