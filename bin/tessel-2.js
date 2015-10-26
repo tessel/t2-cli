@@ -97,6 +97,13 @@ makeCommand('run')
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
+  .option('slim', {
+    flag: true,
+    help: 'Bundle only the required modules'
+  })
+  .option('slimPath', {
+    default: 'build.js'
+  })
   .help('Deploy a script to Tessel and run it with Node');
 
 makeCommand('push')
@@ -118,6 +125,13 @@ makeCommand('push')
     flag: true,
     abbr: 'v',
     help: 'Choose to view more debugging information'
+  })
+  .option('slim', {
+    flag: true,
+    help: 'Bundle only the required modules'
+  })
+  .option('slimPath', {
+    default: 'build.js'
   })
   .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
