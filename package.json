@@ -71,7 +71,7 @@
     "uglify-js": "^2.5.0",
     "uglifyify": "^3.0.1",
     "url-join": "0.0.1",
-    "usb": "1.0.5",
+    "usb": "1.1.0",
     "usb-daemon-parser": "0.0.1"
   },
   "preferGlobal": true,
