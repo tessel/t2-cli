@@ -134,30 +134,48 @@ exports['USB.Connection.prototype._receiveMessages'] = {
     test.done();
   },
 
-  errorWhenStillOpen: function(test) {
+  errorOnOpen: function(test) {
+    var self = this;
     test.expect(2);
+    var errorMessage = 'bad usb things!';
 
-    this.usbConnection._receiveMessages();
+    self.usbConnection.epIn.stopPoll = function() {};
+    this.sandbox.stub(this.usbConnection, '_receiveMessages', function() {
+      self.usbConnection.epIn.emit('error', errorMessage);
+    });
 
-    this.usbConnection.epIn.emit('error', 'oh no!');
+    var closeFunc = this.sandbox.spy(this.usbConnection, '_close');
 
-    test.equal(this.err.callCount, 1);
-    test.equal(this.processExit.callCount, 1);
-    test.done();
-  },
+    var fakeInterface = {
+      claim: function() {},
+      setAltSetting: function(arg1, cb) {
+        cb();
+      },
+      endpoints: [self.usbConnection.epIn, new Emitter()],
+    };
+    this.sandbox.stub(this.usbConnection, 'device', {
+      open: function() {},
+      interface: function() {
+        return fakeInterface;
+      },
+      getStringDescriptor: function(arg1, cb) {
+        cb();
+      },
+      deviceDescriptor: {
+        iSerialNumber: 'blah',
+      }
+    });
 
-  errorWhenClosed: function(test) {
-    test.expect(2);
-
-    this.usbConnection._receiveMessages();
-    this.usbConnection.closed = true;
-    this.usbConnection.epIn.emit('error', 'oh no!');
-
-    // The immediate return prevents these from being
-    // called from in the error handler
-    test.equal(this.err.callCount, 0);
-    test.equal(this.processExit.callCount, 0);
-    test.done();
-  },
-
+    this.usbConnection.open()
+      .then(function() {
+        // It should not resolve
+        test.fail();
+      })
+      .catch(function(err) {
+        // It should throw the error;
+        test.equal(err, errorMessage);
+        test.equal(closeFunc.callCount, 1);
+        test.done();
+      });
+  }
 };
