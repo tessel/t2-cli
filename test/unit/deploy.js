@@ -9,6 +9,7 @@ var mkdirp = require('mkdirp');
 var path = require('path');
 var rimraf = require('rimraf');
 var Ignore = require('fstream-ignore');
+var fsTemp = require('fs-temp');
 var browserify = require('browserify');
 var uglify = require('uglify-js');
 var meminfo = fs.readFileSync('test/unit/fixtures/proc-meminfo', 'utf8');
@@ -327,9 +328,30 @@ exports['Tessel.prototype.deployScript'] = {
 
 exports['tarBundle'] = {
   setUp: function(done) {
+    this.writeFileSync = sandbox.spy(fs, 'writeFileSync');
+    this.rmdirSync = sandbox.spy(fs, 'rmdirSync');
+    this.unlinkSync = sandbox.spy(fs, 'unlinkSync');
+
+    this.exclude = sandbox.spy(browserify.prototype, 'exclude');
+    this.mkdirSync = sandbox.spy(fsTemp, 'mkdirSync');
     this.addIgnoreRules = sandbox.spy(Ignore.prototype, 'addIgnoreRules');
+    this.minify = sandbox.spy(uglify, 'minify');
+
+    this.browserify = sandbox.spy(deploy, 'browserify');
+    this.compress = sandbox.spy(deploy, 'compress');
+
     this.logsWarn = sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = sandbox.stub(logs, 'info', function() {});
+
+    this.glob = sandbox.stub(deploy, 'glob', function(pattern, options, callback) {
+      process.nextTick(function() {
+        callback(null, []);
+      });
+    });
+
+    this.globSync = sandbox.stub(deploy.glob, 'sync', function() {
+      return [];
+    });
 
     done();
   },
@@ -339,29 +361,123 @@ exports['tarBundle'] = {
     done();
   },
 
-  project: function(test) {
-    test.expect(2);
+  full: function(test) {
+    test.expect(11);
 
     var target = 'test/unit/fixtures/bundling';
 
     deploy.tarBundle({
-      target: target
+      target: target,
+      full: true,
     }).then(function(bundle) {
+      test.equal(this.glob.callCount, 0);
+      test.equal(this.globSync.callCount, 0);
       test.equal(this.addIgnoreRules.callCount, 0);
-      test.equal(bundle.length, 4608);
+      test.equal(this.browserify.callCount, 0);
+      test.equal(this.exclude.callCount, 0);
+      test.equal(this.compress.callCount, 0);
+      test.equal(this.minify.callCount, 0);
+      test.equal(this.writeFileSync.callCount, 0);
+      test.equal(this.unlinkSync.callCount, 0);
+      test.equal(this.rmdirSync.callCount, 0);
+
+      test.equal(bundle.length, 5632);
       test.done();
     }.bind(this));
   },
 
   slim: function(test) {
-    test.expect(21);
+    test.expect(13);
+
+    var entryPoint = 'index.js';
+    var target = 'test/unit/fixtures/bundling';
+    var slimPath = '__tessel_program__.js';
+
+    // this.join.reset();
+    deploy.tarBundle({
+      target: target,
+      resolvedEntryPoint: entryPoint,
+      slimPath: slimPath,
+      slim: true,
+    }).then(function(bundle) {
+      test.equal(this.glob.callCount, 1);
+      test.equal(this.browserify.callCount, 1);
+      test.equal(this.compress.callCount, 1);
+      test.equal(this.minify.callCount, 1);
+      test.equal(this.mkdirSync.callCount, 1);
+      test.equal(this.writeFileSync.callCount, 1);
+
+      test.equal(
+        this.writeFileSync.lastCall.args[0],
+        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
+      );
+      test.equal(this.writeFileSync.lastCall.args[1], 'console.log("testing deploy");');
+
+      test.equal(this.unlinkSync.callCount, 1);
+      test.equal(
+        this.unlinkSync.lastCall.args[0],
+        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
+      );
+
+      test.equal(this.rmdirSync.callCount, 1);
+      test.equal(this.rmdirSync.lastCall.args[0], this.mkdirSync.lastCall.returnValue);
+
+      test.equal(bundle.length, 2048);
+      test.done();
+    }.bind(this));
+  },
+
+  slimRequireOnlyTesselLikeInit: function(test) {
+    test.expect(13);
+
+    var entryPoint = 'index.js';
+    var target = 'test/unit/fixtures/init';
+    var slimPath = '__tessel_program__.js';
+
+    deploy.tarBundle({
+      target: target,
+      resolvedEntryPoint: entryPoint,
+      slimPath: slimPath,
+      slim: true,
+    }).then(function(bundle) {
+      test.equal(this.glob.callCount, 1);
+      test.equal(this.browserify.callCount, 1);
+      test.equal(this.compress.callCount, 1);
+      test.equal(this.minify.callCount, 1);
+
+      test.equal(this.mkdirSync.callCount, 1);
+      test.equal(this.writeFileSync.callCount, 1);
+
+      test.equal(
+        this.writeFileSync.lastCall.args[0],
+        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
+      );
+      test.equal(this.writeFileSync.lastCall.args[1], 'var tessel=require("tessel");tessel.led[2].on(),setInterval(function(){tessel.led[2].toggle(),tessel.led[3].toggle()},100);');
+
+      test.equal(this.unlinkSync.callCount, 1);
+      test.equal(
+        this.unlinkSync.lastCall.args[0],
+        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
+      );
+
+      test.equal(this.rmdirSync.callCount, 1);
+      test.equal(this.rmdirSync.lastCall.args[0], this.mkdirSync.lastCall.returnValue);
+
+      test.equal(bundle.length, 2048);
+      test.done();
+    }.bind(this));
+  },
+
+  slimRespectTesselIgnore: function(test) {
+    test.expect(22);
 
     var target = 'test/unit/fixtures/slim';
     var entryPoint = 'index.js';
     var tesselignore = path.join(target, '.tesselignore');
     var fileToIgnore = path.join(target, 'mock-foo.js');
-    var slimPath = path.join(target, 'bundle.js');
+    var slimPath = '__tessel_program__.js';
 
+    this.glob.restore();
     this.glob = sandbox.stub(deploy, 'glob', function(pattern, options, callback) {
       test.equal(options.dot, true);
       process.nextTick(function() {
@@ -371,28 +487,19 @@ exports['tarBundle'] = {
 
     // This is necessary because the path in which the tests are being run might
     // not be the same path that this operation occurs within.
+    this.globSync.restore();
     this.globSync = sandbox.stub(deploy.glob, 'sync', function() {
       return [fileToIgnore];
     });
 
-    this.exclude = sandbox.spy(browserify.prototype, 'exclude');
-    this.browserify = sandbox.spy(deploy, 'browserify');
-
-    this.minify = sandbox.spy(uglify, 'minify');
-    this.compress = sandbox.spy(deploy, 'compress');
-
-    this.writeFileSync = sandbox.spy(fs, 'writeFileSync');
-    this.unlinkSync = sandbox.spy(fs, 'unlinkSync');
-
     deploy.tarBundle({
       target: target,
-      resolvedEntryPoint: path.join(target, entryPoint),
+      resolvedEntryPoint: entryPoint,
       slimPath: slimPath,
       slim: true,
     }).then(function() {
       test.equal(this.glob.callCount, 1);
       test.equal(this.globSync.callCount, 1);
-
       test.equal(this.browserify.callCount, 1);
       test.equal(this.browserify.lastCall.args[0], path.join(target, entryPoint));
 
@@ -423,55 +530,147 @@ exports['tarBundle'] = {
       // mutate the options reference. No need to keep track of that.
       test.equal(this.minify.lastCall.args[1].fromString, true);
 
-      // Creates up bundle.js
+      test.equal(this.mkdirSync.callCount, 1);
       test.equal(this.writeFileSync.callCount, 1);
-      test.equal(this.writeFileSync.lastCall.args[0], slimPath);
+
+      test.equal(
+        this.writeFileSync.lastCall.args[0],
+        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
+      );
       test.equal(this.writeFileSync.lastCall.args[1], minified);
 
-      test.equal(this.addIgnoreRules.callCount, 1);
-      test.deepEqual(this.addIgnoreRules.lastCall.args[0], ['*', '!' + slimPath]);
-
-      // Cleaned up bundle.js
       test.equal(this.unlinkSync.callCount, 1);
-      test.equal(this.unlinkSync.lastCall.args[0], slimPath);
+      test.equal(
+        this.unlinkSync.lastCall.args[0],
+        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
+      );
+
+      test.equal(this.rmdirSync.callCount, 1);
+      test.equal(this.rmdirSync.lastCall.args[0], this.mkdirSync.lastCall.returnValue);
+
 
       test.done();
     }.bind(this));
   },
 
-  single: function(test) {
-    test.expect(3);
+  slimSingle: function(test) {
+    test.expect(7);
 
     var target = 'test/unit/fixtures/bundling';
     var entryPoint = 'index.js';
+    var slimPath = '__tessel_program__.js';
 
     deploy.tarBundle({
       target: target,
       entryPoint: entryPoint,
       resolvedEntryPoint: entryPoint,
-      single: true
+      single: true,
+      slim: true,
+      slimPath: slimPath,
     }).then(function(bundle) {
+      test.equal(this.glob.callCount, 1);
+      test.equal(this.browserify.callCount, 1);
+      test.equal(this.compress.callCount, 1);
+      test.equal(this.minify.callCount, 1);
+      test.equal(this.writeFileSync.callCount, 1);
+      test.equal(this.unlinkSync.callCount, 1);
+
+
+      test.equal(bundle.length, 2048);
+      test.done();
+    }.bind(this));
+  },
+
+  slimSingleNested: function(test) {
+    test.expect(7);
+
+    var target = 'test/unit/fixtures/bundling';
+    var entryPoint = 'another.js';
+    var slimPath = '__tessel_program__.js';
+
+    deploy.tarBundle({
+      target: target,
+      entryPoint: entryPoint,
+      resolvedEntryPoint: path.join('nested', entryPoint),
+      single: true,
+      slim: true,
+      slimPath: slimPath,
+
+    }).then(function(bundle) {
+      test.equal(this.glob.callCount, 1);
+      test.equal(this.browserify.callCount, 1);
+      test.equal(this.compress.callCount, 1);
+      test.equal(this.minify.callCount, 1);
+      test.equal(this.writeFileSync.callCount, 1);
+      test.equal(this.unlinkSync.callCount, 1);
+
+      test.equal(bundle.length, 2048);
+      test.done();
+    }.bind(this));
+  },
+
+  single: function(test) {
+    test.expect(11);
+
+    var target = 'test/unit/fixtures/bundling';
+    var entryPoint = 'index.js';
+    var slimPath = '__tessel_program__.js';
+
+    deploy.tarBundle({
+      target: target,
+      entryPoint: entryPoint,
+      resolvedEntryPoint: entryPoint,
+      single: true,
+      full: true,
+      slimPath: slimPath,
+    }).then(function(bundle) {
+      test.equal(this.glob.callCount, 0);
+      test.equal(this.globSync.callCount, 0);
+      test.equal(this.browserify.callCount, 0);
+      test.equal(this.exclude.callCount, 0);
+      test.equal(this.compress.callCount, 0);
+      test.equal(this.minify.callCount, 0);
+      test.equal(this.writeFileSync.callCount, 0);
+      test.equal(this.unlinkSync.callCount, 0);
+
       test.equal(this.addIgnoreRules.callCount, 1);
-      test.deepEqual(this.addIgnoreRules.lastCall.args[0], ['*', '!index.js']);
+      test.deepEqual(
+        this.addIgnoreRules.lastCall.args[0], ['*', '!index.js']
+      );
       test.equal(bundle.length, 2048);
       test.done();
     }.bind(this));
   },
 
   singleNested: function(test) {
-    test.expect(3);
+    test.expect(11);
 
     var target = 'test/unit/fixtures/bundling';
     var entryPoint = 'another.js';
+    var slimPath = path.join(target, '__tessel_program__.js');
 
     deploy.tarBundle({
       target: target,
       entryPoint: entryPoint,
-      resolvedEntryPoint: 'nested/' + entryPoint,
-      single: true
+      resolvedEntryPoint: path.join('nested', entryPoint),
+      single: true,
+      full: true,
+      slimPath: slimPath,
+
     }).then(function(bundle) {
+      test.equal(this.glob.callCount, 0);
+      test.equal(this.globSync.callCount, 0);
+      test.equal(this.browserify.callCount, 0);
+      test.equal(this.exclude.callCount, 0);
+      test.equal(this.compress.callCount, 0);
+      test.equal(this.minify.callCount, 0);
+      test.equal(this.writeFileSync.callCount, 0);
+      test.equal(this.unlinkSync.callCount, 0);
+
       test.equal(this.addIgnoreRules.callCount, 1);
-      test.deepEqual(this.addIgnoreRules.lastCall.args[0], ['*', '!nested/another.js']);
+      test.deepEqual(
+        this.addIgnoreRules.lastCall.args[0], ['*', '!nested/another.js']
+      );
       test.equal(bundle.length, 2560);
       test.done();
     }.bind(this));

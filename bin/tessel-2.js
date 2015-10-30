@@ -69,7 +69,7 @@ makeCommand('restart')
   })
   .option('entryPoint', {
     position: 1,
-    help: 'The entry point file to deploy to Tessel'
+    help: 'The program entry point file to deploy to Tessel.',
   })
   .option('type', {
     default: 'ram',
@@ -85,7 +85,7 @@ makeCommand('run')
   .option('entryPoint', {
     position: 1,
     required: true,
-    help: 'The entry point file to deploy to Tessel'
+    help: 'The program entry point file to deploy to Tessel.'
   })
   .option('single', {
     flag: true,
@@ -99,10 +99,17 @@ makeCommand('run')
   })
   .option('slim', {
     flag: true,
-    help: 'Bundle only the required modules'
+    default: true,
+    help: 'Deploy a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore. Program is run from "slimPath" file.'
   })
   .option('slimPath', {
-    default: 'build.js'
+    default: '__tessel_program__.js',
+    help: 'Specify the name of the --slim bundle file.'
+  })
+  .option('full', {
+    flag: true,
+    default: false,
+    help: 'Deploy all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore. Program is run from specified "entryPoint" file.'
   })
   .help('Deploy a script to Tessel and run it with Node');
 
@@ -114,7 +121,7 @@ makeCommand('push')
   .option('entryPoint', {
     position: 1,
     required: true,
-    help: 'The entry point file to deploy to Tessel'
+    help: 'The program entry point file to deploy to Tessel.'
   })
   .option('single', {
     flag: true,
@@ -128,10 +135,17 @@ makeCommand('push')
   })
   .option('slim', {
     flag: true,
-    help: 'Bundle only the required modules'
+    default: true,
+    help: 'Push a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore. Program is run from "slimPath" file.'
   })
   .option('slimPath', {
-    default: 'build.js'
+    default: '__tessel_program__.js',
+    help: 'Specify the name of the --slim bundle file.'
+  })
+  .option('full', {
+    flag: true,
+    default: false,
+    help: 'Push all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore. Program is run from specified "entryPoint" file.'
   })
   .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
