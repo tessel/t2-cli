@@ -1,8 +1,10 @@
-var sinon = require('sinon');
 var Emitter = require('events').EventEmitter;
-var LAN = require('../../lib/lan_connection').LAN;
 var fs = require('fs');
+var LAN = require('../../lib/lan_connection').LAN;
+var Tessel = require('../../lib/tessel/tessel');
+var ssh = require('ssh2');
 var mdns = require('mdns-js');
+var sinon = require('sinon');
 
 exports['LAN.Connection'] = {
   setUp: function(done) {
@@ -48,6 +50,53 @@ exports['LAN.Scanner'] = {
     test.equal(this.scanner.browser, undefined);
     test.deepEqual(this.scanner.discovered, []);
     test.done();
+  },
+};
+
+exports['LAN.Connection.prototype.exec'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.isProvisioned = this.sandbox.stub(Tessel, 'isProvisioned', function() {
+      return false;
+    });
+
+    this.Client = this.sandbox.spy(ssh, 'Client');
+
+    this.lanConnection = new LAN.Connection({});
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  closed: function(test) {
+    test.expect(1);
+
+    this.lanConnection.closed = true;
+    this.lanConnection.exec()
+      .catch(function(error) {
+        test.equal(error.message, 'Remote SSH connection has already been closed');
+        test.done();
+      });
+  },
+
+  emitClose: function(test) {
+    test.expect(2);
+
+    this.lanConnection.open()
+      .then(function() {
+        test.equal(this.Client.callCount, 1);
+
+        this.lanConnection.ssh.emit('close');
+        this.lanConnection.exec()
+          .catch(function(error) {
+            test.equal(error.message, 'Remote SSH connection has already been closed');
+            test.done();
+          });
+      }.bind(this));
   },
 };
 
