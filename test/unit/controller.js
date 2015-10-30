@@ -637,7 +637,10 @@ exports['Tessel.get'] = {
       name: 'samesies'
     });
 
-    Tessel.get(this.standardOpts)
+    var customOpts = this.standardOpts;
+    customOpts.lanPrefer = true;
+
+    Tessel.get(customOpts)
       .then(function() {
         test.equal(this.reconcileTessels.callCount, 1);
         test.equal(this.runHeuristics.callCount, 1);
