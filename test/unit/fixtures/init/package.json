@@ -1,0 +1,6 @@
+{
+  "name": "blink",
+  "version": "0.0.1",
+  "description": "blink",
+  "main": "./index.js"
+}
