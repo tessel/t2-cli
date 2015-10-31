@@ -184,6 +184,8 @@ makeCommand('wifi')
     // TODO: Refactor switch case into controller.wifi
     if (opts.list) {
       callControllerWith('printAvailableNetworks', opts);
+    } else if (opts.off) {
+      callControllerWith('disableWifi', opts);
     } else if (opts.ssid && opts.password) {
       callControllerWith('connectToNetwork', opts);
     } else {
@@ -204,6 +206,10 @@ makeCommand('wifi')
     abbr: 'p',
     metavar: 'PASSWORD',
     help: 'Set the password of the network to connect to'
+  })
+  .option('off', {
+    flag: true,
+    help: 'Disable the wireless network'
   })
   .help('Configure the wireless connection');
 
