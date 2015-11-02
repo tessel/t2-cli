@@ -361,6 +361,51 @@ exports['tarBundle'] = {
     done();
   },
 
+  tesselIgnore: function(test) {
+    test.expect(2);
+
+    var target = 'test/unit/fixtures/ignore';
+    var entryPoint = 'index.js';
+    var fileToIgnore = path.join(target, 'mock-foo.js');
+    var slimPath = '__tessel_program__.js';
+
+    this.glob.restore();
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', function() {
+      return [fileToIgnore];
+    });
+
+    deploy.tarBundle({
+      target: target,
+      resolvedEntryPoint: entryPoint,
+      slimPath: slimPath,
+      slim: true,
+    }).then(function() {
+
+      // There are only 4 valid rules. (2 in each .tesselignore)
+      // The empty line MUST NOT create a pattern entry.
+      // The comment line MUST NOT create a pattern entry.
+      test.equal(this.globSync.callCount, 4);
+      test.deepEqual(this.globSync.args, [
+        ['a/**/*.*', {
+          cwd: 'test/unit/fixtures/ignore'
+        }],
+        ['mock-foo.js', {
+          cwd: 'test/unit/fixtures/ignore'
+        }],
+        ['nested/b/**/*.*', {
+          cwd: 'test/unit/fixtures/ignore'
+        }],
+        ['nested/file.js', {
+          cwd: 'test/unit/fixtures/ignore'
+        }]
+      ]);
+
+      test.done();
+    }.bind(this));
+  },
+
+
   full: function(test) {
     test.expect(11);
 
