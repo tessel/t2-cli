@@ -291,12 +291,20 @@ makeCommand('ap')
     help: 'Encryption to use on network (i.e. WEP, WPA, PSK).'
   })
   .option('trigger', {
-    position: 0,
+    position: 1,
     help: 'Trigger, i.e. on OR off, the access point'
   })
   .help('Configure the Tessel as an access point')
   .callback(function(opts) {
-    callControllerWith('createAccessPoint', opts);
+    if (opts.trigger) {
+      if (opts.trigger === 'on') {
+        callControllerWith('enableAccessPoint', opts);
+      } else {
+        callControllerWith('disableAccessPoint', opts);
+      }
+    } else {
+      callControllerWith('createAccessPoint', opts);
+    }
   });
 
 
