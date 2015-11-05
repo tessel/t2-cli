@@ -178,6 +178,8 @@ makeCommand('wifi')
       callControllerWith('printAvailableNetworks', opts);
     } else if (opts.ssid && opts.password) {
       callControllerWith('connectToNetwork', opts);
+    } else if (opts.ip) {
+      callControllerWith('printIpAddress', opts);
     } else {
       callControllerWith('getWifiInfo', opts);
     }
@@ -186,6 +188,11 @@ makeCommand('wifi')
     abbr: 'l',
     flag: true,
     help: 'List available Wifi networks'
+  })
+  .option('ip', {
+    abbr: 'i',
+    flag: true,
+    help: 'Print the IP address of the tessel'
   })
   .option('ssid', {
     abbr: 'n',
