@@ -367,7 +367,7 @@ exports['tarBundle'] = {
     var target = 'test/unit/fixtures/bundling';
 
     deploy.tarBundle({
-      target: target,
+      target: path.normalize(target),
       full: true,
     }).then(function(bundle) {
       test.equal(this.glob.callCount, 0);
@@ -395,7 +395,7 @@ exports['tarBundle'] = {
 
     // this.join.reset();
     deploy.tarBundle({
-      target: target,
+      target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slimPath: slimPath,
       slim: true,
@@ -435,7 +435,7 @@ exports['tarBundle'] = {
     var slimPath = '__tessel_program__.js';
 
     deploy.tarBundle({
-      target: target,
+      target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slimPath: slimPath,
       slim: true,
@@ -493,7 +493,7 @@ exports['tarBundle'] = {
     });
 
     deploy.tarBundle({
-      target: target,
+      target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slimPath: slimPath,
       slim: true,
@@ -514,7 +514,7 @@ exports['tarBundle'] = {
       });
 
       test.equal(this.exclude.callCount, 1);
-      test.equal(this.exclude.lastCall.args[0], 'test/unit/fixtures/slim/mock-foo.js');
+      test.equal(this.exclude.lastCall.args[0], path.normalize('test/unit/fixtures/slim/mock-foo.js'));
 
       test.equal(this.compress.callCount, 1);
       test.equal(Buffer.isBuffer(this.compress.lastCall.args[0]), true);
@@ -561,7 +561,7 @@ exports['tarBundle'] = {
     var slimPath = '__tessel_program__.js';
 
     deploy.tarBundle({
-      target: target,
+      target: path.normalize(target),
       entryPoint: entryPoint,
       resolvedEntryPoint: entryPoint,
       single: true,
@@ -589,7 +589,7 @@ exports['tarBundle'] = {
     var slimPath = '__tessel_program__.js';
 
     deploy.tarBundle({
-      target: target,
+      target: path.normalize(target),
       entryPoint: entryPoint,
       resolvedEntryPoint: path.join('nested', entryPoint),
       single: true,
@@ -617,7 +617,7 @@ exports['tarBundle'] = {
     var slimPath = '__tessel_program__.js';
 
     deploy.tarBundle({
-      target: target,
+      target: path.normalize(target),
       entryPoint: entryPoint,
       resolvedEntryPoint: entryPoint,
       single: true,
@@ -650,7 +650,7 @@ exports['tarBundle'] = {
     var slimPath = path.join(target, '__tessel_program__.js');
 
     deploy.tarBundle({
-      target: target,
+      target: path.normalize(target),
       entryPoint: entryPoint,
       resolvedEntryPoint: path.join('nested', entryPoint),
       single: true,
@@ -669,7 +669,7 @@ exports['tarBundle'] = {
 
       test.equal(this.addIgnoreRules.callCount, 1);
       test.deepEqual(
-        this.addIgnoreRules.lastCall.args[0], ['*', '!nested/another.js']
+        this.addIgnoreRules.lastCall.args[0], ['*', path.normalize('!nested/another.js')]
       );
       test.equal(bundle.length, 2560);
       test.done();
@@ -784,7 +784,7 @@ exports['deploy.findProject'] = {
 
     var key = process.platform === 'win32' ? 'USERPROFILE' : 'HOME';
     var real = process.env[key];
-    var fake = '/fake/test/home/dir';
+    var fake = path.normalize('/fake/test/home/dir');
 
     process.env[key] = fake;
 
@@ -801,7 +801,7 @@ exports['deploy.findProject'] = {
       process.env[key] = real;
 
       // Ensure that "~" was transformed
-      test.equal(arg, '/fake/test/home/dir/foo');
+      test.equal(arg, path.normalize('/fake/test/home/dir/foo'));
       test.done();
     });
 
@@ -884,7 +884,7 @@ exports['deploy.findProject'] = {
       test.deepEqual(project, {
         pushdir: fixtures.project,
         program: path.join(fixtures.project, 'test/index.js'),
-        entryPoint: 'test/index.js'
+        entryPoint: path.normalize('test/index.js')
       });
       test.done();
     });
