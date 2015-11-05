@@ -6,15 +6,16 @@ var TesselSimulator = require('../common/tessel-simulator');
 
 exports['Tessel.prototype.createAccessPoint'] = {
   setUp: function(done) {
-    this.createAccessPoint = sinon.spy(Tessel.prototype, 'createAccessPoint');
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
-    this.setAccessPointSSID = sinon.spy(commands, 'setAccessPointSSID');
-    this.setAccessPointPassword = sinon.spy(commands, 'setAccessPointPassword');
-    this.setAccessPointSecurity = sinon.spy(commands, 'setAccessPointSecurity');
-    this.commitWirelessCredentials = sinon.spy(commands, 'commitWirelessCredentials');
-    this.reconnectWifi = sinon.spy(commands, 'reconnectWifi');
-    this.reconnectDnsmasq = sinon.spy(commands, 'reconnectDnsmasq');
-    this.reconnectDhcp = sinon.spy(commands, 'reconnectDhcp');
+    this.sandbox = sinon.sandbox.create();
+    this.createAccessPoint = this.sandbox.spy(Tessel.prototype, 'createAccessPoint');
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.setAccessPointSSID = this.sandbox.spy(commands, 'setAccessPointSSID');
+    this.setAccessPointPassword = this.sandbox.spy(commands, 'setAccessPointPassword');
+    this.setAccessPointSecurity = this.sandbox.spy(commands, 'setAccessPointSecurity');
+    this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
+    this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
+    this.reconnectDnsmasq = this.sandbox.spy(commands, 'reconnectDnsmasq');
+    this.reconnectDhcp = this.sandbox.spy(commands, 'reconnectDhcp');
 
     this.tessel = TesselSimulator();
 
@@ -23,15 +24,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
   tearDown: function(done) {
     this.tessel.mockClose();
-    this.createAccessPoint.restore();
-    this.logsInfo.restore();
-    this.setAccessPointSSID.restore();
-    this.setAccessPointPassword.restore();
-    this.setAccessPointSecurity.restore();
-    this.commitWirelessCredentials.restore();
-    this.reconnectWifi.restore();
-    this.reconnectDnsmasq.restore();
-    this.reconnectDhcp.restore();
+    this.sandbox.restore();
     done();
   },
 
@@ -164,13 +157,14 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
 exports['Tessel.prototype.enableAccessPoint'] = {
   setUp: function(done) {
-    this.enableAccessPoint = sinon.spy(Tessel.prototype, 'enableAccessPoint');
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
-    this.turnAccessPointOn = sinon.spy(commands, 'turnAccessPointOn');
-    this.commitWirelessCredentials = sinon.spy(commands, 'commitWirelessCredentials');
-    this.reconnectWifi = sinon.spy(commands, 'reconnectWifi');
-    this.reconnectDnsmasq = sinon.spy(commands, 'reconnectDnsmasq');
-    this.reconnectDhcp = sinon.spy(commands, 'reconnectDhcp');
+    this.sandbox = sinon.sandbox.create();
+    this.enableAccessPoint = this.sandbox.spy(Tessel.prototype, 'enableAccessPoint');
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.turnAccessPointOn = this.sandbox.spy(commands, 'turnAccessPointOn');
+    this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
+    this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
+    this.reconnectDnsmasq = this.sandbox.spy(commands, 'reconnectDnsmasq');
+    this.reconnectDhcp = this.sandbox.spy(commands, 'reconnectDhcp');
 
     this.tessel = TesselSimulator();
 
@@ -179,13 +173,7 @@ exports['Tessel.prototype.enableAccessPoint'] = {
 
   tearDown: function(done) {
     this.tessel.mockClose();
-    this.enableAccessPoint.restore();
-    this.logsInfo.restore();
-    this.turnAccessPointOn.restore();
-    this.commitWirelessCredentials.restore();
-    this.reconnectWifi.restore();
-    this.reconnectDnsmasq.restore();
-    this.reconnectDhcp.restore();
+    this.sandbox.restore();
     done();
   },
 
@@ -216,13 +204,14 @@ exports['Tessel.prototype.enableAccessPoint'] = {
 
 exports['Tessel.prototype.disableAccessPoint'] = {
   setUp: function(done) {
-    this.disableAccessPoint = sinon.spy(Tessel.prototype, 'disableAccessPoint');
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
-    this.turnAccessPointOff = sinon.spy(commands, 'turnAccessPointOff');
-    this.commitWirelessCredentials = sinon.spy(commands, 'commitWirelessCredentials');
-    this.reconnectWifi = sinon.spy(commands, 'reconnectWifi');
-    this.reconnectDnsmasq = sinon.spy(commands, 'reconnectDnsmasq');
-    this.reconnectDhcp = sinon.spy(commands, 'reconnectDhcp');
+    this.sandbox = sinon.sandbox.create();
+    this.disableAccessPoint = this.sandbox.spy(Tessel.prototype, 'disableAccessPoint');
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.turnAccessPointOff = this.sandbox.spy(commands, 'turnAccessPointOff');
+    this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
+    this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
+    this.reconnectDnsmasq = this.sandbox.spy(commands, 'reconnectDnsmasq');
+    this.reconnectDhcp = this.sandbox.spy(commands, 'reconnectDhcp');
 
     this.tessel = TesselSimulator();
 
@@ -231,13 +220,7 @@ exports['Tessel.prototype.disableAccessPoint'] = {
 
   tearDown: function(done) {
     this.tessel.mockClose();
-    this.disableAccessPoint.restore();
-    this.logsInfo.restore();
-    this.turnAccessPointOff.restore();
-    this.commitWirelessCredentials.restore();
-    this.reconnectWifi.restore();
-    this.reconnectDnsmasq.restore();
-    this.reconnectDhcp.restore();
+    this.sandbox.restore();
     done();
   },
 
