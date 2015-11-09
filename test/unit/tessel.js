@@ -9,6 +9,7 @@ var logs = require('../../lib/logs');
 var controller = require('../../lib/controller');
 var lan = require('../../lib/lan_connection');
 var TesselSimulator = require('../common/tessel-simulator');
+var TESSEL_AUTH_KEY = require('../../lib/tessel/provision.js').TESSEL_AUTH_KEY;
 
 
 exports['Tessel (get)'] = {
@@ -38,6 +39,11 @@ exports['Tessel (get)'] = {
       return Promise.resolve();
     });
 
+    this.standardOpts = {
+      timeout: 0.01,
+      key: TESSEL_AUTH_KEY
+    };
+
     done();
   },
 
@@ -48,9 +54,7 @@ exports['Tessel (get)'] = {
 
   infoOutput: function(test) {
     test.expect(1);
-    Tessel.get({
-        timeout: 0.01
-      })
+    Tessel.get(this.standardOpts)
       .catch(function() {
         test.equal(this.logsInfo.firstCall.args[0], 'Looking for your Tessel...');
         test.done();
@@ -59,9 +63,7 @@ exports['Tessel (get)'] = {
 
   noTessels: function(test) {
     // Try to get Tessels but return none
-    Tessel.get({
-        timeout: 0.01
-      })
+    Tessel.get(this.standardOpts)
       // If Tessels were returned, this test should fail because we're
       // not emitting any Tessels to the seeker
       .then(function(tessels) {
@@ -76,11 +78,14 @@ exports['Tessel (get)'] = {
   noTesselWithName: function(test) {
     var testConnectionType = 'USB';
     var testName = 'Does_Exist';
+
+    var customOpts = {
+      timeout: this.standardOpts.timeout,
+      key: this.standardOpts.key,
+      name: 'Does_Not_Exist'
+    };
     // Try to get Tessels but return none
-    Tessel.get({
-        name: 'Does_Not_Exist',
-        timeout: 0.01
-      })
+    Tessel.get(customOpts)
       // If
       .then(function(tessels) {
         test.equal(tessels, false, 'Somehow Tessels were returned');
@@ -95,16 +100,16 @@ exports['Tessel (get)'] = {
     });
     tessel.name = testName;
 
-    this.activeSeeker.emit('tessel', tessel);
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', tessel);
+    }.bind(this));
   },
 
   oneUSB: function(test) {
     var testConnectionType = 'USB';
     var testName = 'testTessel';
     // Try to get Tessels but return none
-    Tessel.get({
-        timeout: 0.01
-      })
+    Tessel.get(this.standardOpts)
       // If
       .then(function(tessel) {
         test.equal(tessel.name, testName);
@@ -119,15 +124,16 @@ exports['Tessel (get)'] = {
       connectionType: testConnectionType
     });
     tessel.name = testName;
-    this.activeSeeker.emit('tessel', tessel);
+
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', tessel);
+    }.bind(this));
   },
 
   multipleUSBNoName: function(test) {
     test.expect(2);
     // Try to get Tessels but return none
-    Tessel.get({
-        timeout: 0.01
-      })
+    Tessel.get(this.standardOpts)
       .catch(function(reason) {
         test.equal(reason, 'No Tessel selected, mission aborted!');
         test.equal(this.menu.calledOnce, 1);
@@ -150,17 +156,22 @@ exports['Tessel (get)'] = {
     a.name = 'a';
     b.name = 'b';
 
-    this.activeSeeker.emit('tessel', a);
-    this.activeSeeker.emit('tessel', b);
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', a);
+      this.activeSeeker.emit('tessel', b);
+    }.bind(this));
   },
 
   multipleUSBHasName: function(test) {
     test.expect(1);
 
-    Tessel.get({
-        timeout: 0.01,
-        name: 'a'
-      })
+    var customOpts = {
+      timeout: this.standardOpts.timeout,
+      key: this.standardOpts.key,
+      name: 'a'
+    };
+
+    Tessel.get(customOpts)
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
         test.done();
@@ -185,17 +196,17 @@ exports['Tessel (get)'] = {
     a.name = 'a';
     b.name = 'b';
 
-    this.activeSeeker.emit('tessel', a);
-    this.activeSeeker.emit('tessel', b);
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', a);
+      this.activeSeeker.emit('tessel', b);
+    }.bind(this));
   },
 
   usbAndNonAuthorizedLANSameTessel: function(test) {
     test.expect(2);
 
     // Try to get Tessels but return none
-    Tessel.get({
-        timeout: 0.05,
-      })
+    Tessel.get(this.standardOpts)
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
         test.equal(tessel.connection.connectionType, 'USB');
@@ -225,16 +236,16 @@ exports['Tessel (get)'] = {
     usb.name = 'a';
     lan.name = 'a';
 
-    this.activeSeeker.emit('tessel', usb);
-    this.activeSeeker.emit('tessel', lan);
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', usb);
+      this.activeSeeker.emit('tessel', lan);
+    }.bind(this));
   },
 
   usbAndNonAuthorizedLANSameTesselLANFirst: function(test) {
     test.expect(2);
     // Try to get Tessels but return none
-    Tessel.get({
-        timeout: 0.05,
-      })
+    Tessel.get(this.standardOpts)
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
         test.equal(tessel.connection.connectionType, 'USB');
@@ -261,20 +272,21 @@ exports['Tessel (get)'] = {
     usb.name = 'a';
     lan.name = 'a';
 
-    // "Detect" the lan first. This order is intentional
-    // 1
-    this.activeSeeker.emit('tessel', lan);
-    // 2
-    this.activeSeeker.emit('tessel', usb);
+    setImmediate(function() {
+      // "Detect" the lan first. This order is intentional
+      // 1
+      this.activeSeeker.emit('tessel', lan);
+      // 2
+      this.activeSeeker.emit('tessel', usb);
+    }.bind(this));
+
   },
 
   usbAndAuthorizedLANSameTessel: function(test) {
     test.expect(2);
 
     // Try to get Tessels but return none
-    Tessel.get({
-        timeout: 0.05,
-      })
+    Tessel.get(this.standardOpts)
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
         test.equal(tessel.connection.connectionType, 'LAN');
@@ -303,16 +315,16 @@ exports['Tessel (get)'] = {
 
     lan.connection.authorized = true;
 
-    this.activeSeeker.emit('tessel', usb);
-    this.activeSeeker.emit('tessel', lan);
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', usb);
+      this.activeSeeker.emit('tessel', lan);
+    }.bind(this));
   },
 
   multipleLANNoName: function(test) {
     test.expect(2);
     // Try to get Tessels but return none
-    Tessel.get({
-        timeout: 0.01
-      })
+    Tessel.get(this.standardOpts)
       .catch(function(reason) {
         test.equal(reason, 'No Tessel selected, mission aborted!');
         test.equal(this.menu.calledOnce, 1);
@@ -339,17 +351,22 @@ exports['Tessel (get)'] = {
     a.name = 'a';
     b.name = 'b';
 
-    this.activeSeeker.emit('tessel', a);
-    this.activeSeeker.emit('tessel', b);
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', a);
+      this.activeSeeker.emit('tessel', b);
+    }.bind(this));
   },
 
   multipleLANHasName: function(test) {
     test.expect(1);
 
-    Tessel.get({
-        timeout: 0.01,
-        name: 'a'
-      })
+    var customOpts = {
+      timeout: this.standardOpts.timeout,
+      key: this.standardOpts.key,
+      name: 'a'
+    };
+
+    Tessel.get(customOpts)
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
         a.close();
@@ -378,8 +395,10 @@ exports['Tessel (get)'] = {
     a.name = 'a';
     b.name = 'b';
 
-    this.activeSeeker.emit('tessel', a);
-    this.activeSeeker.emit('tessel', b);
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', a);
+      this.activeSeeker.emit('tessel', b);
+    }.bind(this));
   },
 };
 
@@ -414,6 +433,11 @@ exports['Tessel (get); filter: unauthorized'] = {
       return Promise.resolve();
     });
 
+    this.standardOpts = {
+      timeout: 0.01,
+      key: TESSEL_AUTH_KEY
+    };
+
     done();
   },
 
@@ -425,10 +449,13 @@ exports['Tessel (get); filter: unauthorized'] = {
   unauthorizedLANDoesNotSurface: function(test) {
     test.expect(1);
 
-    Tessel.get({
-        timeout: 1,
-        authorized: true,
-      })
+    var customOpts = {
+      timeout: this.standardOpts.timeout,
+      key: this.standardOpts.key,
+      authorized: true
+    };
+
+    Tessel.get(customOpts)
       .then(function() {
         test.fail();
       }.bind(this))
@@ -442,7 +469,9 @@ exports['Tessel (get); filter: unauthorized'] = {
       authorized: false
     });
 
-    this.activeSeeker.lanScan.emit('connection', lan.connection);
-    this.activeSeeker.emit('end');
+    setImmediate(function() {
+      this.activeSeeker.lanScan.emit('connection', lan.connection);
+      this.activeSeeker.emit('end');
+    }.bind(this));
   },
 };
