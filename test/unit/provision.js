@@ -346,7 +346,7 @@ exports['Tessel.prototype.provisionTessel'] = {
   fallbackKeyPath: function(test) {
     var self = this;
 
-    test.expect(3);
+    test.expect(4);
 
     this.isProvisioned = sinon.stub(Tessel, 'isProvisioned', function() {
       return false;
@@ -367,6 +367,10 @@ exports['Tessel.prototype.provisionTessel'] = {
           test.equal(self.writeFileSpy.callCount, 2);
           test.equal(path.dirname(self.writeFileSpy.firstCall.args[0]), testPath);
           test.equal(path.dirname(self.writeFileSpy.lastCall.args[0]), testPath);
+
+          // Ensure that key ends with a newline
+          var publicKey = self.writeFileSpy.firstCall.args[1];
+          test.equal(publicKey[publicKey.length - 1], '\n');
 
           Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
           self.isProvisioned.restore();
