@@ -1,3 +1,4 @@
 config.env
-node_modules
+node_modules/
+!test/unit/fixtures/**/node_modules
 tmp
