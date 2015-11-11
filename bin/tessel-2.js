@@ -288,7 +288,7 @@ makeCommand('ap')
   })
   .option('security', {
     abbr: 's',
-    help: 'Encryption to use on network (i.e. WEP, WPA, PSK).'
+    help: 'Encryption to use on network (i.e. wep, psk, psk2, wpa, wpa2).'
   })
   .option('trigger', {
     position: 1,

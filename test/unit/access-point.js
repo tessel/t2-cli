@@ -55,7 +55,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
   },
 
   noPasswordNoSecurity: function(test) {
-    test.expect(7);
+    test.expect(8);
     var self = this;
     var creds = {
       ssid: 'test',
@@ -74,11 +74,12 @@ exports['Tessel.prototype.createAccessPoint'] = {
       .then(function() {
         test.equal(self.setAccessPointSSID.callCount, 1);
         test.equal(self.setAccessPointPassword.callCount, 0);
-        test.equal(self.setAccessPointSecurity.callCount, 0);
+        test.equal(self.setAccessPointSecurity.callCount, 1);
         test.equal(self.reconnectWifi.callCount, 1);
         test.equal(self.reconnectDnsmasq.callCount, 1);
         test.equal(self.reconnectDhcp.callCount, 1);
         test.ok(self.setAccessPointSSID.lastCall.calledWith(creds.ssid));
+        test.ok(self.setAccessPointSecurity.lastCall.calledWith('none'));
         test.done();
       })
       .catch(function(error) {
