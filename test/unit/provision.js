@@ -467,6 +467,85 @@ exports['Tessel.prototype.provisionTessel'] = {
   }
 };
 
+exports['provision.setDefaultKey'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    // Added because one test sets it false for a moment
+    global.IS_TEST_ENV = true;
+    done();
+  },
+
+  // setDefaultKey should reject with an error if no path was provided
+  failNoKey: function(test) {
+    test.expect(1);
+
+    provision.setDefaultKey()
+      .then(function noCall() {
+        // This test should throw an error. Fail if it didn't
+        test.fail();
+      })
+      .catch(function doCall(err) {
+        test.ok(err, 'Returned error is undefined');
+        test.done();
+      });
+  },
+
+  // setDefaultKey should reject with an error if a non-string was provided
+  failWrongType: function(test) {
+    test.expect(1);
+
+    provision.setDefaultKey(path.parse('~/.tessel/id_rsa'))
+      .then(function noCall() {
+        // This test should throw an error. Fail if it didn't
+        test.fail();
+      })
+      .catch(function doCall(err) {
+        test.ok(err, 'Returned error is undefined');
+        test.done();
+      });
+  },
+
+  // setDefaultKey should reject with an error if a non-existent file was provided
+  failNoFiles: function(test) {
+    test.expect(1);
+
+    global.IS_TEST_ENV = false;
+
+    provision.setDefaultKey('./no_files_here')
+      .then(function noCall() {
+        // This test should throw an error. Fail if it didn't
+        test.fail();
+      })
+      .catch(function doCall(err) {
+        test.ok(err, 'Returned error is undefined');
+        test.done();
+      });
+  },
+
+  successfulSetting: function(test) {
+    test.expect(1);
+    var key = 'real_file_i_promise';
+    provision.setDefaultKey(key)
+      .then(function doCall() {
+        test.equal(provision.TESSEL_AUTH_KEY, key);
+        test.done();
+      })
+      .catch(function noCall() {
+        // This test should not throw an error. Fail if it did
+        test.fail();
+      });
+  }
+};
+
 function createTestKeys(callback) {
   // Create the test folder
   createKeyTestFolder(function createKeys(err) {
