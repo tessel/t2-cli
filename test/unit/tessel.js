@@ -9,7 +9,6 @@ var logs = require('../../lib/logs');
 var controller = require('../../lib/controller');
 var lan = require('../../lib/lan_connection');
 var TesselSimulator = require('../common/tessel-simulator');
-var TESSEL_AUTH_KEY = require('../../lib/tessel/provision.js').TESSEL_AUTH_KEY;
 
 
 exports['Tessel (get)'] = {
@@ -41,7 +40,7 @@ exports['Tessel (get)'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: TESSEL_AUTH_KEY
+      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();
@@ -435,7 +434,7 @@ exports['Tessel (get); filter: unauthorized'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: TESSEL_AUTH_KEY
+      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();

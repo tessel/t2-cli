@@ -6,7 +6,6 @@ var Seeker = require('../../lib/discover.js');
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var logs = require('../../lib/logs');
-var TESSEL_AUTH_KEY = require('../../lib/tessel/provision.js').TESSEL_AUTH_KEY;
 
 function newTessel(options) {
   var tessel = new Tessel({
@@ -388,7 +387,7 @@ exports['Tessel.list'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: TESSEL_AUTH_KEY
+      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();
@@ -419,9 +418,9 @@ exports['Tessel.list'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', a);
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
   },
 
   oneLANTessel: function(test) {
@@ -444,9 +443,9 @@ exports['Tessel.list'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', a);
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
   },
 
   oneTesselTwoConnections: function(test) {
@@ -477,10 +476,10 @@ exports['Tessel.list'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', usb);
       this.activeSeeker.emit('tessel', lan);
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
   },
 
   multipleDifferentTessels: function(test) {
@@ -511,10 +510,10 @@ exports['Tessel.list'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', usb);
       this.activeSeeker.emit('tessel', lan);
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
   },
 };
 
@@ -552,7 +551,7 @@ exports['Tessel.get'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: TESSEL_AUTH_KEY
+      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();
@@ -575,10 +574,11 @@ exports['Tessel.get'] = {
       name: 'the_name'
     });
 
-    var customOpts = {};
-    customOpts.timeout = this.standardOpts.timeout;
-    customOpts.key = this.standardOpts.key;
-    customOpts.name = 'the_name';
+    var customOpts = {
+      timeout: this.standardOpts.timeout,
+      key: this.standardOpts.key,
+      name: 'the_name'
+    };
 
     Tessel.get(customOpts)
       .then(function() {
@@ -593,9 +593,9 @@ exports['Tessel.get'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', a);
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
   },
 
   oneUnNamedTessel: function(test) {
@@ -623,9 +623,9 @@ exports['Tessel.get'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', a);
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
   },
 
   oneUnamedTesselTwoConnections: function(test) {
@@ -659,10 +659,10 @@ exports['Tessel.get'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', usb);
       this.activeSeeker.emit('tessel', lan);
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
 
   },
 
@@ -712,9 +712,9 @@ exports['Tessel.get'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', usb);
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
   },
 
   standardCommandFailed: function(test) {
@@ -750,9 +750,9 @@ exports['Tessel.get'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', usb);
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
   },
 
   standardCommandSigInt: function(test) {
@@ -782,9 +782,9 @@ exports['Tessel.get'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setTimeout(function() {
+    setImmediate(function() {
       this.activeSeeker.emit('tessel', usb);
       process.emit('SIGINT');
-    }.bind(this), this.standardOpts.timeout - 1);
+    }.bind(this));
   },
 };

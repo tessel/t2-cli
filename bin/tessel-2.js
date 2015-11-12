@@ -6,7 +6,7 @@ var controller = require('../lib/controller');
 var key = require('../lib/key');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
-var TESSEL_AUTH_KEY = require('../lib/tessel/provision.js').TESSEL_AUTH_KEY;
+var Tessel = require('../lib/tessel/tessel');
 
 function makeCommand(commandName) {
   return parser.command(commandName)
@@ -20,7 +20,7 @@ function makeCommand(commandName) {
       required: false,
       metavar: 'PRIVATEKEY',
       abbr: 'i',
-      default: TESSEL_AUTH_KEY,
+      default: Tessel.TESSEL_AUTH_KEY,
       help: 'SSH key for authorization with your Tessel'
     })
     .option('name', {

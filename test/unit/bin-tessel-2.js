@@ -2,8 +2,7 @@ var sinon = require('sinon');
 var cli = require('../../bin/tessel-2');
 var controller = require('../../lib/controller');
 var logs = require('../../lib/logs');
-var TESSEL_AUTH_KEY = require('../../lib/tessel/provision.js').TESSEL_AUTH_KEY;
-
+var Tessel = require('../../lib/tessel/tessel');
 
 // If the defaults are intentionally changed in bin-tessel-2,
 // then they must be changed here as well. This ensures that the
@@ -35,7 +34,7 @@ var defaults = {
     name: 'usb',
     string: '--usb',
   },
-  key: TESSEL_AUTH_KEY
+  key: Tessel.TESSEL_AUTH_KEY
 };
 
 exports['Tessel (cli: makeCommand)'] = {
@@ -144,7 +143,7 @@ exports['Tessel (cli: update)'] = {
       version: 42,
       _: ['update'],
       timeout: 5,
-      key: TESSEL_AUTH_KEY
+      key: Tessel.TESSEL_AUTH_KEY
     });
 
     cli(['update', '--list', ' ']);

@@ -536,7 +536,7 @@ exports['provision.setDefaultKey'] = {
     var key = 'real_file_i_promise';
     provision.setDefaultKey(key)
       .then(function doCall() {
-        test.equal(provision.TESSEL_AUTH_KEY, key);
+        test.equal(Tessel.TESSEL_AUTH_KEY, key);
         test.done();
       })
       .catch(function noCall() {
