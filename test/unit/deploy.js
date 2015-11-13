@@ -4,14 +4,14 @@ var commands = require('../../lib/tessel/commands');
 var deploy = require('../../lib/tessel/deploy');
 var logs = require('../../lib/logs');
 var TesselSimulator = require('../common/tessel-simulator');
-var fs = require('fs');
+var fs = require('fs-extra');
 var mkdirp = require('mkdirp');
 var path = require('path');
-var rimraf = require('rimraf');
 var Ignore = require('fstream-ignore');
 var fsTemp = require('fs-temp');
 var browserify = require('browserify');
 var uglify = require('uglify-js');
+var tar = require('tar');
 var meminfo = fs.readFileSync('test/unit/fixtures/proc-meminfo', 'utf8');
 
 var deployFolder = path.join(__dirname, 'tmp');
@@ -185,7 +185,7 @@ exports['Tessel.prototype.deployScript'] = {
           INFO Running app.js...
           testing deploy
           INFO Stopping script...
-        */
+      */
         test.equal(bundle.length, 2048);
         deleteTemporaryDeployCode().then(function() {
           test.done();
@@ -326,12 +326,13 @@ exports['Tessel.prototype.deployScript'] = {
   }
 };
 
-exports['tarBundle'] = {
+exports['deploy.tarBundle'] = {
   setUp: function(done) {
+    this.copySync = sandbox.spy(fs, 'copySync');
     this.writeFileSync = sandbox.spy(fs, 'writeFileSync');
-    this.rmdirSync = sandbox.spy(fs, 'rmdirSync');
-    this.unlinkSync = sandbox.spy(fs, 'unlinkSync');
+    this.remove = sandbox.spy(fs, 'remove');
 
+    this.globSync = sandbox.spy(deploy.glob, 'sync');
     this.exclude = sandbox.spy(browserify.prototype, 'exclude');
     this.mkdirSync = sandbox.spy(fsTemp, 'mkdirSync');
     this.addIgnoreRules = sandbox.spy(Ignore.prototype, 'addIgnoreRules');
@@ -343,16 +344,6 @@ exports['tarBundle'] = {
     this.logsWarn = sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = sandbox.stub(logs, 'info', function() {});
 
-    this.glob = sandbox.stub(deploy, 'glob', function(pattern, options, callback) {
-      process.nextTick(function() {
-        callback(null, []);
-      });
-    });
-
-    this.globSync = sandbox.stub(deploy.glob, 'sync', function() {
-      return [];
-    });
-
     done();
   },
 
@@ -361,123 +352,151 @@ exports['tarBundle'] = {
     done();
   },
 
-  tesselIgnore: function(test) {
-    test.expect(2);
+  actionsGlobRules: function(test) {
+    test.expect(1);
 
     var target = 'test/unit/fixtures/ignore';
-    var entryPoint = 'index.js';
-    var fileToIgnore = path.join(target, 'mock-foo.js');
-    var slimPath = '__tessel_program__.js';
+    var rules = deploy.glob.rules(target, '.tesselignore');
 
-    this.glob.restore();
-    this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', function() {
-      return [fileToIgnore];
-    });
+    test.deepEqual(
+      rules.map(path.normalize), [
+        // Found in "test/unit/fixtures/ignore/.tesselignore"
+        'a/**/*.*',
+        'mock-foo.js',
+        // Found in "test/unit/fixtures/ignore/nested/.tesselignore"
+        'nested/b/**/*.*',
+        'nested/file.js'
+      ].map(path.normalize)
+    );
 
-    deploy.tarBundle({
-      target: target,
-      resolvedEntryPoint: entryPoint,
-      slimPath: slimPath,
-      slim: true,
-    }).then(function() {
-
-      // There are only 4 valid rules. (2 in each .tesselignore)
-      // The empty line MUST NOT create a pattern entry.
-      // The comment line MUST NOT create a pattern entry.
-      test.equal(this.globSync.callCount, 4);
-      test.deepEqual(this.globSync.args, [
-        [path.normalize('a/**/*.*'), {
-          cwd: path.normalize('test/unit/fixtures/ignore')
-        }],
-        [path.normalize('mock-foo.js'), {
-          cwd: path.normalize('test/unit/fixtures/ignore')
-        }],
-        [path.normalize('nested/b/**/*.*'), {
-          cwd: path.normalize('test/unit/fixtures/ignore')
-        }],
-        [path.normalize('nested/file.js'), {
-          cwd: path.normalize('test/unit/fixtures/ignore')
-        }]
-      ]);
-
-      test.done();
-    }.bind(this));
+    test.done();
   },
 
+  actionsGlobFiles: function(test) {
+    test.expect(1);
+
+    var target = 'test/unit/fixtures/ignore';
+    var rules = deploy.glob.rules(target, '.tesselignore');
+    var files = deploy.glob.files(target, rules);
+
+    test.deepEqual(files, ['mock-foo.js']);
+    test.done();
+  },
+
+  actionsGlobFilesNested: function(test) {
+    test.expect(1);
+
+    var target = 'test/unit/fixtures/ignore';
+    var files = deploy.glob.files(target, ['**/.tesselignore']);
+
+    test.deepEqual(files, [
+      '.tesselignore',
+      'nested/.tesselignore'
+    ]);
+
+    test.done();
+  },
+
+  actionsGlobFilesNonNested: function(test) {
+    test.expect(1);
+
+    var target = 'test/unit/fixtures/ignore';
+    var files = deploy.glob.files(target, ['.tesselignore']);
+
+    test.deepEqual(files, ['.tesselignore']);
+    test.done();
+  },
 
   full: function(test) {
-    test.expect(11);
+    test.expect(9);
 
-    var target = 'test/unit/fixtures/bundling';
+    var target = 'test/unit/fixtures/project';
+
+    /*
+      project
+      ├── .tesselignore
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselignore
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
+
+      3 directories, 9 files
+     */
 
     deploy.tarBundle({
       target: path.normalize(target),
       full: true,
     }).then(function(bundle) {
-      test.equal(this.glob.callCount, 0);
-      test.equal(this.globSync.callCount, 0);
-      test.equal(this.addIgnoreRules.callCount, 0);
+      // One call for .tesselinclude
+      // One call for the single rule found within
+      test.equal(this.globSync.callCount, 1);
+
+      // addIgnoreRules might be called many times, but we only
+      // care about tracking the call that's explicitly made by
+      // tessel's deploy operation
+      test.deepEqual(this.addIgnoreRules.getCall(0).args[0], [
+        '**/.tesselignore',
+        '**/.tesselinclude',
+      ]);
+
+      // These things don't happen in the --full path
       test.equal(this.browserify.callCount, 0);
       test.equal(this.exclude.callCount, 0);
       test.equal(this.compress.callCount, 0);
       test.equal(this.minify.callCount, 0);
       test.equal(this.writeFileSync.callCount, 0);
-      test.equal(this.unlinkSync.callCount, 0);
-      test.equal(this.rmdirSync.callCount, 0);
+      test.equal(this.remove.callCount, 0);
+      // End
 
-      test.equal(bundle.length, 5632);
-      test.done();
+      // Extract and inspect the bundle...
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        test.deepEqual(entries, [
+          'index.js',
+          'nested/another.js',
+          'node_modules/foo/index.js',
+          'package.json',
+        ]);
+
+        test.done();
+      });
     }.bind(this));
   },
 
   slim: function(test) {
-    test.expect(13);
+    test.expect(11);
 
     var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/bundling';
     var slimPath = '__tessel_program__.js';
+    var target = 'test/unit/fixtures/project';
 
-    // this.join.reset();
-    deploy.tarBundle({
-      target: path.normalize(target),
-      resolvedEntryPoint: entryPoint,
-      slimPath: slimPath,
-      slim: true,
-    }).then(function(bundle) {
-      test.equal(this.glob.callCount, 1);
-      test.equal(this.browserify.callCount, 1);
-      test.equal(this.compress.callCount, 1);
-      test.equal(this.minify.callCount, 1);
-      test.equal(this.mkdirSync.callCount, 1);
-      test.equal(this.writeFileSync.callCount, 1);
+    /*
+      project
+      ├── .tesselignore
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselignore
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
 
-      test.equal(
-        this.writeFileSync.lastCall.args[0],
-        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
-      );
-      test.equal(this.writeFileSync.lastCall.args[1], 'console.log("testing deploy");');
-
-      test.equal(this.unlinkSync.callCount, 1);
-      test.equal(
-        this.unlinkSync.lastCall.args[0],
-        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
-      );
-
-      test.equal(this.rmdirSync.callCount, 1);
-      test.equal(this.rmdirSync.lastCall.args[0], this.mkdirSync.lastCall.returnValue);
-
-      test.equal(bundle.length, 2048);
-      test.done();
-    }.bind(this));
-  },
-
-  slimRequireOnlyTesselLikeInit: function(test) {
-    test.expect(13);
-
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/init';
-    var slimPath = '__tessel_program__.js';
+      3 directories, 9 files
+     */
 
     deploy.tarBundle({
       target: path.normalize(target),
@@ -485,123 +504,93 @@ exports['tarBundle'] = {
       slimPath: slimPath,
       slim: true,
     }).then(function(bundle) {
-      test.equal(this.glob.callCount, 1);
+      // These things happen in the --slim path
       test.equal(this.browserify.callCount, 1);
       test.equal(this.compress.callCount, 1);
       test.equal(this.minify.callCount, 1);
-
       test.equal(this.mkdirSync.callCount, 1);
       test.equal(this.writeFileSync.callCount, 1);
+      // End
 
-      test.equal(
-        this.writeFileSync.lastCall.args[0],
-        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
-      );
-      test.equal(this.writeFileSync.lastCall.args[1], 'var tessel=require("tessel");tessel.led[2].on(),setInterval(function(){tessel.led[2].toggle(),tessel.led[3].toggle()},100);');
+      /*
+        $ find . -type f -name .tesselignore -exec cat {} \+
+        mock-foo.js
+        other.js
+        package.json
+      */
 
-      test.equal(this.unlinkSync.callCount, 1);
-      test.equal(
-        this.unlinkSync.lastCall.args[0],
-        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
-      );
-
-      test.equal(this.rmdirSync.callCount, 1);
-      test.equal(this.rmdirSync.lastCall.args[0], this.mkdirSync.lastCall.returnValue);
-
-      test.equal(bundle.length, 2048);
-      test.done();
-    }.bind(this));
-  },
-
-  slimRespectTesselIgnore: function(test) {
-    test.expect(22);
-
-    var target = 'test/unit/fixtures/slim';
-    var entryPoint = 'index.js';
-    var tesselignore = path.join(target, '.tesselignore');
-    var fileToIgnore = path.join(target, 'mock-foo.js');
-    var slimPath = '__tessel_program__.js';
-
-    this.glob.restore();
-    this.glob = sandbox.stub(deploy, 'glob', function(pattern, options, callback) {
-      test.equal(options.dot, true);
-      process.nextTick(function() {
-        callback(null, [tesselignore]);
-      });
-    });
-
-    // This is necessary because the path in which the tests are being run might
-    // not be the same path that this operation occurs within.
-    this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', function() {
-      return [fileToIgnore];
-    });
-
-    deploy.tarBundle({
-      target: path.normalize(target),
-      resolvedEntryPoint: entryPoint,
-      slimPath: slimPath,
-      slim: true,
-    }).then(function() {
-      test.equal(this.glob.callCount, 1);
-      test.equal(this.globSync.callCount, 1);
-      test.equal(this.browserify.callCount, 1);
-      test.equal(this.browserify.lastCall.args[0], path.join(target, entryPoint));
-
-      // These options are extrememly important. Without them,
-      // the bundles will have node.js built-ins shimmed!!
-      test.deepEqual(this.browserify.lastCall.args[1], {
-        builtins: false,
-        commondir: false,
-        browserField: false,
-        detectGlobals: false,
-        ignoreMissing: true
-      });
-
-      test.equal(this.exclude.callCount, 1);
-      test.equal(this.exclude.lastCall.args[0], path.normalize('test/unit/fixtures/slim/mock-foo.js'));
-
-      test.equal(this.compress.callCount, 1);
-      test.equal(Buffer.isBuffer(this.compress.lastCall.args[0]), true);
+      test.equal(this.exclude.callCount, 3);
 
       var minified = this.compress.lastCall.returnValue;
-
-      test.equal(minified.indexOf('!!mock foo!!'), -1);
-
-      test.equal(this.minify.callCount, 1);
-      test.equal(typeof this.minify.lastCall.args[0], 'string');
+      test.equal(this.compress.callCount, 1);
+      test.equal(Buffer.isBuffer(this.compress.lastCall.args[0]), true);
+      test.equal(minified.indexOf('!!mock-foo!!') === -1, true);
 
       // Cannot deepEqual because uglify.minify(..., options) will
       // mutate the options reference. No need to keep track of that.
       test.equal(this.minify.lastCall.args[1].fromString, true);
 
+      // Extract and inspect the bundle...
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        test.deepEqual(entries, ['__tessel_program__.js']);
+        test.done();
+      });
+
+    }.bind(this));
+  },
+
+  slimTesselInit: function(test) {
+    test.expect(8);
+
+    var entryPoint = 'index.js';
+    var slimPath = '__tessel_program__.js';
+    var target = 'test/unit/fixtures/init';
+
+    /*
+      init
+      ├── index.js
+      └── package.json
+
+      0 directories, 2 files
+     */
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slimPath: slimPath,
+      slim: true,
+    }).then(function(bundle) {
+      test.equal(this.browserify.callCount, 1);
+      test.equal(this.compress.callCount, 1);
+      test.equal(this.minify.callCount, 1);
       test.equal(this.mkdirSync.callCount, 1);
       test.equal(this.writeFileSync.callCount, 1);
+      test.equal(this.exclude.callCount, 0);
 
-      test.equal(
-        this.writeFileSync.lastCall.args[0],
-        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
-      );
-      test.equal(this.writeFileSync.lastCall.args[1], minified);
+      var minified = this.compress.lastCall.returnValue;
 
-      test.equal(this.unlinkSync.callCount, 1);
-      test.equal(
-        this.unlinkSync.lastCall.args[0],
-        path.join(this.mkdirSync.lastCall.returnValue, slimPath)
-      );
+      test.equal(minified, 'var tessel=require("tessel");tessel.led[2].on(),setInterval(function(){tessel.led[2].toggle(),tessel.led[3].toggle()},100);');
 
-      test.equal(this.rmdirSync.callCount, 1);
-      test.equal(this.rmdirSync.lastCall.args[0], this.mkdirSync.lastCall.returnValue);
+      // Extract and inspect the bundle...
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
 
-
-      test.done();
+        test.deepEqual(entries, ['__tessel_program__.js']);
+        test.done();
+      });
     }.bind(this));
   },
 
   slimSingle: function(test) {
-    test.expect(7);
+    test.expect(6);
 
-    var target = 'test/unit/fixtures/bundling';
+    var target = 'test/unit/fixtures/project';
     var entryPoint = 'index.js';
     var slimPath = '__tessel_program__.js';
 
@@ -613,23 +602,27 @@ exports['tarBundle'] = {
       slim: true,
       slimPath: slimPath,
     }).then(function(bundle) {
-      test.equal(this.glob.callCount, 1);
       test.equal(this.browserify.callCount, 1);
       test.equal(this.compress.callCount, 1);
       test.equal(this.minify.callCount, 1);
       test.equal(this.writeFileSync.callCount, 1);
-      test.equal(this.unlinkSync.callCount, 1);
-
 
       test.equal(bundle.length, 2048);
-      test.done();
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        test.deepEqual(entries, ['__tessel_program__.js']);
+        test.done();
+      });
     }.bind(this));
   },
 
   slimSingleNested: function(test) {
-    test.expect(7);
+    test.expect(6);
 
-    var target = 'test/unit/fixtures/bundling';
+    var target = 'test/unit/fixtures/project';
     var entryPoint = 'another.js';
     var slimPath = '__tessel_program__.js';
 
@@ -642,24 +635,28 @@ exports['tarBundle'] = {
       slimPath: slimPath,
 
     }).then(function(bundle) {
-      test.equal(this.glob.callCount, 1);
       test.equal(this.browserify.callCount, 1);
       test.equal(this.compress.callCount, 1);
       test.equal(this.minify.callCount, 1);
       test.equal(this.writeFileSync.callCount, 1);
-      test.equal(this.unlinkSync.callCount, 1);
-
       test.equal(bundle.length, 2048);
-      test.done();
+
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        test.deepEqual(entries, ['__tessel_program__.js']);
+        test.done();
+      });
     }.bind(this));
   },
 
-  single: function(test) {
-    test.expect(11);
+  fullSingle: function(test) {
+    test.expect(3);
 
-    var target = 'test/unit/fixtures/bundling';
+    var target = 'test/unit/fixtures/project';
     var entryPoint = 'index.js';
-    var slimPath = '__tessel_program__.js';
 
     deploy.tarBundle({
       target: path.normalize(target),
@@ -667,32 +664,26 @@ exports['tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       single: true,
       full: true,
-      slimPath: slimPath,
     }).then(function(bundle) {
-      test.equal(this.glob.callCount, 0);
-      test.equal(this.globSync.callCount, 0);
-      test.equal(this.browserify.callCount, 0);
-      test.equal(this.exclude.callCount, 0);
-      test.equal(this.compress.callCount, 0);
-      test.equal(this.minify.callCount, 0);
-      test.equal(this.writeFileSync.callCount, 0);
-      test.equal(this.unlinkSync.callCount, 0);
 
-      test.equal(this.addIgnoreRules.callCount, 1);
-      test.deepEqual(
-        this.addIgnoreRules.lastCall.args[0], ['*', '!index.js']
-      );
+      test.equal(this.addIgnoreRules.callCount, 3);
       test.equal(bundle.length, 2048);
-      test.done();
+
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+        test.deepEqual(entries, ['index.js']);
+        test.done();
+      });
     }.bind(this));
   },
 
-  singleNested: function(test) {
-    test.expect(11);
+  fullSingleNested: function(test) {
+    test.expect(2);
 
-    var target = 'test/unit/fixtures/bundling';
+    var target = 'test/unit/fixtures/project';
     var entryPoint = 'another.js';
-    var slimPath = path.join(target, '__tessel_program__.js');
 
     deploy.tarBundle({
       target: path.normalize(target),
@@ -700,24 +691,533 @@ exports['tarBundle'] = {
       resolvedEntryPoint: path.join('nested', entryPoint),
       single: true,
       full: true,
-      slimPath: slimPath,
-
     }).then(function(bundle) {
-      test.equal(this.glob.callCount, 0);
-      test.equal(this.globSync.callCount, 0);
-      test.equal(this.browserify.callCount, 0);
+      test.equal(bundle.length, 2560);
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+        test.deepEqual(entries, ['nested/another.js']);
+        test.done();
+      });
+
+    }.bind(this));
+  },
+
+  slimIncludeOverridesIgnore: function(test) {
+    test.expect(9);
+
+    var entryPoint = 'index.js';
+    var slimPath = '__tessel_program__.js';
+    var target = 'test/unit/fixtures/project-include-overrides-ignore';
+
+    /*
+      project-include-overrides-ignore
+      ├── .tesselignore
+      ├── .tesselinclude
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselignore
+      │       ├── .tesselinclude
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
+
+      3 directories, 11 files
+    */
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slimPath: slimPath,
+      slim: true,
+    }).then(function(bundle) {
+      test.equal(this.globSync.callCount, 8);
+
+      /*
+        All .tesselignore rules are negated by all .tesselinclude rules:
+
+        $ find . -type f -name .tesselignore -exec cat {} \+
+        mock-foo.js
+        other.js
+        package.json
+
+        $ find . -type f -name .tesselinclude -exec cat {} \+
+        mock-foo.js
+        other.js
+        package.json
+      */
+
+      test.equal(this.copySync.callCount, 3);
+
+      // There are 3 files that must be included in the temp
+      // project directory. These file names MUST match the
+      // names that are expected to be copied.
       test.equal(this.exclude.callCount, 0);
+
+
+      test.equal(this.browserify.callCount, 1);
+      test.equal(this.compress.callCount, 1);
+      test.equal(this.minify.callCount, 1);
+      test.equal(this.writeFileSync.callCount, 1);
+      test.equal(this.remove.callCount, 1);
+
+      // Extract and inspect the bundle...
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        // Since the .tesselignore rules are ALL negated by .tesselinclude rules,
+        // the additional files are copied into the temporary bundle dir, and
+        // then included in the tarred bundle.
+        test.deepEqual(entries, [
+          '__tessel_program__.js',
+          // from ./.tesselinclude
+          'mock-foo.js',
+          // from ./node_modules/foo/.tesselinclude
+          'node_modules/foo/package.json',
+          // from ./.tesselinclude
+          'other.js'
+        ]);
+
+        test.done();
+      });
+    }.bind(this));
+  },
+
+  fullIncludeOverridesIgnore: function(test) {
+    test.expect(9);
+
+    var target = 'test/unit/fixtures/project-include-overrides-ignore';
+
+    /*
+      project-include-overrides-ignore
+      ├── .tesselignore
+      ├── .tesselinclude
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselignore
+      │       ├── .tesselinclude
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
+
+      3 directories, 11 files
+    */
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      full: true,
+    }).then(function(bundle) {
+      test.equal(this.globSync.callCount, 4);
+
+      // addIgnoreRules might be called many times, but we only
+      // care about tracking the call that's explicitly made by
+      // tessel's deploy operation
+      test.deepEqual(this.addIgnoreRules.getCall(0).args[0], [
+        '**/.tesselignore',
+        '**/.tesselinclude',
+      ]);
+
+      /*
+        $ find . -type f -name .tesselignore -exec cat {} \+
+        mock-foo.js
+        other.js
+        package.json
+      */
+
+      test.equal(this.exclude.callCount, 0);
+
+
+      // These things don't happen in the --full path
+      test.equal(this.browserify.callCount, 0);
       test.equal(this.compress.callCount, 0);
       test.equal(this.minify.callCount, 0);
       test.equal(this.writeFileSync.callCount, 0);
-      test.equal(this.unlinkSync.callCount, 0);
+      test.equal(this.remove.callCount, 0);
+      // End
 
-      test.equal(this.addIgnoreRules.callCount, 1);
-      test.deepEqual(
-        this.addIgnoreRules.lastCall.args[0], ['*', path.normalize('!nested/another.js')]
-      );
-      test.equal(bundle.length, 2560);
-      test.done();
+      // Extract and inspect the bundle...
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        // The .tesselignore rules are ALL overridden by .tesselinclude rules
+        test.deepEqual(entries, [
+          'index.js',
+          'mock-foo.js',
+          'nested/another.js',
+          'node_modules/foo/index.js',
+          'other.js',
+          'package.json'
+        ]);
+
+        test.done();
+      });
+    }.bind(this));
+  },
+
+  slimIncludeWithoutIgnore: function(test) {
+    test.expect(9);
+
+    var entryPoint = 'index.js';
+    var slimPath = '__tessel_program__.js';
+    var target = 'test/unit/fixtures/project-include-without-ignore';
+
+    /*
+      project-include-without-ignore
+      ├── .tesselinclude
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselinclude
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
+
+      3 directories, 9 files
+    */
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slimPath: slimPath,
+      slim: true,
+    }).then(function(bundle) {
+      test.equal(this.globSync.callCount, 5);
+
+      /*
+        There are NO .tesselignore rules, but there are .tesselinclude rules:
+
+        $ find . -type f -name .tesselignore -exec cat {} \+
+        (no results)
+
+        $ find . -type f -name .tesselinclude -exec cat {} \+
+        mock-foo.js
+        other.js
+        package.json
+
+      */
+
+      test.equal(this.exclude.callCount, 0);
+
+      // There are 3 files that must be included in the temp
+      // project directory. These file names MUST match the
+      // names that are expected to be copied.
+      test.equal(this.copySync.callCount, 3);
+
+      test.equal(this.browserify.callCount, 1);
+      test.equal(this.compress.callCount, 1);
+      test.equal(this.minify.callCount, 1);
+      test.equal(this.writeFileSync.callCount, 1);
+      test.equal(this.remove.callCount, 1);
+
+      // Extract and inspect the bundle...
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        // There are no .tesselignore rules, all .tesselinclude rules are
+        // respected the additional files are copied into the temporary
+        // bundle dir, and then included in the tarred bundle.
+        test.deepEqual(entries, [
+          '__tessel_program__.js',
+          // from ./.tesselinclude
+          'mock-foo.js',
+          // from ./node_modules/foo/.tesselinclude
+          'node_modules/foo/package.json',
+          // from ./.tesselinclude
+          'other.js'
+        ]);
+
+        test.done();
+      });
+    }.bind(this));
+  },
+
+  fullIncludeWithoutIgnore: function(test) {
+    test.expect(9);
+
+    /*
+      !! TAKE NOTE!!
+
+      This is actually the default behavior. That is to say:
+      these files would be included, whether they are listed
+      in the .tesselinclude file or not.
+    */
+
+    var target = 'test/unit/fixtures/project-include-without-ignore';
+
+    /*
+      project-include-without-ignore
+      ├── .tesselinclude
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselinclude
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
+
+      3 directories, 9 files
+    */
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      full: true,
+    }).then(function(bundle) {
+      test.equal(this.globSync.callCount, 4);
+
+      // addIgnoreRules might be called many times, but we only
+      // care about tracking the call that's explicitly made by
+      // tessel's deploy operation
+      test.deepEqual(this.addIgnoreRules.getCall(0).args[0], [
+        '**/.tesselignore',
+        '**/.tesselinclude',
+      ]);
+
+      /*
+        There are NO .tesselignore rules, but there are .tesselinclude rules:
+
+        $ find . -type f -name .tesselignore -exec cat {} \+
+        (no results)
+
+        $ find . -type f -name .tesselinclude -exec cat {} \+
+        mock-foo.js
+        other.js
+        package.json
+
+      */
+
+      test.equal(this.exclude.callCount, 0);
+
+
+      // These things don't happen in the --full path
+      test.equal(this.browserify.callCount, 0);
+      test.equal(this.compress.callCount, 0);
+      test.equal(this.minify.callCount, 0);
+      test.equal(this.writeFileSync.callCount, 0);
+      test.equal(this.remove.callCount, 0);
+      // End
+
+      // Extract and inspect the bundle...
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        // There are no .tesselignore rules, all .tesselinclude rules are
+        // respected the additional files are copied into the temporary
+        // bundle dir, and then included in the tarred bundle.
+        test.deepEqual(entries, [
+          'index.js',
+          'mock-foo.js',
+          'nested/another.js',
+          'node_modules/foo/index.js',
+          'node_modules/foo/package.json',
+          'other.js',
+          'package.json'
+        ]);
+
+        test.done();
+      });
+    }.bind(this));
+  },
+
+  slimIncludeHasNegateRules: function(test) {
+    test.expect(9);
+
+    var entryPoint = 'index.js';
+    var slimPath = '__tessel_program__.js';
+    var target = 'test/unit/fixtures/project-include-has-negate-rules';
+
+    /*
+      project-include-has-negate-rules
+      .
+      ├── .tesselinclude
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselinclude
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
+
+      3 directories, 9 files
+    */
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slimPath: slimPath,
+      slim: true,
+    }).then(function(bundle) {
+      test.equal(this.globSync.callCount, 6);
+
+      /*
+        There are NO .tesselignore rules, but there are .tesselinclude rules:
+
+        $ find . -type f -name .tesselignore -exec cat {} \+
+        (no results)
+
+        $ find . -type f -name .tesselinclude -exec cat {} \+
+        !mock-foo.js
+        other.js
+        package.json
+
+        The negated rule will be transferred.
+
+      */
+      test.equal(this.exclude.callCount, 1);
+
+      // There are 3 files that must be included in the temp
+      // project directory. These file names MUST match the
+      // names that are expected to be copied.
+      test.equal(this.copySync.callCount, 2);
+
+      test.equal(this.browserify.callCount, 1);
+      test.equal(this.compress.callCount, 1);
+      test.equal(this.minify.callCount, 1);
+      test.equal(this.writeFileSync.callCount, 1);
+      test.equal(this.remove.callCount, 1);
+
+      // Extract and inspect the bundle...
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        // There are no .tesselignore rules, but the .tesselinclude rules
+        // include a negated pattern. The additional, non-negated files
+        // are copied into the temporary bundle dir, and then included
+        // in the tarred bundle.
+        test.deepEqual(entries, [
+          '__tessel_program__.js',
+          // mock-foo.js is NOT present
+          // from ./node_modules/foo/.tesselinclude
+          'node_modules/foo/package.json',
+          // from ./.tesselinclude
+          'other.js'
+        ]);
+
+        test.done();
+      });
+    }.bind(this));
+  },
+
+  fullIncludeHasNegateRules: function(test) {
+    test.expect(9);
+
+    var target = 'test/unit/fixtures/project-include-has-negate-rules';
+
+    /*
+      project-include-has-negate-rules
+      .
+      ├── .tesselinclude
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselinclude
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
+
+      3 directories, 9 files
+    */
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      full: true,
+    }).then(function(bundle) {
+      test.equal(this.globSync.callCount, 4);
+
+      // addIgnoreRules might be called many times, but we only
+      // care about tracking the call that's explicitly made by
+      // tessel's deploy operation
+      test.deepEqual(this.addIgnoreRules.getCall(0).args[0], [
+        '**/.tesselignore',
+        '**/.tesselinclude',
+      ]);
+
+      // This is where the negated rule is transferred.
+      test.deepEqual(this.addIgnoreRules.getCall(1).args[0], [
+        // Note that the "!" was stripped from the rule
+        'mock-foo.js',
+      ]);
+
+      /*
+        There are NO .tesselignore rules, but there are .tesselinclude rules:
+
+        $ find . -type f -name .tesselignore -exec cat {} \+
+        (no results)
+
+        $ find . -type f -name .tesselinclude -exec cat {} \+
+        !mock-foo.js
+        other.js
+        package.json
+
+        The negated rule will be transferred.
+
+      */
+
+      // These things don't happen in the --full path
+      test.equal(this.browserify.callCount, 0);
+      test.equal(this.compress.callCount, 0);
+      test.equal(this.minify.callCount, 0);
+      test.equal(this.writeFileSync.callCount, 0);
+      test.equal(this.remove.callCount, 0);
+      // End
+
+      // Extract and inspect the bundle...
+      extract(bundle, function(error, entries) {
+        if (error) {
+          test.fail(error);
+        }
+
+        // There are no .tesselignore rules, all .tesselinclude rules are
+        // respected the additional files are copied into the temporary
+        // bundle dir, and then included in the tarred bundle.
+        test.deepEqual(entries, [
+          'index.js',
+          // mock-foo.js is NOT present
+          'nested/another.js',
+          'node_modules/foo/index.js',
+          'node_modules/foo/package.json',
+          'other.js',
+          'package.json'
+        ]);
+
+        test.done();
+      });
     }.bind(this));
   },
 };
@@ -989,7 +1489,7 @@ function createTemporaryDeployCode() {
 
 function deleteTemporaryDeployCode() {
   return new Promise(function(resolve, reject) {
-    rimraf(deployFolder, function(err) {
+    fs.remove(deployFolder, function(err) {
       if (err) {
         reject(err);
       } else {
@@ -997,4 +1497,26 @@ function deleteTemporaryDeployCode() {
       }
     });
   });
+}
+
+
+function extract(bundle, callback) {
+  var parser = tar.Parse();
+  var entries = [];
+
+  parser.on('entry', function(entry) {
+    if (entry.type === 'File') {
+      entries.push(entry.path);
+    }
+  });
+
+  parser.on('end', function() {
+    callback(null, entries);
+  });
+
+  parser.on('error', function(error) {
+    callback(error, null);
+  });
+
+  parser.end(bundle);
 }
