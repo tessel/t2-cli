@@ -387,17 +387,17 @@ exports['tarBundle'] = {
       // The comment line MUST NOT create a pattern entry.
       test.equal(this.globSync.callCount, 4);
       test.deepEqual(this.globSync.args, [
-        ['a/**/*.*', {
-          cwd: 'test/unit/fixtures/ignore'
+        [path.normalize('a/**/*.*'), {
+          cwd: path.normalize('test/unit/fixtures/ignore')
         }],
-        ['mock-foo.js', {
-          cwd: 'test/unit/fixtures/ignore'
+        [path.normalize('mock-foo.js'), {
+          cwd: path.normalize('test/unit/fixtures/ignore')
         }],
-        ['nested/b/**/*.*', {
-          cwd: 'test/unit/fixtures/ignore'
+        [path.normalize('nested/b/**/*.*'), {
+          cwd: path.normalize('test/unit/fixtures/ignore')
         }],
-        ['nested/file.js', {
-          cwd: 'test/unit/fixtures/ignore'
+        [path.normalize('nested/file.js'), {
+          cwd: path.normalize('test/unit/fixtures/ignore')
         }]
       ]);
 
