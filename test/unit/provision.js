@@ -1,6 +1,7 @@
 var sinon = require('sinon');
 var Tessel = require('../../lib/tessel/tessel');
 var controller = require('../../lib/controller');
+var os = require('os');
 var fs = require('fs-extra');
 var path = require('path');
 var cp = require('child_process');
@@ -370,7 +371,7 @@ exports['Tessel.prototype.provisionTessel'] = {
 
           // Ensure that key ends with a newline
           var publicKey = self.writeFileSpy.firstCall.args[1];
-          test.equal(publicKey[publicKey.length - 1], '\n');
+          test.equal(publicKey[publicKey.length - 1], os.EOL);
 
           Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
           self.isProvisioned.restore();
