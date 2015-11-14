@@ -387,7 +387,6 @@ exports['Tessel.list'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();
@@ -551,7 +550,6 @@ exports['Tessel.get'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();
