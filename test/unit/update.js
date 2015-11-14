@@ -23,6 +23,7 @@ exports['controller.update'] = {
     this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
     this.tessel = TesselSimulator();
 
+    this.setName = this.sandbox.spy(Tessel.prototype, 'setName');
     this.getTessel = this.sandbox.stub(Tessel, 'get', function() {
       return Promise.resolve(this.tessel);
     }.bind(this));
@@ -132,6 +133,69 @@ exports['controller.update'] = {
 
     controller.update(opts)
       .then(function() {
+        // We have to fetch the build list to figure out what the sha is of this version
+        test.equal(this.requestBuildList.callCount, 1);
+        // We did fetch the specified build
+        test.equal(this.fetchBuild.callCount, 1);
+        // It was called with the correct args
+        test.deepEqual(this.fetchBuild.lastCall.args[0], builds[1]);
+        // We fetched the Tessel to update
+        test.equal(this.getTessel.callCount, 1);
+        // The Tessel was updated
+        test.equal(this.update.callCount, 1);
+        // The update used the appropriate binaries
+        test.equal(this.update.calledWith(binaries), true);
+        // Then the Tessel was closed
+        test.equal(this.tessel.closed, true);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.done();
+      }.bind(this))
+      .catch(function(err) {
+        test.ifError(err);
+      });
+  },
+
+  buildOptionRetainsName: function(test) {
+    test.expect(11);
+
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+      name: 'snorlax'
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {}
+    });
+
+    var binaries = {
+      firmware: new Buffer(0),
+      openwrt: new Buffer(0)
+    };
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+      return Promise.resolve(binaries);
+    });
+
+    var opts = {
+      version: '0.0.1'
+    };
+
+    controller.update(opts)
+      .then(function() {
+        // The Tessel should have kept its old name
+        test.equal(this.tessel.name, 'snorlax');
+        // Tessel.setName should have been called
+        test.equal(this.setName.callCount, 1);
         // We have to fetch the build list to figure out what the sha is of this version
         test.equal(this.requestBuildList.callCount, 1);
         // We did fetch the specified build
@@ -271,6 +335,70 @@ exports['controller.update'] = {
       });
   },
 
+  buildLatestRetainsName: function(test) {
+    test.expect(10);
+
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+      name: 'ekans'
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {}
+    });
+
+    var binaries = {
+      firmware: new Buffer(0),
+      openwrt: new Buffer(0)
+    };
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+      return Promise.resolve(binaries);
+    });
+
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+      return Promise.resolve('ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29');
+    });
+
+    var opts = {};
+    controller.update(opts)
+      .then(function() {
+        // The Tessel should have kept its old name
+        test.equal(this.tessel.name, 'ekans');
+        // Tessel.setName should have been called
+        test.equal(this.setName.callCount, 1);
+        // Make sure we checked what the Tessel version is currently at
+        test.equal(this.fetchCurrentBuildInfo.callCount, 1);
+        // We fetched only one build
+        test.equal(this.fetchBuild.callCount, 1);
+        // It was the latest build
+        test.equal(this.fetchBuild.calledWith(builds[1]), true);
+        // Update Tessel was successfully called
+        test.equal(this.update.callCount, 1);
+        // It was provided the binaries
+        test.equal(this.update.calledWith(binaries), true);
+        // Then Tessel was closed
+        test.equal(this.tessel.closed, true);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.done();
+      }.bind(this))
+      .catch(function(err) {
+        test.ifError(err);
+        test.done();
+      });
+  },
+
   buildLatestAlreadyCurrent: function(test) {
     test.expect(7);
 
@@ -383,7 +511,7 @@ exports['controller.update'] = {
   },
 
   buildLatestForce: function(test) {
-    test.expect(7);
+    test.expect(9);
 
     // This Tessel instance MUST be connected via BOTH
     //
@@ -393,6 +521,7 @@ exports['controller.update'] = {
     this.tessel = TesselSimulator({
       type: 'LAN',
       authorized: true,
+      name: 'togepi'
     });
 
     this.tessel.addConnection({
@@ -417,6 +546,10 @@ exports['controller.update'] = {
 
     controller.update(opts)
       .then(function() {
+        // The Tessel should have kept its old name
+        test.equal(this.tessel.name, 'togepi');
+        // Tessel.setName should have been called
+        test.equal(this.setName.callCount, 1);
         // We fetched only one build
         test.equal(this.fetchBuild.callCount, 1);
         // It was the latest build
