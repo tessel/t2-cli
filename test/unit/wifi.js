@@ -202,3 +202,87 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
       });
   }
 };
+
+module.exports['Tessel.setWifiState'] = {
+  setUp: function(done) {
+    this.logsWarn = sinon.stub(logs, 'warn', function() {});
+    this.logsInfo = sinon.stub(logs, 'info', function() {});
+    this.tessel = TesselSimulator();
+    this.simpleExec = sinon.spy(this.tessel, 'simpleExec');
+
+    done();
+  },
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    this.logsWarn.restore();
+    this.logsInfo.restore();
+    done();
+  },
+
+  setWifiStateTruthy: function(test) {
+    var self = this;
+
+    test.expect(6);
+    var state = true;
+    this.tessel.setWiFiState(state)
+      .then(function() {
+        test.equal(self.simpleExec.calledThrice, true);
+        test.deepEqual(self.simpleExec.args[0][0], commands.turnOnWifi(state));
+        test.deepEqual(self.simpleExec.args[1][0], commands.commitWirelessCredentials());
+        test.deepEqual(self.simpleExec.args[2][0], commands.reconnectWifi());
+        test.equal(self.logsInfo.calledOnce, true);
+        test.equal(self.logsInfo.args[0][1].indexOf('Enabled.') !== -1, true);
+        test.done();
+      })
+      .catch(function(err) {
+        test.equal(undefined, err, 'an unexpected error was thrown');
+      });
+
+    setImmediate(function() {
+      // enable wifi completed
+      self.tessel._rps.emit('close');
+      setImmediate(function() {
+        // commit wifi settings completed
+        self.tessel._rps.emit('close');
+        setImmediate(function() {
+          // Reconnecting to wifi completed
+          self.tessel._rps.emit('close');
+        });
+      });
+    });
+  },
+  setWifiStateFalsy: function(test) {
+    var self = this;
+
+    test.expect(6);
+    var state = false;
+    this.tessel.setWiFiState(state)
+      .then(function() {
+        test.equal(self.simpleExec.calledThrice, true);
+        test.deepEqual(self.simpleExec.args[0][0], commands.turnOnWifi(state));
+        test.deepEqual(self.simpleExec.args[1][0], commands.commitWirelessCredentials());
+        test.deepEqual(self.simpleExec.args[2][0], commands.reconnectWifi());
+        test.equal(self.logsInfo.calledOnce, true);
+        test.equal(self.logsInfo.args[0][1].indexOf('Disabled.') !== -1, true);
+        test.done();
+      })
+      .catch(function(err) {
+        test.equal(undefined, err, 'an unexpected error was thrown');
+      });
+
+    setImmediate(function() {
+      // enable wifi completed
+      self.tessel._rps.emit('close');
+      setImmediate(function() {
+        // commit wifi settings completed
+        self.tessel._rps.emit('close');
+        setImmediate(function() {
+          // Reconnecting to wifi completed
+          self.tessel._rps.emit('close');
+        });
+      });
+    });
+
+  }
+
+};
