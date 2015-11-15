@@ -1434,6 +1434,29 @@ exports['deploy.findProject'] = {
       test.done();
     });
   },
+
+  noPackageJsonSingle: function(test) {
+    test.expect(1);
+
+    var pushdir = path.normalize('test/unit/fixtures/project-no-package.json/');
+    var entryPoint = path.normalize('test/unit/fixtures/project-no-package.json/index.js');
+    var slimPath = '__tessel_program__.js';
+
+    var opts = {
+      entryPoint: entryPoint,
+      slimPath: slimPath,
+      single: true,
+      slim: true,
+    };
+
+    deploy.findProject(opts).then(function(project) {
+      // Without the `single` flag, this would've continued upward
+      // until it found a directory with a package.json.
+      test.ok(project.pushdir, fs.realpathSync(path.dirname(pushdir)));
+      test.done();
+    });
+  },
+
 };
 
 function deployTestCode(tessel, test, opts, callback) {
