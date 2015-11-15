@@ -7,6 +7,7 @@ var key = require('../lib/key');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
 var Tessel = require('../lib/tessel/tessel');
+var drivers = require('./tessel-install-drivers');
 
 function makeCommand(commandName) {
   return parser.command(commandName)
@@ -47,6 +48,17 @@ function callControllerCallback(methodName) {
     return callControllerWith(methodName, opts);
   };
 }
+
+parser.command('install-drivers')
+  .callback(function() {
+    require('./tessel-install-drivers');
+    var ret = drivers.install();
+    if (ret !== 0) {
+      module.exports.closeFailedCommand(ret);
+    } else {
+      module.exports.closeSuccessfulCommand(ret);
+    }
+  });
 
 parser.command('provision')
   .callback(callControllerCallback('provisionTessel'))
@@ -287,8 +299,11 @@ module.exports.closeFailedCommand = function(opts, err) {
     opts.type = opts.type || 'warn';
     logs[opts.type](err);
   }
-  // NOTE: Exit code is non-zero
-  process.exit(1);
+  if (opts.code === undefined) {
+    opts.code = 1;
+  }
+
+  process.exit(opts.code);
 };
 
 
