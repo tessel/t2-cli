@@ -40,7 +40,12 @@ function makeCommand(commandName) {
 
 function callControllerWith(methodName, opts) {
   return controller[methodName](opts)
-    .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
+    .then(module.exports.closeSuccessfulCommand, function(opts, err) {
+      if (typeof opts === 'object' && opts !== null) {
+        err = opts.message || '';
+      }
+      module.exports.closeFailedCommand(opts, err);
+    });
 }
 
 function callControllerCallback(methodName) {
