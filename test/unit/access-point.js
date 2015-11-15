@@ -9,6 +9,17 @@ exports['Tessel.prototype.createAccessPoint'] = {
     this.sandbox = sinon.sandbox.create();
     this.createAccessPoint = this.sandbox.spy(Tessel.prototype, 'createAccessPoint');
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.setLanNetwork = this.sandbox.spy(commands, 'setLanNetwork');
+    this.setLanNetworkIfname = this.sandbox.spy(commands, 'setLanNetworkIfname');
+    this.setLanNetworkProto = this.sandbox.spy(commands, 'setLanNetworkProto');
+    this.setLanNetworkIP = this.sandbox.spy(commands, 'setLanNetworkIP');
+    this.setLanNetworkNetmask = this.sandbox.spy(commands, 'setLanNetworkNetmask');
+    this.commitNetwork = this.sandbox.spy(commands, 'commitNetwork');
+    this.setAccessPoint = this.sandbox.spy(commands, 'setAccessPoint');
+    this.getAccessPointSSID = this.sandbox.spy(commands, 'getAccessPointSSID');
+    this.setAccessPointDevice = this.sandbox.spy(commands, 'setAccessPointDevice');
+    this.setAccessPointNetwork = this.sandbox.spy(commands, 'setAccessPointNetwork');
+    this.setAccessPointMode = this.sandbox.spy(commands, 'setAccessPointMode');
     this.setAccessPointSSID = this.sandbox.spy(commands, 'setAccessPointSSID');
     this.setAccessPointPassword = this.sandbox.spy(commands, 'setAccessPointPassword');
     this.setAccessPointSecurity = this.sandbox.spy(commands, 'setAccessPointSecurity');
@@ -28,34 +39,65 @@ exports['Tessel.prototype.createAccessPoint'] = {
     done();
   },
 
-  noSSID: function(test) {
-    test.expect(1);
+  newAccessPoint: function(test) {
+    test.expect(20);
+    var self = this;
+    var creds = {
+      ssid: 'test',
+      pass: 'test-password',
+      security: 'psk2'
+    };
 
-    this.tessel.createAccessPoint({
-        ssid: undefined
-      })
-      .catch(function(error) {
-        test.ok(error);
-        test.done();
+    // Test is expecting two closes...;
+    self.tessel._rps.on('control', function() {
+      setImmediate(function() {
+        self.tessel._rps.emit('close');
       });
-  },
+    });
 
-  noPasswordWithSecurity: function(test) {
-    test.expect(1);
+    // tessel.receive is called twice but needs to be rejected the first time
+    var count = 0;
+    this.sandbox.stub(this.tessel, 'receive', function() {
+      if (count === 0) {
+        count++;
+        return Promise.reject(new Error('uci: Entry not found'));
+      } else {
+        return Promise.resolve();
+      }
+    });
 
-    this.tessel.createAccessPoint({
-        ssid: 'test',
-        password: undefined,
-        security: 'psk2'
+    this.tessel.createAccessPoint(creds)
+      .then(function() {
+        test.equal(self.getAccessPointSSID.callCount, 1);
+        test.equal(self.setAccessPoint.callCount, 1);
+        test.equal(self.setAccessPointDevice.callCount, 1);
+        test.equal(self.setAccessPointNetwork.callCount, 1);
+        test.equal(self.setAccessPointMode.callCount, 1);
+        test.equal(self.setAccessPointSSID.callCount, 1);
+        test.equal(self.setAccessPointPassword.callCount, 1);
+        test.equal(self.setAccessPointSecurity.callCount, 1);
+        test.equal(self.setLanNetwork.callCount, 1);
+        test.equal(self.setLanNetworkIfname.callCount, 1);
+        test.equal(self.setLanNetworkProto.callCount, 1);
+        test.equal(self.setLanNetworkIP.callCount, 1);
+        test.equal(self.setLanNetworkNetmask.callCount, 1);
+        test.equal(self.commitNetwork.callCount, 1);
+        test.equal(self.reconnectWifi.callCount, 1);
+        test.equal(self.reconnectDnsmasq.callCount, 1);
+        test.equal(self.reconnectDhcp.callCount, 1);
+        test.ok(self.setAccessPointSSID.lastCall.calledWith(creds.ssid));
+        test.ok(self.setAccessPointPassword.lastCall.calledWith(creds.pass));
+        test.ok(self.setAccessPointSecurity.lastCall.calledWith(creds.security));
+
+        test.done();
       })
       .catch(function(error) {
-        test.ok(error);
-        test.done();
+        test.fail(error);
       });
   },
 
   noPasswordNoSecurity: function(test) {
-    test.expect(8);
+    test.expect(9);
     var self = this;
     var creds = {
       ssid: 'test',
@@ -72,6 +114,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
     this.tessel.createAccessPoint(creds)
       .then(function() {
+        test.equal(self.getAccessPointSSID.callCount, 1);
         test.equal(self.setAccessPointSSID.callCount, 1);
         test.equal(self.setAccessPointPassword.callCount, 0);
         test.equal(self.setAccessPointSecurity.callCount, 1);
@@ -88,7 +131,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
   },
 
   properCredentials: function(test) {
-    test.expect(9);
+    test.expect(10);
     var self = this;
     var creds = {
       ssid: 'test',
@@ -105,6 +148,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
     this.tessel.createAccessPoint(creds)
       .then(function() {
+        test.equal(self.getAccessPointSSID.callCount, 1);
         test.equal(self.setAccessPointSSID.callCount, 1);
         test.equal(self.setAccessPointPassword.callCount, 1);
         test.equal(self.setAccessPointSecurity.callCount, 1);
@@ -122,7 +166,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
   },
 
   passwordNoSecurity: function(test) {
-    test.expect(9);
+    test.expect(10);
     var self = this;
     var creds = {
       ssid: 'test',
@@ -139,6 +183,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
     this.tessel.createAccessPoint(creds)
       .then(function() {
+        test.equal(self.getAccessPointSSID.callCount, 1);
         test.equal(self.setAccessPointSSID.callCount, 1);
         test.equal(self.setAccessPointPassword.callCount, 1);
         test.equal(self.setAccessPointSecurity.callCount, 1);
