@@ -40,12 +40,7 @@ function makeCommand(commandName) {
 
 function callControllerWith(methodName, opts) {
   return controller[methodName](opts)
-    .then(module.exports.closeSuccessfulCommand, function(opts, err) {
-      if (typeof opts === 'object' && opts !== null) {
-        err = opts.message || '';
-      }
-      module.exports.closeFailedCommand(opts, err);
-    });
+    .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
 }
 
 function callControllerCallback(methodName) {
@@ -322,23 +317,22 @@ module.exports.closeSuccessfulCommand = function() {
 };
 
 // Allow options to be partially applied
-module.exports.closeFailedCommand = function(opts, err) {
-  if (!err) {
-    err = opts;
-    opts = {};
-  }
-  if (err instanceof Error) {
-    throw err;
+module.exports.closeFailedCommand = function(status, options) {
+  var code = 1;
+
+  options = options || {};
+
+  if (status instanceof Error) {
+    logs.err(status.toString());
   } else {
-    // Print a stern warning by default
-    opts.type = opts.type || 'warn';
-    logs[opts.type](err);
-  }
-  if (opts.code === undefined) {
-    opts.code = 1;
+    if (status !== undefined) {
+      // Print a stern warning by default
+      options.type = options.type || 'warn';
+      logs[options.type](status);
+    }
   }
 
-  process.exit(opts.code);
+  process.exit(options.code || status.code || code);
 };
 
 

@@ -544,7 +544,7 @@ exports['deploy.tarBundle'] = {
   },
 
   slimSyntaxErrorRejects: function(test) {
-    test.expect(2);
+    test.expect(1);
 
     var entryPoint = 'index.js';
     var slimPath = '__tessel_program__.js';
@@ -559,7 +559,6 @@ exports['deploy.tarBundle'] = {
       test.fail();
       test.done();
     }).catch(function(error) {
-      test.equal(error.type, 'err');
       test.ok(error.message.indexOf('Unexpected token') !== -1);
       test.done();
     }.bind(this));
