@@ -543,6 +543,28 @@ exports['deploy.tarBundle'] = {
     }.bind(this));
   },
 
+  slimSyntaxErrorRejects: function(test) {
+    test.expect(2);
+
+    var entryPoint = 'index.js';
+    var slimPath = '__tessel_program__.js';
+    var target = 'test/unit/fixtures/syntax-error';
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slimPath: slimPath,
+      slim: true,
+    }).then(function() {
+      test.fail();
+      test.done();
+    }).catch(function(error) {
+      test.equal(error.type, 'err');
+      test.ok(error.message.indexOf('Unexpected token') !== -1);
+      test.done();
+    }.bind(this));
+  },
+
   slimTesselInit: function(test) {
     test.expect(8);
 
