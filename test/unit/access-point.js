@@ -1,8 +1,5 @@
-var sinon = require('sinon');
-var Tessel = require('../../lib/tessel/tessel');
-var commands = require('../../lib/tessel/commands');
-var logs = require('../../lib/logs');
-var TesselSimulator = require('../common/tessel-simulator');
+// Test dependencies are required and exposed in common/bootstrap.js
+
 
 exports['Tessel.prototype.createAccessPoint'] = {
   setUp: function(done) {

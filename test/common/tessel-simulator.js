@@ -1,5 +1,4 @@
-var RemoteProcessSimulator = require('./remote-process-simulator');
-var Tessel = require('../../lib/tessel/tessel');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 function TesselSimulator(options) {
 

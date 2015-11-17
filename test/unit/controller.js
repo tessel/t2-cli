@@ -1,11 +1,4 @@
-var sinon = require('sinon');
-var _ = require('lodash');
-var controller = require('../../lib/controller');
-var Tessel = require('../../lib/tessel/tessel');
-var Seeker = require('../../lib/discover.js');
-var util = require('util');
-var EventEmitter = require('events').EventEmitter;
-var logs = require('../../lib/logs');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 function newTessel(options) {
   var tessel = new Tessel({
@@ -363,7 +356,7 @@ exports['Tessel.list'] = {
     this.sandbox = sinon.sandbox.create();
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
-    this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
+    this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function() {
       this.start = function(opts) {
         self.activeSeeker = this;
         if (opts.timeout && typeof opts.timeout === 'number') {
@@ -376,7 +369,7 @@ exports['Tessel.list'] = {
         return this;
       }.bind(this);
     });
-    util.inherits(this.seeker, EventEmitter);
+    util.inherits(this.seeker, Emitter);
 
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
@@ -523,7 +516,7 @@ exports['Tessel.get'] = {
     this.sandbox = sinon.sandbox.create();
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
-    this.seeker = this.sandbox.stub(Seeker, 'TesselSeeker', function Seeker() {
+    this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
       this.start = function(opts) {
         self.activeSeeker = this;
         this.msg = {
@@ -540,7 +533,7 @@ exports['Tessel.get'] = {
         return this;
       }.bind(this);
     });
-    util.inherits(this.seeker, EventEmitter);
+    util.inherits(this.seeker, Emitter);
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
     this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});

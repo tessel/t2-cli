@@ -9,27 +9,25 @@ module.exports = function(grunt) {
       ]
     },
     jshint: {
-      options: {
-        jshintrc: '.jshintrc'
+      all: {
+        options: {
+          jshintrc: '.jshintrc'
+        },
+        src: [
+          'bin/*',
+          'lib/**/*.js',
+          'Gruntfile.js',
+        ]
       },
-      all: [
-        'bin/*',
-        'lib/**/*.js',
-        'test/**/*.js',
-        'Gruntfile.js',
-        '!test/unit/fixtures/syntax-error/**/*.js',
-
-        // This is commented out because there are
-        // too many errors to address. I went through
-        // half of them and still:
-        //
-        // >> 75 errors in 3 files
-        //
-        // There are a lot of undefined vars being used
-        // and without fully understanding these files, it's
-        // not worth the effort to fix them all.
-        // 'resources/**/*.js',
-      ]
+      tests: {
+        options: {
+          jshintrc: 'test/.jshintrc'
+        },
+        src: [
+          'test/**/*.js',
+          '!test/unit/fixtures/syntax-error/**/*.js',
+        ]
+      }
     },
     jscs: {
       all: [

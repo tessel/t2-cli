@@ -1,9 +1,4 @@
-var sinon = require('sinon');
-var Emitter = require('events').EventEmitter;
-var Duplex = require('stream').Duplex;
-var USB = require('../../lib/usb_connection').USB;
-var Daemon = require('../../lib/usb/usb_daemon');
-var logs = require('../../lib/logs');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 exports['USB.Connection'] = {
   setUp: function(done) {

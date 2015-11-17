@@ -1,19 +1,9 @@
-var sinon = require('sinon');
-var Tessel = require('../../lib/tessel/tessel');
-var controller = require('../../lib/controller');
-var fs = require('fs-extra');
-var path = require('path');
-var cp = require('child_process');
-var TesselSimulator = require('../common/tessel-simulator');
-var logs = require('../../lib/logs');
-var provision = require('../../lib/tessel/provision');
-var mkdirp = require('mkdirp');
+// Test dependencies are required and exposed in common/bootstrap.js
+
 var testDir = __dirname + '/tmp/';
 var testFile = 'test_rsa';
 var testPath = path.join(testDir, testFile);
 var fakeKeyFileData = 'Test Contents';
-var commands = require('../../lib/tessel/commands');
-var async = require('async');
 
 exports['Tessel.isProvisioned()'] = {
   setUp: function(done) {

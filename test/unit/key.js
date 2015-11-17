@@ -1,19 +1,11 @@
-var sinon = require('sinon');
-var logs = require('../../lib/logs');
+// Test dependencies are required and exposed in common/bootstrap.js
+
 var testDir = __dirname + '/tmp/';
 var testFile = 'test_rsa';
-var path = require('path');
 var testPath = path.join(testDir, testFile);
-var provision = require('../../lib/tessel/provision');
-var osenv = require('osenv');
 var authPath = path.join(osenv.home(), '.tessel');
 var idrsa = 'id_rsa';
 var authKey = path.join(authPath, idrsa);
-var Tessel = require('../../lib/tessel/tessel');
-var fs = require('fs-extra');
-var async = require('async');
-var NodeRSA = require('node-rsa');
-var sshpk = require('sshpk');
 
 function createKeyTestFolder(callback) {
   fs.mkdirs(testDir, callback);

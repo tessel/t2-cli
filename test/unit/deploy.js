@@ -1,19 +1,6 @@
-var sinon = require('sinon');
-var Tessel = require('../../lib/tessel/tessel');
-var commands = require('../../lib/tessel/commands');
-var deploy = require('../../lib/tessel/deploy');
-var logs = require('../../lib/logs');
-var TesselSimulator = require('../common/tessel-simulator');
-var fs = require('fs-extra');
-var mkdirp = require('mkdirp');
-var path = require('path');
-var Ignore = require('fstream-ignore');
-var fsTemp = require('fs-temp');
-var browserify = require('browserify');
-var uglify = require('uglify-js');
-var tar = require('tar');
-var meminfo = fs.readFileSync('test/unit/fixtures/proc-meminfo', 'utf8');
+// Test dependencies are required and exposed in common/bootstrap.js
 
+var meminfo = fs.readFileSync('test/unit/fixtures/proc-meminfo', 'utf8');
 var deployFolder = path.join(__dirname, 'tmp');
 var deployFile = path.join(deployFolder, 'app.js');
 var codeContents = 'console.log("testing deploy");';

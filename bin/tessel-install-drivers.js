@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 
-var fs = require('fs');
-var logs = require('../lib/logs');
+// System Objects
 var child_process = require('child_process');
+var fs = require('fs');
+
+// Third Party Dependencies
+// ...
+
+// Internal
+var logs = require('../lib/logs');
 
 module.exports.install = function() {
   if (process.platform === 'linux') {

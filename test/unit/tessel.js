@@ -1,15 +1,4 @@
-var sinon = require('sinon');
-var Tessel = require('../../lib/tessel/tessel');
-var discover = require('../../lib/discover.js');
-var util = require('util');
-var EventEmitter = require('events').EventEmitter;
-var logs = require('../../lib/logs');
-// Require this function so that the functions in the
-// controller placed on the Tessel prototype
-var controller = require('../../lib/controller');
-var lan = require('../../lib/lan_connection');
-var TesselSimulator = require('../common/tessel-simulator');
-
+// Test dependencies are required and exposed in common/bootstrap.js
 
 exports['Tessel (get)'] = {
 
@@ -17,7 +6,7 @@ exports['Tessel (get)'] = {
     var self = this;
     this.sandbox = sinon.sandbox.create();
     this.activeSeeker = undefined;
-    // This is necessary to prevent an EventEmitter memory leak warning
+    // This is necessary to prevent an Emitter memory leak warning
     this.processOn = this.sandbox.stub(process, 'on');
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
       this.start = function(options) {
@@ -30,7 +19,7 @@ exports['Tessel (get)'] = {
         return this;
       };
     });
-    util.inherits(this.seeker, EventEmitter);
+    util.inherits(this.seeker, Emitter);
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
 
@@ -404,7 +393,7 @@ exports['Tessel (get); filter: unauthorized'] = {
     var self = this;
     this.sandbox = sinon.sandbox.create();
     this.activeSeeker = undefined;
-    // This is necessary to prevent an EventEmitter memory leak warning
+    // This is necessary to prevent an Emitter memory leak warning
     this.processOn = this.sandbox.stub(process, 'on');
 
     var Seeker = discover.TesselSeeker;
@@ -417,10 +406,10 @@ exports['Tessel (get); filter: unauthorized'] = {
     });
 
     this.startScan = this.sandbox.stub(lan, 'startScan', function() {
-      return new EventEmitter();
+      return new Emitter();
     });
 
-    util.inherits(this.seeker, EventEmitter);
+    util.inherits(this.seeker, Emitter);
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
 

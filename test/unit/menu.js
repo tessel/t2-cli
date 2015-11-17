@@ -1,8 +1,4 @@
-var sinon = require('sinon');
-var controller = require('../../lib/controller');
-var logs = require('../../lib/logs');
-var TesselSimulator = require('../common/tessel-simulator');
-var inquirer = require('inquirer');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 exports['controller.menu'] = {
   setUp: function(done) {

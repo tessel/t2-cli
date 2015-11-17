@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 
+// System Objects
 var path = require('path');
+
+// Third Party Dependencies
 var parser = require('nomnom').script('t2');
+
+// Internal
 var controller = require('../lib/controller');
-var key = require('../lib/key');
 var init = require('../lib/init');
+var key = require('../lib/key');
 var logs = require('../lib/logs');
 var Tessel = require('../lib/tessel/tessel');
 var drivers = require('./tessel-install-drivers');

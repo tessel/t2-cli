@@ -1,9 +1,4 @@
-var sinon = require('sinon');
-var controller = require('../../lib/controller');
-var logs = require('../../lib/logs');
-var updates = require('../../lib/update-fetch');
-var Tessel = require('../../lib/tessel/tessel');
-var TesselSimulator = require('../common/tessel-simulator');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 var builds = [{
   sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',

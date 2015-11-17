@@ -1,10 +1,4 @@
-var Emitter = require('events').EventEmitter;
-var fs = require('fs');
-var LAN = require('../../lib/lan_connection').LAN;
-var Tessel = require('../../lib/tessel/tessel');
-var ssh = require('ssh2');
-var mdns = require('mdns-js');
-var sinon = require('sinon');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 exports['LAN.Connection'] = {
   setUp: function(done) {
