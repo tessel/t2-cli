@@ -127,6 +127,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     this.logsInfo = sinon.stub(logs, 'info', function() {});
     this.setNetworkSSID = sinon.spy(commands, 'setNetworkSSID');
     this.setNetworkPassword = sinon.spy(commands, 'setNetworkPassword');
+    this.setNetworkEncryption = sinon.spy(commands, 'setNetworkEncryption');
     this.commitWirelessCredentials = sinon.spy(commands, 'commitWirelessCredentials');
     this.reconnectWifi = sinon.spy(commands, 'reconnectWifi');
     this.tessel = TesselSimulator();
@@ -140,13 +141,14 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     this.logsInfo.restore();
     this.setNetworkSSID.restore();
     this.setNetworkPassword.restore();
+    this.setNetworkEncryption.restore();
     this.commitWirelessCredentials.restore();
     this.reconnectWifi.restore();
     done();
   },
   noSSID: function(test) {
     var self = this;
-    test.expect(3);
+    test.expect(4);
     this.tessel.connectToNetwork({
         ssid: undefined,
         password: 'fish'
@@ -155,12 +157,13 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(error);
         test.equal(self.setNetworkSSID.callCount, 0);
         test.equal(self.setNetworkPassword.callCount, 0);
+        test.equal(self.setNetworkEncryption.callCount, 0);
         test.done();
       });
   },
   noPassword: function(test) {
     var self = this;
-    test.expect(3);
+    test.expect(4);
     this.tessel.connectToNetwork({
         ssid: 'tank',
         password: undefined
@@ -169,12 +172,13 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(error);
         test.equal(self.setNetworkSSID.callCount, 0);
         test.equal(self.setNetworkPassword.callCount, 0);
+        test.equal(self.setNetworkEncryption.callCount, 0);
         test.done();
       });
   },
   properCredentials: function(test) {
     var self = this;
-    test.expect(6);
+    test.expect(8);
     var creds = {
       ssid: 'tank',
       password: 'fish'
@@ -191,10 +195,12 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
       .then(function() {
         test.equal(self.setNetworkSSID.callCount, 1);
         test.equal(self.setNetworkPassword.callCount, 1);
+        test.equal(self.setNetworkEncryption.callCount, 1);
         test.equal(self.commitWirelessCredentials.callCount, 1);
         test.equal(self.reconnectWifi.callCount, 1);
         test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
         test.ok(self.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(self.setNetworkEncryption.lastCall.calledWith('psk2'));
         test.done();
       })
       .catch(function(error) {

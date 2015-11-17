@@ -282,6 +282,36 @@ makeCommand('version')
   .callback(callControllerCallback('tesselFirmwareVerion'))
   .help('Display Tessel\'s current firmware version');
 
+makeCommand('ap')
+  .option('ssid', {
+    abbr: 'n',
+    help: 'Name of the network.'
+  })
+  .option('pass', {
+    abbr: 'p',
+    help: 'Password to access network.'
+  })
+  .option('security', {
+    abbr: 's',
+    help: 'Encryption to use on network (i.e. wep, psk, psk2, wpa, wpa2).'
+  })
+  .option('trigger', {
+    position: 1,
+    help: 'Trigger, i.e. on OR off, the access point'
+  })
+  .help('Configure the Tessel as an access point')
+  .callback(function(opts) {
+    if (opts.trigger) {
+      if (opts.trigger === 'on') {
+        callControllerWith('enableAccessPoint', opts);
+      } else {
+        callControllerWith('disableAccessPoint', opts);
+      }
+    } else {
+      callControllerWith('createAccessPoint', opts);
+    }
+  });
+
 
 module.exports = function(args) {
   parser.parse(args);

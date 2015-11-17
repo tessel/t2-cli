@@ -786,3 +786,59 @@ exports['Tessel.get'] = {
     }.bind(this));
   },
 };
+
+exports['controller.closeTesselConnections'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  noSSID: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+        ssid: undefined
+      })
+      .catch(function(error) {
+        test.ok(error);
+        test.done();
+      });
+  },
+
+  noPasswordWithSecurity: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+        ssid: 'test',
+        password: undefined,
+        security: 'psk2'
+      })
+      .catch(function(error) {
+        test.ok(error);
+        test.done();
+      });
+  },
+
+  invalidSecurityOption: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+        ssid: 'test',
+        password: undefined,
+        security: 'reallySecure'
+      })
+      .catch(function(error) {
+        test.ok(error);
+        test.done();
+      });
+  },
+};
