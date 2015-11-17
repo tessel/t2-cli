@@ -40,7 +40,6 @@ exports['Tessel (get)'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();
@@ -80,7 +79,6 @@ exports['Tessel (get)'] = {
 
     var customOpts = {
       timeout: this.standardOpts.timeout,
-      key: this.standardOpts.key,
       name: 'Does_Not_Exist'
     };
     // Try to get Tessels but return none
@@ -166,7 +164,6 @@ exports['Tessel (get)'] = {
 
     var customOpts = {
       timeout: this.standardOpts.timeout,
-      key: this.standardOpts.key,
       name: 'a'
     };
 
@@ -361,7 +358,6 @@ exports['Tessel (get)'] = {
 
     var customOpts = {
       timeout: this.standardOpts.timeout,
-      key: this.standardOpts.key,
       name: 'a'
     };
 
@@ -434,7 +430,6 @@ exports['Tessel (get); filter: unauthorized'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();
@@ -450,7 +445,6 @@ exports['Tessel (get); filter: unauthorized'] = {
 
     var customOpts = {
       timeout: this.standardOpts.timeout,
-      key: this.standardOpts.key,
       authorized: true
     };
 

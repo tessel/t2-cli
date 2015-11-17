@@ -7,6 +7,7 @@ var key = require('../lib/key');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
 var Tessel = require('../lib/tessel/tessel');
+var drivers = require('./tessel-install-drivers');
 
 function makeCommand(commandName) {
   return parser.command(commandName)
@@ -47,6 +48,17 @@ function callControllerCallback(methodName) {
     return callControllerWith(methodName, opts);
   };
 }
+
+parser.command('install-drivers')
+  .callback(function() {
+    require('./tessel-install-drivers');
+    var ret = drivers.install();
+    if (ret !== 0) {
+      module.exports.closeFailedCommand(ret);
+    } else {
+      module.exports.closeSuccessfulCommand(ret);
+    }
+  });
 
 parser.command('provision')
   .callback(callControllerCallback('provisionTessel'))
@@ -278,6 +290,36 @@ makeCommand('version')
   .callback(callControllerCallback('tesselFirmwareVerion'))
   .help('Display Tessel\'s current firmware version');
 
+makeCommand('ap')
+  .option('ssid', {
+    abbr: 'n',
+    help: 'Name of the network.'
+  })
+  .option('pass', {
+    abbr: 'p',
+    help: 'Password to access network.'
+  })
+  .option('security', {
+    abbr: 's',
+    help: 'Encryption to use on network (i.e. wep, psk, psk2, wpa, wpa2).'
+  })
+  .option('trigger', {
+    position: 1,
+    help: 'Trigger, i.e. on OR off, the access point'
+  })
+  .help('Configure the Tessel as an access point')
+  .callback(function(opts) {
+    if (opts.trigger) {
+      if (opts.trigger === 'on') {
+        callControllerWith('enableAccessPoint', opts);
+      } else {
+        callControllerWith('disableAccessPoint', opts);
+      }
+    } else {
+      callControllerWith('createAccessPoint', opts);
+    }
+  });
+
 
 module.exports = function(args) {
   parser.parse(args);
@@ -288,20 +330,22 @@ module.exports.closeSuccessfulCommand = function() {
 };
 
 // Allow options to be partially applied
-module.exports.closeFailedCommand = function(opts, err) {
-  if (!err) {
-    err = opts;
-    opts = {};
-  }
-  if (err instanceof Error) {
-    throw err;
+module.exports.closeFailedCommand = function(status, options) {
+  var code = 1;
+
+  options = options || {};
+
+  if (status instanceof Error) {
+    logs.err(status.toString());
   } else {
-    // Print a stern warning by default
-    opts.type = opts.type || 'warn';
-    logs[opts.type](err);
+    if (status !== undefined) {
+      // Print a stern warning by default
+      options.type = options.type || 'warn';
+      logs[options.type](status);
+    }
   }
-  // NOTE: Exit code is non-zero
-  process.exit(1);
+
+  process.exit(options.code || status.code || code);
 };
 
 

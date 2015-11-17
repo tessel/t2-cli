@@ -483,8 +483,6 @@ exports['provision.setDefaultKey'] = {
 
   tearDown: function(done) {
     this.sandbox.restore();
-    // Added because one test sets it false for a moment
-    global.IS_TEST_ENV = true;
     done();
   },
 
@@ -521,9 +519,6 @@ exports['provision.setDefaultKey'] = {
   // setDefaultKey should reject with an error if a non-existent file was provided
   failNoFiles: function(test) {
     test.expect(1);
-
-    global.IS_TEST_ENV = false;
-
     provision.setDefaultKey('./no_files_here')
       .then(function noCall() {
         // This test should throw an error. Fail if it didn't
@@ -537,10 +532,17 @@ exports['provision.setDefaultKey'] = {
 
   successfulSetting: function(test) {
     test.expect(1);
-    var key = 'real_file_i_promise';
+
+    var key = path.join(__dirname, './real_file_i_promise');
+    var privateKeyPath = path.join(__dirname, './real_file_i_promise');
+    var publicKeyPath = path.join(__dirname, './real_file_i_promise' + '.pub');
+    fs.writeFileSync(privateKeyPath, 'test_contents');
+    fs.writeFileSync(publicKeyPath, 'test_contents');
     provision.setDefaultKey(key)
       .then(function doCall() {
         test.equal(Tessel.TESSEL_AUTH_KEY, key);
+        fs.unlinkSync(privateKeyPath);
+        fs.unlinkSync(publicKeyPath);
         test.done();
       })
       .catch(function noCall() {

@@ -17,6 +17,7 @@ module.exports = function(grunt) {
         'lib/**/*.js',
         'test/**/*.js',
         'Gruntfile.js',
+        '!test/unit/fixtures/syntax-error/**/*.js',
 
         // This is commented out because there are
         // too many errors to address. I went through
@@ -36,6 +37,7 @@ module.exports = function(grunt) {
         'lib/**/*.js',
         'test/**/*.js',
         'Gruntfile.js',
+        '!test/unit/fixtures/syntax-error/**/*.js',
         // 'resources/**/*.js',
       ],
       options: {
