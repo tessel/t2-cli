@@ -8,7 +8,6 @@ var TesselSimulator = require('../common/tessel-simulator');
 var logs = require('../../lib/logs');
 var provision = require('../../lib/tessel/provision');
 var mkdirp = require('mkdirp');
-var rimraf = require('rimraf');
 var testDir = __dirname + '/tmp/';
 var testFile = 'test_rsa';
 var testPath = path.join(testDir, testFile);
@@ -139,7 +138,7 @@ exports['controller.provisionTessel'] = {
         test.equal(this.provisionSpy.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-        rimraf(path.join(process.cwd(), Tessel.TESSEL_AUTH_PATH), function(err) {
+        fs.remove(path.join(process.cwd(), Tessel.TESSEL_AUTH_PATH), function(err) {
           test.ifError(err);
           Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
           test.done();
@@ -579,5 +578,5 @@ function deleteKeyTestFolder(callback) {
   if (!callback) {
     callback = function() {};
   }
-  rimraf(testDir, callback);
+  fs.remove(testDir, callback);
 }
