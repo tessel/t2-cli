@@ -30,7 +30,7 @@ var defaults = {
     name: 'usb',
     string: '--usb',
   },
-  key: Tessel.TESSEL_AUTH_KEY
+  key: Tessel.LOCAL_AUTH_KEY
 };
 
 exports['Tessel (cli: makeCommand)'] = {
@@ -146,7 +146,7 @@ exports['Tessel (cli: update)'] = {
       version: 42,
       _: ['update'],
       timeout: 5,
-      key: Tessel.TESSEL_AUTH_KEY
+      key: Tessel.LOCAL_AUTH_KEY
     });
 
     cli(['update', '--list', ' ']);

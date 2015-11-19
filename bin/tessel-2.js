@@ -26,7 +26,7 @@ function makeCommand(commandName) {
       required: false,
       metavar: 'PRIVATEKEY',
       abbr: 'i',
-      default: Tessel.TESSEL_AUTH_KEY,
+      default: Tessel.LOCAL_AUTH_KEY,
       help: 'SSH key for authorization with your Tessel'
     })
     .option('name', {

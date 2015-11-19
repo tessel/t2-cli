@@ -19,16 +19,16 @@ exports['Tessel.isProvisioned()'] = {
   isProvisionedTrue: function(test) {
     test.expect(3);
 
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
     Tessel.isProvisioned();
 
     test.equal(this.existsSync.callCount, 2);
-    test.equal(this.existsSync.firstCall.args[0], path.join(Tessel.TESSEL_AUTH_PATH, 'id_rsa'));
-    test.equal(this.existsSync.lastCall.args[0], path.join(Tessel.TESSEL_AUTH_PATH, 'id_rsa.pub'));
+    test.equal(this.existsSync.firstCall.args[0], path.join(Tessel.LOCAL_AUTH_PATH, 'id_rsa'));
+    test.equal(this.existsSync.lastCall.args[0], path.join(Tessel.LOCAL_AUTH_PATH, 'id_rsa.pub'));
 
-    Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+    Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
     test.done();
   },
 
@@ -37,15 +37,15 @@ exports['Tessel.isProvisioned()'] = {
 
     this.existsSync.returns(false);
 
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
     Tessel.isProvisioned();
 
     test.equal(this.existsSync.callCount, 1);
-    test.equal(this.existsSync.firstCall.args[0], path.join(Tessel.TESSEL_AUTH_PATH, 'id_rsa'));
+    test.equal(this.existsSync.firstCall.args[0], path.join(Tessel.LOCAL_AUTH_PATH, 'id_rsa'));
 
-    Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+    Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
     test.done();
   },
 };
@@ -110,9 +110,9 @@ exports['controller.provisionTessel'] = {
 
   completeForced: function(test) {
     test.expect(6);
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     // Say it's provisioned to make sure old folder gets deleted
     this.isProvisioned.onFirstCall().returns(true);
@@ -124,13 +124,13 @@ exports['controller.provisionTessel'] = {
       })
       .then(function() {
         test.equal(this.exec.callCount, 1);
-        test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.TESSEL_AUTH_PATH);
+        test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.LOCAL_AUTH_PATH);
         test.equal(this.provisionSpy.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-        fs.remove(path.join(process.cwd(), Tessel.TESSEL_AUTH_PATH), function(err) {
+        fs.remove(path.join(process.cwd(), Tessel.LOCAL_AUTH_PATH), function(err) {
           test.ifError(err);
-          Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+          Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
           test.done();
         });
       }.bind(this));
@@ -138,9 +138,9 @@ exports['controller.provisionTessel'] = {
 
   completeUnprovisioned: function(test) {
     test.expect(4);
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     this.isProvisioned.returns(false);
 
@@ -149,16 +149,16 @@ exports['controller.provisionTessel'] = {
       test.equal(this.provisionSpy.callCount, 1);
       test.equal(this.closeTesselConnections.callCount, 1);
       test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-      Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+      Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
       test.done();
     }.bind(this));
   },
 
   completeUnprovisionedForced: function(test) {
     test.expect(4);
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     this.isProvisioned.returns(false);
 
@@ -169,7 +169,7 @@ exports['controller.provisionTessel'] = {
       test.equal(this.provisionSpy.callCount, 1);
       test.equal(this.closeTesselConnections.callCount, 1);
       test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-      Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+      Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
       test.done();
     }.bind(this));
   },
@@ -273,8 +273,8 @@ exports['Tessel.prototype.provisionTessel'] = {
 
     test.expect(3);
 
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     // Create folders for the folder that we'd like to
     createKeyTestFolder(function(err) {
@@ -292,7 +292,7 @@ exports['Tessel.prototype.provisionTessel'] = {
           test.equal(self.writeFileSpy.firstCall.args[2].mode, 384);
           test.equal(self.writeFileSpy.lastCall.args[2].mode, 384);
 
-          Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+          Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
           // End the test
           test.done();
         })
@@ -341,8 +341,8 @@ exports['Tessel.prototype.provisionTessel'] = {
       return false;
     });
 
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     // Create folders for the folder that we'd like to
     createKeyTestFolder(function(err) {
@@ -361,7 +361,7 @@ exports['Tessel.prototype.provisionTessel'] = {
           var publicKey = self.writeFileSpy.firstCall.args[1];
           test.equal(publicKey[publicKey.length - 1], '\n');
 
-          Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+          Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
           self.isProvisioned.restore();
           // End the test
           test.done();
@@ -529,7 +529,7 @@ exports['provision.setDefaultKey'] = {
     fs.writeFileSync(publicKeyPath, 'test_contents');
     provision.setDefaultKey(key)
       .then(function doCall() {
-        test.equal(Tessel.TESSEL_AUTH_KEY, key);
+        test.equal(Tessel.LOCAL_AUTH_KEY, key);
         fs.unlinkSync(privateKeyPath);
         fs.unlinkSync(publicKeyPath);
         test.done();

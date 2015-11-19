@@ -36,9 +36,9 @@ exports['provision.setDefaultKey'] = {
 
       }).catch(function() {
         test.equal(self.setDefaultKeySpy.callCount, 1);
-        // ensure the Tessel.TESSEL_AUTH_PATH has a default when using options without presetting key s
-        test.equal(Tessel.TESSEL_AUTH_PATH, authPath);
-        test.equal(Tessel.TESSEL_AUTH_KEY, authKey);
+        // ensure the Tessel.LOCAL_AUTH_PATH has a default when using options without presetting key s
+        test.equal(Tessel.LOCAL_AUTH_PATH, authPath);
+        test.equal(Tessel.LOCAL_AUTH_KEY, authKey);
         test.done();
       });
   },
@@ -51,9 +51,9 @@ exports['provision.setDefaultKey'] = {
         test.fail('...');
       }).catch(function() {
         test.equal(self.setDefaultKeySpy.callCount, 1);
-        // ensure the Tessel.TESSEL_AUTH_PATH has a default when using options without presetting key s
-        test.equal(Tessel.TESSEL_AUTH_PATH, authPath);
-        test.equal(Tessel.TESSEL_AUTH_KEY, authKey);
+        // ensure the Tessel.LOCAL_AUTH_PATH has a default when using options without presetting key s
+        test.equal(Tessel.LOCAL_AUTH_PATH, authPath);
+        test.equal(Tessel.LOCAL_AUTH_KEY, authKey);
         test.done();
       });
   },
