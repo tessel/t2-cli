@@ -20,17 +20,22 @@ var defaults = {
   },
   lan: {
     flag: true,
-    help: 'Use LAN connection',
+    help: 'Use only a LAN connection',
     name: 'lan',
     string: '--lan',
   },
   usb: {
     flag: true,
-    help: 'Use USB connection',
+    help: 'Use only a USB connection',
     name: 'usb',
     string: '--usb',
   },
-  key: Tessel.LOCAL_AUTH_KEY
+  key: Tessel.LOCAL_AUTH_KEY,
+  lan_prefer: {
+    flag: true,
+    default: false,
+    help: 'Prefer a LAN connection if it\'s available, otherwise use USB'
+  }
 };
 
 exports['Tessel (cli: makeCommand)'] = {
@@ -146,7 +151,8 @@ exports['Tessel (cli: update)'] = {
       version: 42,
       _: ['update'],
       timeout: 5,
-      key: Tessel.LOCAL_AUTH_KEY
+      key: Tessel.LOCAL_AUTH_KEY,
+      lan_prefer: false
     });
 
     cli(['update', '--list', ' ']);
