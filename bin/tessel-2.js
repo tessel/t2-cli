@@ -322,6 +322,12 @@ makeCommand('ap')
     }
   });
 
+makeCommand('root')
+  .callback(function(opts) {
+    callControllerWith('root', opts);
+  })
+  .help('Gain SSH root access to one of your authorized tessels');
+
 
 module.exports = function(args) {
   parser.parse(args);
