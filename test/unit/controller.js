@@ -838,3 +838,114 @@ exports['controller.closeTesselConnections'] = {
       });
   },
 };
+
+exports['controller.root'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').returns(Promise.resolve());
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  setsOptsLanTrue: function(test) {
+    test.expect(3);
+
+    var opts = {};
+
+    controller.root(opts)
+      .then(function() {
+        var options = this.standardTesselCommand.lastCall.args[0];
+
+        test.equal(this.standardTesselCommand.callCount, 1);
+        test.equal(options, opts);
+        test.equal(options.lan, true);
+        test.done();
+      }.bind(this));
+  },
+
+  setsAuthorizedTrue: function(test) {
+    test.expect(3);
+
+    var opts = {};
+
+    controller.root(opts)
+      .then(function() {
+        var options = this.standardTesselCommand.lastCall.args[0];
+
+        test.equal(this.standardTesselCommand.callCount, 1);
+        test.equal(options, opts);
+        test.equal(options.authorized, true);
+        test.done();
+      }.bind(this));
+  },
+
+  openShell: function(test) {
+    test.expect(6);
+
+    var sandbox = this.sandbox;
+    var tessel = newTessel({
+      authorized: true,
+      sandbox: sandbox,
+      type: 'LAN',
+    });
+
+    function S() {
+      this.stdout = {
+        pipe: sandbox.spy()
+      };
+      this.stderr = {
+        pipe: sandbox.spy()
+      };
+      this.stdin = {
+        pipe: sandbox.spy()
+      };
+    }
+
+    S.prototype = Object.create(Emitter.prototype);
+
+    var stream = new S();
+
+    tessel.lanConnection.ssh = {};
+    tessel.lanConnection.ssh.shell = function() {};
+
+    this.shell = this.sandbox.stub(tessel.lanConnection.ssh, 'shell', function(callback) {
+      process.nextTick(function() {
+        callback(null, stream);
+      });
+    });
+
+    this.standardTesselCommand.restore();
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', function(opts, callback) {
+      return callback(tessel);
+    }.bind(this));
+
+
+    this.processStdin = this.sandbox.stub(process.stdin, 'pipe');
+
+    controller.root({})
+      .then(function() {
+
+        test.equal(stream.stdout.pipe.callCount, 1);
+        test.equal(stream.stderr.pipe.callCount, 1);
+        test.equal(process.stdin.pipe.callCount, 1);
+
+        test.equal(stream.stdout.pipe.lastCall.args[0], process.stdout);
+        test.equal(stream.stderr.pipe.lastCall.args[0], process.stderr);
+        test.equal(process.stdin.pipe.lastCall.args[0], stream.stdin);
+
+        test.done();
+      }.bind(this));
+
+    setImmediate(function() {
+      stream.emit('close');
+    });
+  },
+};
