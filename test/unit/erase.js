@@ -1,8 +1,4 @@
-var sinon = require('sinon');
-var Tessel = require('../../lib/tessel/tessel');
-var commands = require('../../lib/tessel/commands');
-var logs = require('../../lib/logs');
-var TesselSimulator = require('../common/tessel-simulator');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 exports['Tessel.prototype.erase'] = {
   setUp: function(done) {
@@ -29,7 +25,7 @@ exports['Tessel.prototype.erase'] = {
 
     test.expect(10);
 
-    var expected = [commands.stopRunningScript(), commands.disablePushedScript(), commands.deleteFolder(Tessel.PUSH_PATH)];
+    var expected = [commands.stopRunningScript(), commands.disablePushedScript(), commands.deleteFolder(Tessel.REMOTE_PUSH_PATH)];
     var commandNumber = 0;
 
     // Test that we received the proper command

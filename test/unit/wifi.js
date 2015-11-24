@@ -1,8 +1,4 @@
-var sinon = require('sinon');
-var Tessel = require('../../lib/tessel/tessel');
-var commands = require('../../lib/tessel/commands');
-var logs = require('../../lib/logs');
-var TesselSimulator = require('../common/tessel-simulator');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 exports['Tessel.prototype.findAvailableNetworks'] = {
   setUp: function(done) {
@@ -127,6 +123,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     this.logsInfo = sinon.stub(logs, 'info', function() {});
     this.setNetworkSSID = sinon.spy(commands, 'setNetworkSSID');
     this.setNetworkPassword = sinon.spy(commands, 'setNetworkPassword');
+    this.setNetworkEncryption = sinon.spy(commands, 'setNetworkEncryption');
     this.commitWirelessCredentials = sinon.spy(commands, 'commitWirelessCredentials');
     this.reconnectWifi = sinon.spy(commands, 'reconnectWifi');
     this.tessel = TesselSimulator();
@@ -140,13 +137,14 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     this.logsInfo.restore();
     this.setNetworkSSID.restore();
     this.setNetworkPassword.restore();
+    this.setNetworkEncryption.restore();
     this.commitWirelessCredentials.restore();
     this.reconnectWifi.restore();
     done();
   },
   noSSID: function(test) {
     var self = this;
-    test.expect(3);
+    test.expect(4);
     this.tessel.connectToNetwork({
         ssid: undefined,
         password: 'fish'
@@ -155,12 +153,13 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(error);
         test.equal(self.setNetworkSSID.callCount, 0);
         test.equal(self.setNetworkPassword.callCount, 0);
+        test.equal(self.setNetworkEncryption.callCount, 0);
         test.done();
       });
   },
   noPassword: function(test) {
     var self = this;
-    test.expect(3);
+    test.expect(4);
     this.tessel.connectToNetwork({
         ssid: 'tank',
         password: undefined
@@ -169,12 +168,13 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(error);
         test.equal(self.setNetworkSSID.callCount, 0);
         test.equal(self.setNetworkPassword.callCount, 0);
+        test.equal(self.setNetworkEncryption.callCount, 0);
         test.done();
       });
   },
   properCredentials: function(test) {
     var self = this;
-    test.expect(6);
+    test.expect(8);
     var creds = {
       ssid: 'tank',
       password: 'fish'
@@ -191,14 +191,100 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
       .then(function() {
         test.equal(self.setNetworkSSID.callCount, 1);
         test.equal(self.setNetworkPassword.callCount, 1);
+        test.equal(self.setNetworkEncryption.callCount, 1);
         test.equal(self.commitWirelessCredentials.callCount, 1);
         test.equal(self.reconnectWifi.callCount, 1);
         test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
         test.ok(self.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(self.setNetworkEncryption.lastCall.calledWith('psk2'));
         test.done();
       })
       .catch(function(error) {
         test.fail(error);
       });
   }
+};
+
+module.exports['Tessel.setWifiState'] = {
+  setUp: function(done) {
+    this.logsWarn = sinon.stub(logs, 'warn', function() {});
+    this.logsInfo = sinon.stub(logs, 'info', function() {});
+    this.tessel = TesselSimulator();
+    this.simpleExec = sinon.spy(this.tessel, 'simpleExec');
+
+    done();
+  },
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    this.logsWarn.restore();
+    this.logsInfo.restore();
+    done();
+  },
+
+  setWifiStateTruthy: function(test) {
+    var self = this;
+
+    test.expect(6);
+    var state = true;
+    this.tessel.setWiFiState(state)
+      .then(function() {
+        test.equal(self.simpleExec.calledThrice, true);
+        test.deepEqual(self.simpleExec.args[0][0], commands.turnOnWifi(state));
+        test.deepEqual(self.simpleExec.args[1][0], commands.commitWirelessCredentials());
+        test.deepEqual(self.simpleExec.args[2][0], commands.reconnectWifi());
+        test.equal(self.logsInfo.calledOnce, true);
+        test.equal(self.logsInfo.args[0][1].indexOf('Enabled.') !== -1, true);
+        test.done();
+      })
+      .catch(function(err) {
+        test.equal(undefined, err, 'an unexpected error was thrown');
+      });
+
+    setImmediate(function() {
+      // enable wifi completed
+      self.tessel._rps.emit('close');
+      setImmediate(function() {
+        // commit wifi settings completed
+        self.tessel._rps.emit('close');
+        setImmediate(function() {
+          // Reconnecting to wifi completed
+          self.tessel._rps.emit('close');
+        });
+      });
+    });
+  },
+  setWifiStateFalsy: function(test) {
+    var self = this;
+
+    test.expect(6);
+    var state = false;
+    this.tessel.setWiFiState(state)
+      .then(function() {
+        test.equal(self.simpleExec.calledThrice, true);
+        test.deepEqual(self.simpleExec.args[0][0], commands.turnOnWifi(state));
+        test.deepEqual(self.simpleExec.args[1][0], commands.commitWirelessCredentials());
+        test.deepEqual(self.simpleExec.args[2][0], commands.reconnectWifi());
+        test.equal(self.logsInfo.calledOnce, true);
+        test.equal(self.logsInfo.args[0][1].indexOf('Disabled.') !== -1, true);
+        test.done();
+      })
+      .catch(function(err) {
+        test.equal(undefined, err, 'an unexpected error was thrown');
+      });
+
+    setImmediate(function() {
+      // enable wifi completed
+      self.tessel._rps.emit('close');
+      setImmediate(function() {
+        // commit wifi settings completed
+        self.tessel._rps.emit('close');
+        setImmediate(function() {
+          // Reconnecting to wifi completed
+          self.tessel._rps.emit('close');
+        });
+      });
+    });
+
+  }
+
 };

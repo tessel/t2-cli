@@ -1,12 +1,4 @@
-var Emitter = require('events').EventEmitter;
-var sinon = require('sinon');
-var usb = require('../../lib/usb_connection');
-var lan = require('../../lib/lan_connection');
-var TesselSeeker = require('../../lib/discover').TesselSeeker;
-var TesselSimulator = require('../common/tessel-simulator');
-var Tessel = require('../../lib/tessel/tessel.js');
-var logs = require('../../lib/logs');
-
+// Test dependencies are required and exposed in common/bootstrap.js
 
 function FakeScanner() {
   Emitter.call(this);

@@ -1,6 +1,4 @@
-var stream = require('stream');
-var EventEmitter = require('events').EventEmitter;
-var util = require('util');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 function RemoteProcessSimulator() {
   var self = this;
@@ -37,6 +35,6 @@ function RemoteProcessSimulator() {
   });
 }
 
-util.inherits(RemoteProcessSimulator, EventEmitter);
+util.inherits(RemoteProcessSimulator, Emitter);
 
 module.exports = RemoteProcessSimulator;

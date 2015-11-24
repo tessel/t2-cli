@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 
+// System Objects
 var path = require('path');
+
+// Third Party Dependencies
 var parser = require('nomnom').script('t2');
+
+// Internal
 var controller = require('../lib/controller');
-var key = require('../lib/key');
 var init = require('../lib/init');
+var key = require('../lib/key');
 var logs = require('../lib/logs');
 var Tessel = require('../lib/tessel/tessel');
+var drivers = require('./tessel-install-drivers');
 
 function makeCommand(commandName) {
   return parser.command(commandName)
@@ -20,7 +26,7 @@ function makeCommand(commandName) {
       required: false,
       metavar: 'PRIVATEKEY',
       abbr: 'i',
-      default: Tessel.TESSEL_AUTH_KEY,
+      default: Tessel.LOCAL_AUTH_KEY,
       help: 'SSH key for authorization with your Tessel'
     })
     .option('name', {
@@ -29,11 +35,16 @@ function makeCommand(commandName) {
     })
     .option('lan', {
       flag: true,
-      help: 'Use LAN connection'
+      help: 'Use only a LAN connection'
     })
     .option('usb', {
       flag: true,
-      help: 'Use USB connection'
+      help: 'Use only a USB connection'
+    })
+    .option('lan_prefer', {
+      flag: true,
+      default: false,
+      help: 'Prefer a LAN connection if it\'s available, otherwise use USB'
     });
 }
 
@@ -47,6 +58,17 @@ function callControllerCallback(methodName) {
     return callControllerWith(methodName, opts);
   };
 }
+
+parser.command('install-drivers')
+  .callback(function() {
+    require('./tessel-install-drivers');
+    var ret = drivers.install();
+    if (ret !== 0) {
+      module.exports.closeFailedCommand(ret);
+    } else {
+      module.exports.closeSuccessfulCommand(ret);
+    }
+  });
 
 parser.command('provision')
   .callback(callControllerCallback('provisionTessel'))
@@ -77,7 +99,7 @@ makeCommand('restart')
   })
   .option('entryPoint', {
     position: 1,
-    help: 'The program entry point file to deploy to Tessel.',
+    help: 'The entry point file to deploy to Tessel'
   })
   .option('type', {
     default: 'ram',
@@ -93,7 +115,7 @@ makeCommand('run')
   .option('entryPoint', {
     position: 1,
     required: true,
-    help: 'The program entry point file to deploy to Tessel.'
+    help: 'The entry point file to deploy to Tessel'
   })
   .option('single', {
     flag: true,
@@ -107,17 +129,16 @@ makeCommand('run')
   })
   .option('slim', {
     flag: true,
-    default: true,
-    help: 'Deploy a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore. Program is run from "slimPath" file.'
+    help: 'Bundle only the required modules'
   })
   .option('slimPath', {
-    default: '__tessel_program__.js',
-    help: 'Specify the name of the --slim bundle file.'
+    default: 'build.js'
   })
-  .option('full', {
+  // Overrides default lan_prefer because deploys require high bandwidth
+  .option('lan_prefer', {
     flag: true,
-    default: false,
-    help: 'Deploy all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore. Program is run from specified "entryPoint" file.'
+    default: true,
+    help: 'Prefer a LAN connection if it\'s available, otherwise use USB'
   })
   .help('Deploy a script to Tessel and run it with Node');
 
@@ -129,7 +150,7 @@ makeCommand('push')
   .option('entryPoint', {
     position: 1,
     required: true,
-    help: 'The program entry point file to deploy to Tessel.'
+    help: 'The entry point file to deploy to Tessel'
   })
   .option('single', {
     flag: true,
@@ -143,17 +164,10 @@ makeCommand('push')
   })
   .option('slim', {
     flag: true,
-    default: true,
-    help: 'Push a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore. Program is run from "slimPath" file.'
+    help: 'Bundle only the required modules'
   })
   .option('slimPath', {
-    default: '__tessel_program__.js',
-    help: 'Specify the name of the --slim bundle file.'
-  })
-  .option('full', {
-    flag: true,
-    default: false,
-    help: 'Push all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore. Program is run from specified "entryPoint" file.'
+    default: 'build.js'
   })
   .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
@@ -184,6 +198,11 @@ makeCommand('wifi')
     // TODO: Refactor switch case into controller.wifi
     if (opts.list) {
       callControllerWith('printAvailableNetworks', opts);
+    } else if (opts.off || opts.on) {
+      if (opts.off) {
+        opts.on = false;
+      }
+      callControllerWith('setWiFiState', opts);
     } else if (opts.ssid && opts.password) {
       callControllerWith('connectToNetwork', opts);
     } else {
@@ -204,6 +223,14 @@ makeCommand('wifi')
     abbr: 'p',
     metavar: 'PASSWORD',
     help: 'Set the password of the network to connect to'
+  })
+  .option('off', {
+    flag: true,
+    help: 'Disable the wireless network'
+  })
+  .option('on', {
+    flag: true,
+    help: 'Enable the wireless network'
   })
   .help('Configure the wireless connection');
 
@@ -265,6 +292,42 @@ makeCommand('version')
   .callback(callControllerCallback('tesselFirmwareVerion'))
   .help('Display Tessel\'s current firmware version');
 
+makeCommand('ap')
+  .option('ssid', {
+    abbr: 'n',
+    help: 'Name of the network.'
+  })
+  .option('pass', {
+    abbr: 'p',
+    help: 'Password to access network.'
+  })
+  .option('security', {
+    abbr: 's',
+    help: 'Encryption to use on network (i.e. wep, psk, psk2, wpa, wpa2).'
+  })
+  .option('trigger', {
+    position: 1,
+    help: 'Trigger, i.e. on OR off, the access point'
+  })
+  .help('Configure the Tessel as an access point')
+  .callback(function(opts) {
+    if (opts.trigger) {
+      if (opts.trigger === 'on') {
+        callControllerWith('enableAccessPoint', opts);
+      } else {
+        callControllerWith('disableAccessPoint', opts);
+      }
+    } else {
+      callControllerWith('createAccessPoint', opts);
+    }
+  });
+
+makeCommand('root')
+  .callback(function(opts) {
+    callControllerWith('root', opts);
+  })
+  .help('Gain SSH root access to one of your authorized tessels');
+
 
 module.exports = function(args) {
   parser.parse(args);
@@ -275,20 +338,22 @@ module.exports.closeSuccessfulCommand = function() {
 };
 
 // Allow options to be partially applied
-module.exports.closeFailedCommand = function(opts, err) {
-  if (!err) {
-    err = opts;
-    opts = {};
-  }
-  if (err instanceof Error) {
-    throw err;
+module.exports.closeFailedCommand = function(status, options) {
+  var code = 1;
+
+  options = options || {};
+
+  if (status instanceof Error) {
+    logs.err(status.toString());
   } else {
-    // Print a stern warning by default
-    opts.type = opts.type || 'warn';
-    logs[opts.type](err);
+    if (status !== undefined) {
+      // Print a stern warning by default
+      options.type = options.type || 'warn';
+      logs[options.type](status);
+    }
   }
-  // NOTE: Exit code is non-zero
-  process.exit(1);
+
+  process.exit(options.code || status.code || code);
 };
 
 

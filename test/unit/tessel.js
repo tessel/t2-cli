@@ -1,15 +1,4 @@
-var sinon = require('sinon');
-var Tessel = require('../../lib/tessel/tessel');
-var discover = require('../../lib/discover.js');
-var util = require('util');
-var EventEmitter = require('events').EventEmitter;
-var logs = require('../../lib/logs');
-// Require this function so that the functions in the
-// controller placed on the Tessel prototype
-var controller = require('../../lib/controller');
-var lan = require('../../lib/lan_connection');
-var TesselSimulator = require('../common/tessel-simulator');
-
+// Test dependencies are required and exposed in common/bootstrap.js
 
 exports['Tessel (get)'] = {
 
@@ -17,7 +6,7 @@ exports['Tessel (get)'] = {
     var self = this;
     this.sandbox = sinon.sandbox.create();
     this.activeSeeker = undefined;
-    // This is necessary to prevent an EventEmitter memory leak warning
+    // This is necessary to prevent an Emitter memory leak warning
     this.processOn = this.sandbox.stub(process, 'on');
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
       this.start = function(options) {
@@ -30,7 +19,7 @@ exports['Tessel (get)'] = {
         return this;
       };
     });
-    util.inherits(this.seeker, EventEmitter);
+    util.inherits(this.seeker, Emitter);
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
 
@@ -40,7 +29,6 @@ exports['Tessel (get)'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();
@@ -80,12 +68,11 @@ exports['Tessel (get)'] = {
 
     var customOpts = {
       timeout: this.standardOpts.timeout,
-      key: this.standardOpts.key,
       name: 'Does_Not_Exist'
     };
+
     // Try to get Tessels but return none
     Tessel.get(customOpts)
-      // If
       .then(function(tessels) {
         test.equal(tessels, false, 'Somehow Tessels were returned');
       })
@@ -131,12 +118,16 @@ exports['Tessel (get)'] = {
 
   multipleUSBNoName: function(test) {
     test.expect(2);
-    // Try to get Tessels but return none
+    // Try to get Tessels
     Tessel.get(this.standardOpts)
-      .catch(function(reason) {
-        test.equal(reason, 'No Tessel selected, mission aborted!');
-        test.equal(this.menu.calledOnce, 1);
+      // It should return the first USB device it finds
+      .then(function(tessel) {
+        test.equal(tessel.name, a.name);
+        test.equal(tessel.connection.connectionType, a.connection.connectionType);
         test.done();
+      })
+      .catch(function(reason) {
+        test.equal(reason, undefined, 'Neither USB device was found');
       }.bind(this));
 
     var a = new Tessel({
@@ -166,7 +157,6 @@ exports['Tessel (get)'] = {
 
     var customOpts = {
       timeout: this.standardOpts.timeout,
-      key: this.standardOpts.key,
       name: 'a'
     };
 
@@ -284,11 +274,11 @@ exports['Tessel (get)'] = {
   usbAndAuthorizedLANSameTessel: function(test) {
     test.expect(2);
 
-    // Try to get Tessels but return none
+    // Try to get Tessels
     Tessel.get(this.standardOpts)
       .then(function(tessel) {
         test.equal(tessel.name, 'a');
-        test.equal(tessel.connection.connectionType, 'LAN');
+        test.equal(tessel.connection.connectionType, 'USB');
         test.done();
       })
       .catch(function() {
@@ -361,7 +351,6 @@ exports['Tessel (get)'] = {
 
     var customOpts = {
       timeout: this.standardOpts.timeout,
-      key: this.standardOpts.key,
       name: 'a'
     };
 
@@ -399,6 +388,126 @@ exports['Tessel (get)'] = {
       this.activeSeeker.emit('tessel', b);
     }.bind(this));
   },
+
+  // Tests that Tessel.get will return a USB connection
+  // immediately upon being found if preferLAN is false
+  defaultUSBPrefer: function(test) {
+    test.expect(1);
+
+    Tessel.get({
+        timeout: 0.01,
+      })
+      .then(function(tessel) {
+        test.equal(tessel.name, b.name);
+        a.close();
+        b.close();
+        test.done();
+      })
+      .catch(function() {
+        test.fail();
+      });
+
+    var a = new Tessel({
+      connectionType: 'LAN',
+      authorized: true,
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+    var b = new Tessel({
+      connectionType: 'USB',
+      authorized: true,
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+
+    a.name = 'a';
+    b.name = 'b';
+
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', a);
+      this.activeSeeker.emit('tessel', b);
+    }.bind(this));
+  },
+
+  // Tests that Tessel.get will return a LAN connection
+  // if one is ever found for a default Tessel
+  LANPrefer: function(test) {
+    test.expect(2);
+
+    Tessel.get({
+        timeout: 0.01,
+        lanPrefer: true
+      })
+      .then(function(tessel) {
+        test.equal(tessel.name, lan.name);
+        test.equal(tessel.connection.connectionType, 'LAN');
+        usb.close();
+        lan.close();
+        test.done();
+      })
+      .catch(function() {
+        test.fail();
+      });
+
+    var usb = new Tessel({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+    var lan = new Tessel({
+      connectionType: 'LAN',
+      authorized: true,
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+
+    usb.name = 'a';
+    lan.name = 'a';
+
+
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', usb);
+      this.activeSeeker.emit('tessel', lan);
+    }.bind(this));
+  },
+
+  // Tests that Tessel.get will return a LAN connection
+  // if USB is preferred but none are found
+  USBPreferNoUSBFound: function(test) {
+    test.expect(2);
+
+    Tessel.get({
+        timeout: 0.01,
+        lanPrefer: false
+      })
+      .then(function(tessel) {
+        test.equal(tessel.name, lan.name);
+        test.equal(tessel.connection.connectionType, 'LAN');
+        lan.close();
+        test.done();
+      })
+      .catch(function() {
+        test.fail();
+      });
+
+    var lan = new Tessel({
+      connectionType: 'LAN',
+      authorized: true,
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+
+    lan.name = 'a';
+
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', lan);
+    }.bind(this));
+  }
 };
 
 
@@ -408,7 +517,7 @@ exports['Tessel (get); filter: unauthorized'] = {
     var self = this;
     this.sandbox = sinon.sandbox.create();
     this.activeSeeker = undefined;
-    // This is necessary to prevent an EventEmitter memory leak warning
+    // This is necessary to prevent an Emitter memory leak warning
     this.processOn = this.sandbox.stub(process, 'on');
 
     var Seeker = discover.TesselSeeker;
@@ -421,10 +530,10 @@ exports['Tessel (get); filter: unauthorized'] = {
     });
 
     this.startScan = this.sandbox.stub(lan, 'startScan', function() {
-      return new EventEmitter();
+      return new Emitter();
     });
 
-    util.inherits(this.seeker, EventEmitter);
+    util.inherits(this.seeker, Emitter);
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
 
@@ -434,7 +543,6 @@ exports['Tessel (get); filter: unauthorized'] = {
 
     this.standardOpts = {
       timeout: 0.01,
-      key: Tessel.TESSEL_AUTH_KEY
     };
 
     done();
@@ -450,7 +558,6 @@ exports['Tessel (get); filter: unauthorized'] = {
 
     var customOpts = {
       timeout: this.standardOpts.timeout,
-      key: this.standardOpts.key,
       authorized: true
     };
 
@@ -467,6 +574,8 @@ exports['Tessel (get); filter: unauthorized'] = {
       type: 'LAN',
       authorized: false
     });
+
+    lan.connection.host = 'TestTessel';
 
     setImmediate(function() {
       this.activeSeeker.lanScan.emit('connection', lan.connection);

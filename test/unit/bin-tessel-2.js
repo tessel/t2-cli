@@ -1,8 +1,4 @@
-var sinon = require('sinon');
-var cli = require('../../bin/tessel-2');
-var controller = require('../../lib/controller');
-var logs = require('../../lib/logs');
-var Tessel = require('../../lib/tessel/tessel');
+// Test dependencies are required and exposed in common/bootstrap.js
 
 // If the defaults are intentionally changed in bin-tessel-2,
 // then they must be changed here as well. This ensures that the
@@ -24,17 +20,22 @@ var defaults = {
   },
   lan: {
     flag: true,
-    help: 'Use LAN connection',
+    help: 'Use only a LAN connection',
     name: 'lan',
     string: '--lan',
   },
   usb: {
     flag: true,
-    help: 'Use USB connection',
+    help: 'Use only a USB connection',
     name: 'usb',
     string: '--usb',
   },
-  key: Tessel.TESSEL_AUTH_KEY
+  key: Tessel.LOCAL_AUTH_KEY,
+  lan_prefer: {
+    flag: true,
+    default: false,
+    help: 'Prefer a LAN connection if it\'s available, otherwise use USB'
+  }
 };
 
 exports['Tessel (cli: makeCommand)'] = {
@@ -73,9 +74,11 @@ exports['Tessel (cli: makeCommand)'] = {
 exports['Tessel (cli: restart)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.err = this.sandbox.stub(logs, 'err');
     this.warn = this.sandbox.stub(logs, 'warn');
     this.info = this.sandbox.stub(logs, 'info');
     this.restartScript = this.sandbox.stub(controller, 'restartScript').returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(cli, 'closeFailedCommand');
     this.processExit = this.sandbox.stub(process, 'exit');
 
     done();
@@ -100,9 +103,10 @@ exports['Tessel (cli: restart)'] = {
   },
 
   exitCodeOne: function(test) {
-    test.expect(2);
+    test.expect(4);
 
-    var restartOp = Promise.reject();
+    var error = new Error('Some error happened.');
+    var restartOp = Promise.reject(error);
 
     this.restartScript.returns(restartOp);
 
@@ -110,6 +114,8 @@ exports['Tessel (cli: restart)'] = {
 
     restartOp.catch(function() {
       test.equal(this.restartScript.callCount, 1);
+      test.equal(this.closeFailedCommand.callCount, 1);
+      test.equal(this.closeFailedCommand.lastCall.args[0], error);
       test.equal(this.processExit.lastCall.args[0], 1);
       test.done();
     }.bind(this));
@@ -120,9 +126,11 @@ exports['Tessel (cli: restart)'] = {
 exports['Tessel (cli: update)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.err = this.sandbox.stub(logs, 'err');
     this.warn = this.sandbox.stub(logs, 'warn');
     this.printAvailableUpdates = this.sandbox.stub(controller, 'printAvailableUpdates').returns(Promise.resolve());
     this.update = this.sandbox.stub(controller, 'update').returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(cli, 'closeFailedCommand');
     this.processExit = this.sandbox.stub(process, 'exit');
 
     done();
@@ -143,7 +151,8 @@ exports['Tessel (cli: update)'] = {
       version: 42,
       _: ['update'],
       timeout: 5,
-      key: Tessel.TESSEL_AUTH_KEY
+      key: Tessel.LOCAL_AUTH_KEY,
+      lan_prefer: false
     });
 
     cli(['update', '--list', ' ']);
@@ -172,9 +181,10 @@ exports['Tessel (cli: update)'] = {
   },
 
   exitCodeOne: function(test) {
-    test.expect(2);
+    test.expect(4);
 
-    var updateOp = Promise.reject();
+    var error = new Error('Some error happened.');
+    var updateOp = Promise.reject(error);
 
     this.update.returns(updateOp);
 
@@ -182,6 +192,8 @@ exports['Tessel (cli: update)'] = {
 
     updateOp.catch(function() {
       test.equal(this.update.callCount, 1);
+      test.equal(this.closeFailedCommand.callCount, 1);
+      test.equal(this.closeFailedCommand.lastCall.args[0], error);
       test.equal(this.processExit.lastCall.args[0], 1);
       test.done();
     }.bind(this));
@@ -191,9 +203,11 @@ exports['Tessel (cli: update)'] = {
 exports['Tessel (cli: provision)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.err = this.sandbox.stub(logs, 'err');
     this.warn = this.sandbox.stub(logs, 'warn');
     this.info = this.sandbox.stub(logs, 'info');
     this.provisionTessel = this.sandbox.stub(controller, 'provisionTessel').returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(cli, 'closeFailedCommand');
     this.processExit = this.sandbox.stub(process, 'exit');
 
     done();
@@ -219,9 +233,10 @@ exports['Tessel (cli: provision)'] = {
   },
 
   exitCodeOne: function(test) {
-    test.expect(2);
+    test.expect(4);
 
-    var provisionOp = Promise.reject();
+    var error = new Error('Some error happened.');
+    var provisionOp = Promise.reject(error);
 
     this.provisionTessel.returns(provisionOp);
 
@@ -229,6 +244,8 @@ exports['Tessel (cli: provision)'] = {
 
     provisionOp.catch(function() {
       test.equal(this.provisionTessel.callCount, 1);
+      test.equal(this.closeFailedCommand.callCount, 1);
+      test.equal(this.closeFailedCommand.lastCall.args[0], error);
       test.equal(this.processExit.lastCall.args[0], 1);
       test.done();
     }.bind(this));
@@ -324,5 +341,109 @@ exports['Tessel (cli: wifi)'] = {
       test.equal(this.failedCommand.callCount, 1);
       test.done();
     }.bind(this));
+  },
+};
+
+exports['Tessel (cli: root)'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
+    this.root = this.sandbox.stub(controller, 'root').returns(Promise.resolve());
+    this.successfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  callThrough: function(test) {
+    test.expect(2);
+
+    var resolve = Promise.resolve();
+    this.root.returns(resolve);
+
+    cli(['root']);
+
+    resolve.then(function() {
+      test.equal(this.root.callCount, 1);
+      test.equal(this.successfulCommand.callCount, 1);
+      test.done();
+    }.bind(this));
+  },
+
+};
+
+exports['closeFailedCommand'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.err = this.sandbox.stub(logs, 'err');
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  warningJustAString: function(test) {
+    test.expect(3);
+
+    cli.closeFailedCommand('a string');
+
+    test.equal(this.warn.callCount, 1);
+    test.equal(this.warn.lastCall.args[0], 'a string');
+    test.equal(this.processExit.callCount, 1);
+
+    test.done();
+  },
+
+  errorIsAnErrorObject: function(test) {
+    test.expect(3);
+    var error = new Error('for real');
+
+    cli.closeFailedCommand(error);
+
+    test.equal(this.err.callCount, 1);
+    test.equal(this.err.lastCall.args[0], error.toString());
+    test.equal(this.processExit.callCount, 1);
+
+    test.done();
+  },
+
+  errorCode: function(test) {
+    test.expect(4);
+    var error = new Error('for real');
+
+    error.code = 'red';
+
+    cli.closeFailedCommand(error);
+
+    test.equal(this.err.callCount, 1);
+    test.equal(this.err.lastCall.args[0], error.toString());
+    test.equal(this.processExit.callCount, 1);
+    test.equal(this.processExit.lastCall.args[0], 'red');
+
+    test.done();
+  },
+
+  errorCodeInOptions: function(test) {
+    test.expect(4);
+    var error = new Error('for real');
+    cli.closeFailedCommand(error, {
+      code: 'red'
+    });
+
+    test.equal(this.err.callCount, 1);
+    test.equal(this.err.lastCall.args[0], error.toString());
+    test.equal(this.processExit.callCount, 1);
+    test.equal(this.processExit.lastCall.args[0], 'red');
+
+    test.done();
   },
 };

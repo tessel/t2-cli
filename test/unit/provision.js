@@ -1,20 +1,9 @@
-var sinon = require('sinon');
-var Tessel = require('../../lib/tessel/tessel');
-var controller = require('../../lib/controller');
-var fs = require('fs-extra');
-var path = require('path');
-var cp = require('child_process');
-var TesselSimulator = require('../common/tessel-simulator');
-var logs = require('../../lib/logs');
-var provision = require('../../lib/tessel/provision');
-var mkdirp = require('mkdirp');
-var rimraf = require('rimraf');
+// Test dependencies are required and exposed in common/bootstrap.js
+
 var testDir = __dirname + '/tmp/';
 var testFile = 'test_rsa';
 var testPath = path.join(testDir, testFile);
 var fakeKeyFileData = 'Test Contents';
-var commands = require('../../lib/tessel/commands');
-var async = require('async');
 
 exports['Tessel.isProvisioned()'] = {
   setUp: function(done) {
@@ -30,16 +19,16 @@ exports['Tessel.isProvisioned()'] = {
   isProvisionedTrue: function(test) {
     test.expect(3);
 
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
     Tessel.isProvisioned();
 
     test.equal(this.existsSync.callCount, 2);
-    test.equal(this.existsSync.firstCall.args[0], path.join(Tessel.TESSEL_AUTH_PATH, 'id_rsa'));
-    test.equal(this.existsSync.lastCall.args[0], path.join(Tessel.TESSEL_AUTH_PATH, 'id_rsa.pub'));
+    test.equal(this.existsSync.firstCall.args[0], path.join(Tessel.LOCAL_AUTH_PATH, 'id_rsa'));
+    test.equal(this.existsSync.lastCall.args[0], path.join(Tessel.LOCAL_AUTH_PATH, 'id_rsa.pub'));
 
-    Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+    Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
     test.done();
   },
 
@@ -48,15 +37,15 @@ exports['Tessel.isProvisioned()'] = {
 
     this.existsSync.returns(false);
 
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
     Tessel.isProvisioned();
 
     test.equal(this.existsSync.callCount, 1);
-    test.equal(this.existsSync.firstCall.args[0], path.join(Tessel.TESSEL_AUTH_PATH, 'id_rsa'));
+    test.equal(this.existsSync.firstCall.args[0], path.join(Tessel.LOCAL_AUTH_PATH, 'id_rsa'));
 
-    Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+    Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
     test.done();
   },
 };
@@ -121,9 +110,9 @@ exports['controller.provisionTessel'] = {
 
   completeForced: function(test) {
     test.expect(6);
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     // Say it's provisioned to make sure old folder gets deleted
     this.isProvisioned.onFirstCall().returns(true);
@@ -135,13 +124,13 @@ exports['controller.provisionTessel'] = {
       })
       .then(function() {
         test.equal(this.exec.callCount, 1);
-        test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.TESSEL_AUTH_PATH);
+        test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.LOCAL_AUTH_PATH);
         test.equal(this.provisionSpy.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-        rimraf(path.join(process.cwd(), Tessel.TESSEL_AUTH_PATH), function(err) {
+        fs.remove(path.join(process.cwd(), Tessel.LOCAL_AUTH_PATH), function(err) {
           test.ifError(err);
-          Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+          Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
           test.done();
         });
       }.bind(this));
@@ -149,9 +138,9 @@ exports['controller.provisionTessel'] = {
 
   completeUnprovisioned: function(test) {
     test.expect(4);
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     this.isProvisioned.returns(false);
 
@@ -160,16 +149,16 @@ exports['controller.provisionTessel'] = {
       test.equal(this.provisionSpy.callCount, 1);
       test.equal(this.closeTesselConnections.callCount, 1);
       test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-      Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+      Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
       test.done();
     }.bind(this));
   },
 
   completeUnprovisionedForced: function(test) {
     test.expect(4);
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     this.isProvisioned.returns(false);
 
@@ -180,7 +169,7 @@ exports['controller.provisionTessel'] = {
       test.equal(this.provisionSpy.callCount, 1);
       test.equal(this.closeTesselConnections.callCount, 1);
       test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-      Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+      Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
       test.done();
     }.bind(this));
   },
@@ -284,8 +273,8 @@ exports['Tessel.prototype.provisionTessel'] = {
 
     test.expect(3);
 
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     // Create folders for the folder that we'd like to
     createKeyTestFolder(function(err) {
@@ -303,7 +292,7 @@ exports['Tessel.prototype.provisionTessel'] = {
           test.equal(self.writeFileSpy.firstCall.args[2].mode, 384);
           test.equal(self.writeFileSpy.lastCall.args[2].mode, 384);
 
-          Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+          Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
           // End the test
           test.done();
         })
@@ -352,8 +341,8 @@ exports['Tessel.prototype.provisionTessel'] = {
       return false;
     });
 
-    var tesselAuthPath = Tessel.TESSEL_AUTH_PATH;
-    Tessel.TESSEL_AUTH_PATH = testPath;
+    var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
+    Tessel.LOCAL_AUTH_PATH = testPath;
 
     // Create folders for the folder that we'd like to
     createKeyTestFolder(function(err) {
@@ -372,7 +361,7 @@ exports['Tessel.prototype.provisionTessel'] = {
           var publicKey = self.writeFileSpy.firstCall.args[1];
           test.equal(publicKey[publicKey.length - 1], '\n');
 
-          Tessel.TESSEL_AUTH_PATH = tesselAuthPath;
+          Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
           self.isProvisioned.restore();
           // End the test
           test.done();
@@ -483,8 +472,6 @@ exports['provision.setDefaultKey'] = {
 
   tearDown: function(done) {
     this.sandbox.restore();
-    // Added because one test sets it false for a moment
-    global.IS_TEST_ENV = true;
     done();
   },
 
@@ -521,9 +508,6 @@ exports['provision.setDefaultKey'] = {
   // setDefaultKey should reject with an error if a non-existent file was provided
   failNoFiles: function(test) {
     test.expect(1);
-
-    global.IS_TEST_ENV = false;
-
     provision.setDefaultKey('./no_files_here')
       .then(function noCall() {
         // This test should throw an error. Fail if it didn't
@@ -537,10 +521,17 @@ exports['provision.setDefaultKey'] = {
 
   successfulSetting: function(test) {
     test.expect(1);
-    var key = 'real_file_i_promise';
+
+    var key = path.join(__dirname, './real_file_i_promise');
+    var privateKeyPath = path.join(__dirname, './real_file_i_promise');
+    var publicKeyPath = path.join(__dirname, './real_file_i_promise' + '.pub');
+    fs.writeFileSync(privateKeyPath, 'test_contents');
+    fs.writeFileSync(publicKeyPath, 'test_contents');
     provision.setDefaultKey(key)
       .then(function doCall() {
-        test.equal(Tessel.TESSEL_AUTH_KEY, key);
+        test.equal(Tessel.LOCAL_AUTH_KEY, key);
+        fs.unlinkSync(privateKeyPath);
+        fs.unlinkSync(publicKeyPath);
         test.done();
       })
       .catch(function noCall() {
@@ -577,5 +568,5 @@ function deleteKeyTestFolder(callback) {
   if (!callback) {
     callback = function() {};
   }
-  rimraf(testDir, callback);
+  fs.remove(testDir, callback);
 }
