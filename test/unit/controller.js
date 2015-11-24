@@ -847,6 +847,17 @@ exports['controller.root'] = {
     this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
 
     this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').returns(Promise.resolve());
+
+    function FakeChild() {}
+
+    FakeChild.prototype = Object.create(Emitter.prototype);
+
+    this.child = new FakeChild();
+
+    this.spawn = this.sandbox.stub(cp, 'spawn', function() {
+      return this.child;
+    }.bind(this));
+
     done();
   },
 
@@ -897,29 +908,47 @@ exports['controller.root'] = {
       type: 'LAN',
     });
 
-    function S() {
-      this.stdout = {
-        pipe: sandbox.spy()
-      };
-      this.stderr = {
-        pipe: sandbox.spy()
-      };
-      this.stdin = {
-        pipe: sandbox.spy()
-      };
-    }
+    var testIP = '192.1.1.1';
+    tessel.lanConnection.ip = testIP;
+    var testKey = '~/fake';
 
-    S.prototype = Object.create(Emitter.prototype);
+    this.standardTesselCommand.restore();
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', function(opts, callback) {
+      return callback(tessel);
+    }.bind(this));
 
-    var stream = new S();
+    controller.root({
+        key: testKey
+      })
+      .then(function() {
+        // Only spawn one process
+        test.ok(this.spawn.calledOnce);
+        // That process is ssh
+        test.equal(this.spawn.firstCall.args[0], 'ssh');
+        // We want to make sure we provide a key path
+        test.equal(this.spawn.firstCall.args[1][0], '-i');
+        // Make sure it's the optional key we provided
+        test.equal(this.spawn.firstCall.args[1][1], testKey);
+        // Make sure it's using the correct IP address
+        test.equal(this.spawn.firstCall.args[1][2], 'root@' + testIP);
+        // We want to ensure stdio streams are piped to the console
+        test.equal(this.spawn.firstCall.args[2].stdio, 'inherit');
+        test.done();
+      }.bind(this));
 
-    tessel.lanConnection.ssh = {};
-    tessel.lanConnection.ssh.shell = function() {};
+    setImmediate(function() {
+      this.child.emit('close');
+    }.bind(this));
+  },
 
-    this.shell = this.sandbox.stub(tessel.lanConnection.ssh, 'shell', function(callback) {
-      process.nextTick(function() {
-        callback(null, stream);
-      });
+  shellOpenError: function(test) {
+    test.expect(1);
+
+    var sandbox = this.sandbox;
+    var tessel = newTessel({
+      authorized: true,
+      sandbox: sandbox,
+      type: 'LAN',
     });
 
     this.standardTesselCommand.restore();
@@ -927,25 +956,20 @@ exports['controller.root'] = {
       return callback(tessel);
     }.bind(this));
 
-
-    this.processStdin = this.sandbox.stub(process.stdin, 'pipe');
+    var errMessage = 'Your child is a fake!';
 
     controller.root({})
       .then(function() {
-
-        test.equal(stream.stdout.pipe.callCount, 1);
-        test.equal(stream.stderr.pipe.callCount, 1);
-        test.equal(process.stdin.pipe.callCount, 1);
-
-        test.equal(stream.stdout.pipe.lastCall.args[0], process.stdout);
-        test.equal(stream.stderr.pipe.lastCall.args[0], process.stderr);
-        test.equal(process.stdin.pipe.lastCall.args[0], stream.stdin);
-
+        // Only spawn one process
+        test.fail('Should have rejected the root promise.');
+      }.bind(this))
+      .catch(function(err) {
+        test.ok(err.indexOf(errMessage) !== -1);
         test.done();
-      }.bind(this));
+      });
 
     setImmediate(function() {
-      stream.emit('close');
-    });
-  },
+      this.child.emit('error', new Error(errMessage));
+    }.bind(this));
+  }
 };
