@@ -344,6 +344,38 @@ exports['Tessel (cli: wifi)'] = {
   },
 };
 
+exports['Tessel (cli: root)'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
+    this.root = this.sandbox.stub(controller, 'root').returns(Promise.resolve());
+    this.successfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  callThrough: function(test) {
+    test.expect(2);
+
+    var resolve = Promise.resolve();
+    this.root.returns(resolve);
+
+    cli(['root']);
+
+    resolve.then(function() {
+      test.equal(this.root.callCount, 1);
+      test.equal(this.successfulCommand.callCount, 1);
+      test.done();
+    }.bind(this));
+  },
+
+};
+
 exports['closeFailedCommand'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
