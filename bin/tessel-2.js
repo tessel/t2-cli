@@ -62,12 +62,8 @@ function callControllerCallback(methodName) {
 parser.command('install-drivers')
   .callback(function() {
     require('./tessel-install-drivers');
-    var ret = drivers.install();
-    if (ret !== 0) {
-      module.exports.closeFailedCommand(ret);
-    } else {
-      module.exports.closeSuccessfulCommand(ret);
-    }
+    drivers.install()
+      .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
   });
 
 parser.command('provision')
