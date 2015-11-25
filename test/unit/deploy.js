@@ -261,6 +261,49 @@ exports['Tessel.prototype.deployScript'] = {
     }.bind(this));
   },
 
+  writeToFileDefaultEntryPoint: function(test) {
+    test.expect(1);
+
+    var shellScript = tags.stripIndent `
+      #!/bin/sh
+      cd /app
+      exec node index.js
+    `;
+    this.end.restore();
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', function(buffer) {
+      test.equal(buffer.toString(), shellScript);
+      test.done();
+    }.bind(this));
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', function() {
+      return Promise.resolve(this.tessel._rps);
+    }.bind(this));
+
+    deploy.writeToFile(this.tessel, 'index.js');
+  },
+
+
+  writeToFileSendsCorrectEntryPoint: function(test) {
+    test.expect(1);
+
+    var shellScript = tags.stripIndent `
+      #!/bin/sh
+      cd /app
+      exec node __tessel_program__.js
+    `;
+    this.end.restore();
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', function(buffer) {
+      test.equal(buffer.toString(), shellScript);
+      test.done();
+    }.bind(this));
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', function() {
+      return Promise.resolve(this.tessel._rps);
+    }.bind(this));
+
+    deploy.writeToFile(this.tessel, '__tessel_program__.js');
+  },
+
   processCompletionOrder: function(test) {
 
     var self = this;

@@ -46,6 +46,7 @@
     "bluebird": "^2.9.6",
     "browserify": "^11.2.0",
     "colors": "^1.1.0",
+    "common-tags": "0.0.1",
     "debug": "^2.2.0",
     "envfile": "^1.0.0",
     "fs-extra": "^0.18.0",

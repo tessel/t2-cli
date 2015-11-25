@@ -60,6 +60,7 @@
     "cli": true,
     "LAN": true,
     "TesselSeeker": true,
-    "USB": true
+    "USB": true,
+    "tags": true
   }
 }
