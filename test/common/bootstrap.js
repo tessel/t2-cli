@@ -26,6 +26,7 @@ global.osenv = require('osenv');
 global.sinon = require('sinon');
 global.sshpk = require('sshpk');
 global.ssh = require('ssh2');
+global.tags = require('common-tags');
 global.tar = require('tar');
 global.uglify = require('uglify-js');
 

@@ -19,7 +19,7 @@ exports['controller.update'] = {
     this.tessel = TesselSimulator();
 
     this.getTessel = this.sandbox.stub(Tessel, 'get', function(opts) {
-      this.tessel.setLANConnectionPreference(opts.lan_prefer);
+      this.tessel.setLANConnectionPreference(opts.lanPrefer);
       return Promise.resolve(this.tessel);
     }.bind(this));
 
@@ -124,7 +124,7 @@ exports['controller.update'] = {
 
     var opts = {
       version: '0.0.1',
-      lan_prefer: true
+      lanPrefer: true
     };
     controller.update(opts)
       .then(function() {
@@ -158,7 +158,7 @@ exports['controller.update'] = {
 
     var opts = {
       version: '0.0.1',
-      lan_prefer: true
+      lanPrefer: true
     };
 
     controller.update(opts)
@@ -242,7 +242,7 @@ exports['controller.update'] = {
     });
 
     var opts = {
-      lan_prefer: true
+      lanPrefer: true
     };
     controller.update(opts)
       .then(function() {
@@ -300,7 +300,7 @@ exports['controller.update'] = {
     });
 
     var opts = {
-      lan_prefer: true
+      lanPrefer: true
     };
     controller.update(opts)
       .then(function() {
@@ -363,7 +363,7 @@ exports['controller.update'] = {
     }.bind(this));
 
     var opts = {
-      lan_prefer: true
+      lanPrefer: true
     };
     controller.update(opts)
       .catch(function(err) {
@@ -416,7 +416,7 @@ exports['controller.update'] = {
 
     var opts = {
       force: true,
-      lan_prefer: true
+      lanPrefer: true
     };
 
     controller.update(opts)
@@ -473,7 +473,7 @@ exports['controller.update'] = {
 
     var opts = {
       version: 'latest',
-      lan_prefer: true
+      lanPrefer: true
     };
 
     controller.update(opts)
@@ -512,7 +512,7 @@ exports['controller.update'] = {
 
     var opts = {
       version: 'x.x.x',
-      lan_prefer: true
+      lanPrefer: true
     };
     controller.update(opts)
       .catch(function(message) {
@@ -558,7 +558,7 @@ exports['controller.update'] = {
     });
 
     var opts = {
-      lan_prefer: true
+      lanPrefer: true
     };
     controller.update(opts)
       .then(function() {
@@ -614,7 +614,7 @@ exports['controller.update'] = {
     });
 
     var opts = {
-      lan_prefer: true
+      lanPrefer: true
     };
     controller.update(opts)
       .then(function() {
