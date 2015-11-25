@@ -1,6 +1,6 @@
 {
   "name": "t2-cli",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "The starting point of Tessel 2's command line interface",
   "main": "./bin/tessel-2.js",
   "scripts": {
@@ -75,7 +75,7 @@
     "tar-stream": "^1.3.0",
     "uglify-js": "^2.5.0",
     "url-join": "0.0.1",
-    "usb": "1.1.0",
+    "usb": "1.1.1",
     "usb-daemon-parser": "0.0.1"
   },
   "preferGlobal": true,
