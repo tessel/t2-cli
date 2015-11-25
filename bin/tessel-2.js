@@ -167,7 +167,7 @@ makeCommand('push')
     help: 'Bundle only the required modules'
   })
   .option('slimPath', {
-    default: 'build.js'
+    default: 'index.js'
   })
   .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
