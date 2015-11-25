@@ -31,7 +31,7 @@ var defaults = {
     string: '--usb',
   },
   key: Tessel.LOCAL_AUTH_KEY,
-  lan_prefer: {
+  lanPrefer: {
     flag: true,
     default: false,
     help: 'Prefer a LAN connection if it\'s available, otherwise use USB'
@@ -97,9 +97,7 @@ exports['Tessel (cli: restart)'] = {
     test.equal(this.restartScript.callCount, 1);
     // We must wait for the command to complete
     // or else the sandbox will be cleared too early
-    setImmediate(function() {
-      test.done();
-    });
+    setImmediate(test.done);
   },
 
   exitCodeOne: function(test) {
@@ -152,7 +150,7 @@ exports['Tessel (cli: update)'] = {
       _: ['update'],
       timeout: 5,
       key: Tessel.LOCAL_AUTH_KEY,
-      lan_prefer: false
+      lanPrefer: false
     });
 
     cli(['update', '--list', ' ']);
@@ -175,9 +173,7 @@ exports['Tessel (cli: update)'] = {
 
     // We must wait for the command to complete
     // or else the sandbox will be cleared to early
-    setImmediate(function() {
-      test.done();
-    });
+    setImmediate(test.done);
   },
 
   exitCodeOne: function(test) {
@@ -227,9 +223,7 @@ exports['Tessel (cli: provision)'] = {
 
     // We must wait for the command to complete
     // or else the sandbox will be cleared to early
-    setImmediate(function() {
-      test.done();
-    });
+    setImmediate(test.done);
   },
 
   exitCodeOne: function(test) {
@@ -374,6 +368,117 @@ exports['Tessel (cli: root)'] = {
     }.bind(this));
   },
 
+};
+
+exports['Tessel (cli: run)'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
+    this.deployScript = this.sandbox.stub(controller, 'deployScript').returns(Promise.resolve());
+    this.successfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  defaultOptions: function(test) {
+    test.expect(5);
+
+    cli(['run', 'index.js']);
+
+    test.equal(this.deployScript.callCount, 1);
+
+    var args = this.deployScript.lastCall.args[0];
+
+    // These represent the minimum required properties
+    // and default values for `t2 run index.js`
+    test.ok(args.lanPrefer);
+    test.ok(args.slim);
+
+    test.ok(!args.full);
+    test.ok(!args.push);
+
+    setImmediate(test.done);
+  },
+
+  fullSetTrue_slimOverriddenLater: function(test) {
+    test.expect(5);
+
+    cli(['run', 'index.js', '--full=true']);
+
+    test.equal(this.deployScript.callCount, 1);
+
+    var args = this.deployScript.lastCall.args[0];
+
+    // opts.full will override opts.slim in `tarBundle`
+    // (See test/unit/deploy.js)
+    test.ok(args.full);
+    test.ok(args.lanPrefer);
+    test.ok(args.slim);
+
+    test.ok(!args.push);
+
+    setImmediate(test.done);
+  },
+};
+
+exports['Tessel (cli: push)'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
+    this.deployScript = this.sandbox.stub(controller, 'deployScript').returns(Promise.resolve());
+    this.successfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  defaultOptions: function(test) {
+    test.expect(5);
+
+    cli(['push', 'index.js']);
+
+    test.equal(this.deployScript.callCount, 1);
+
+    var args = this.deployScript.lastCall.args[0];
+
+    // These represent the minimum required properties
+    // and default values for `t2 push index.js`
+    test.ok(args.lanPrefer);
+    test.ok(args.slim);
+    test.ok(args.push);
+
+    test.ok(!args.full);
+
+    setImmediate(test.done);
+  },
+
+  fullSetTrue_slimOverriddenLater: function(test) {
+    test.expect(5);
+
+    cli(['push', 'index.js', '--full=true']);
+
+    test.equal(this.deployScript.callCount, 1);
+
+    var args = this.deployScript.lastCall.args[0];
+
+    // opts.full will override opts.slim in `tarBundle`
+    // (See test/unit/deploy.js)
+    test.ok(args.full);
+    test.ok(args.lanPrefer);
+    test.ok(args.push);
+    test.ok(args.slim);
+
+    setImmediate(test.done);
+  },
 };
 
 exports['closeFailedCommand'] = {

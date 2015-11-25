@@ -41,10 +41,10 @@ function makeCommand(commandName) {
       flag: true,
       help: 'Use only a USB connection'
     })
-    .option('lan_prefer', {
+    .option('lanPrefer', {
       flag: true,
       default: false,
-      help: 'Prefer a LAN connection if it\'s available, otherwise use USB'
+      help: 'Prefer a LAN connection when available, otherwise use USB.'
     });
 }
 
@@ -109,13 +109,16 @@ makeCommand('restart')
 
 makeCommand('run')
   .callback(function(opts) {
+    opts.lanPrefer = true;
     opts.push = false;
+    // Overridden in tarBundle if opts.full is `true`
+    opts.slim = true;
     callControllerWith('deployScript', opts);
   })
   .option('entryPoint', {
     position: 1,
     required: true,
-    help: 'The entry point file to deploy to Tessel'
+    help: 'The program entry point file to deploy to Tessel'
   })
   .option('single', {
     flag: true,
@@ -129,28 +132,32 @@ makeCommand('run')
   })
   .option('slim', {
     flag: true,
-    help: 'Bundle only the required modules'
+    default: true,
+    help: 'Deploy a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from "slimPath" file (if not provided, a default name is given).',
   })
   .option('slimPath', {
-    default: 'build.js'
+    default: '__tessel_program__.js',
+    help: 'Specify the name of the --slim bundle file.',
   })
-  // Overrides default lan_prefer because deploys require high bandwidth
-  .option('lan_prefer', {
+  .option('full', {
     flag: true,
-    default: true,
-    help: 'Prefer a LAN connection if it\'s available, otherwise use USB'
+    default: false,
+    help: 'Deploy all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from specified "entryPoint" file.'
   })
   .help('Deploy a script to Tessel and run it with Node');
 
 makeCommand('push')
   .callback(function(opts) {
+    opts.lanPrefer = true;
     opts.push = true;
+    // Overridden in tarBundle if opts.full is `true`
+    opts.slim = true;
     callControllerWith('deployScript', opts);
   })
   .option('entryPoint', {
     position: 1,
     required: true,
-    help: 'The entry point file to deploy to Tessel'
+    help: 'The program entry point file to deploy to Tessel'
   })
   .option('single', {
     flag: true,
@@ -164,10 +171,17 @@ makeCommand('push')
   })
   .option('slim', {
     flag: true,
-    help: 'Bundle only the required modules'
+    default: true,
+    help: 'Push a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from "slimPath" file (if not provided, a default name is given).'
   })
   .option('slimPath', {
-    default: 'index.js'
+    default: '__tessel_program__.js',
+    help: 'Specify the name of the --slim bundle file.'
+  })
+  .option('full', {
+    flag: true,
+    default: false,
+    help: 'Push all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from specified "entryPoint" file.'
   })
   .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
 
