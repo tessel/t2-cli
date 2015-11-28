@@ -798,7 +798,47 @@ exports['controller.closeTesselConnections'] = {
     done();
   },
 
-  noSSID: function(test) {
+  noNetworkSSID: function(test) {
+    test.expect(1);
+
+    controller.connectToNetwork({
+        ssid: undefined
+      })
+      .catch(function(error) {
+        test.ok(error);
+        test.done();
+      });
+  },
+
+  noNetworkPasswordWithSecurity: function(test) {
+    test.expect(1);
+
+    controller.connectToNetwork({
+        ssid: 'test',
+        password: undefined,
+        security: 'psk2'
+      })
+      .catch(function(error) {
+        test.ok(error);
+        test.done();
+      });
+  },
+
+  invalidNetworkSecurityOption: function(test) {
+    test.expect(1);
+
+    controller.connectToNetwork({
+        ssid: 'test',
+        password: undefined,
+        security: 'reallySecure'
+      })
+      .catch(function(error) {
+        test.ok(error);
+        test.done();
+      });
+  },
+
+  noAccessPointSSID: function(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -810,7 +850,7 @@ exports['controller.closeTesselConnections'] = {
       });
   },
 
-  noPasswordWithSecurity: function(test) {
+  noAccessPointPasswordWithSecurity: function(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -824,7 +864,7 @@ exports['controller.closeTesselConnections'] = {
       });
   },
 
-  invalidSecurityOption: function(test) {
+  invalidAccessPointSecurityOption: function(test) {
     test.expect(1);
 
     controller.createAccessPoint({
