@@ -211,7 +211,7 @@ makeCommand('wifi')
         opts.on = false;
       }
       callControllerWith('setWiFiState', opts);
-    } else if (opts.ssid && opts.password) {
+    } else if (opts.ssid) {
       callControllerWith('connectToNetwork', opts);
     } else {
       callControllerWith('getWifiInfo', opts);
@@ -231,6 +231,10 @@ makeCommand('wifi')
     abbr: 'p',
     metavar: 'PASSWORD',
     help: 'Set the password of the network to connect to'
+  })
+  .option('security', {
+    abbr: 's',
+    help: 'Set the encryption of the network to connect to (i.e. wep, psk, psk2, wpa, wpa2).'
   })
   .option('off', {
     flag: true,
