@@ -142,34 +142,34 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     this.reconnectWifi.restore();
     done();
   },
-  noSSID: function(test) {
-    var self = this;
-    test.expect(4);
-    this.tessel.connectToNetwork({
-        ssid: undefined,
-        password: 'fish'
-      })
-      .catch(function(error) {
-        test.ok(error);
-        test.equal(self.setNetworkSSID.callCount, 0);
-        test.equal(self.setNetworkPassword.callCount, 0);
-        test.equal(self.setNetworkEncryption.callCount, 0);
-        test.done();
-      });
-  },
   noPassword: function(test) {
     var self = this;
-    test.expect(4);
-    this.tessel.connectToNetwork({
-        ssid: 'tank',
-        password: undefined
+    test.expect(7);
+    var creds = {
+      ssid: 'tank',
+      password: undefined
+    };
+
+    // Test is expecting two closes...;
+    self.tessel._rps.on('control', function() {
+      setImmediate(function() {
+        self.tessel._rps.emit('close');
+      });
+    });
+
+    this.tessel.connectToNetwork(creds)
+      .then(function() {
+        test.equal(self.setNetworkSSID.callCount, 1);
+        test.equal(self.setNetworkPassword.callCount, 0);
+        test.equal(self.setNetworkEncryption.callCount, 1);
+        test.equal(self.commitWirelessCredentials.callCount, 1);
+        test.equal(self.reconnectWifi.callCount, 1);
+        test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(self.setNetworkEncryption.lastCall.calledWith('none'));
+        test.done();
       })
       .catch(function(error) {
-        test.ok(error);
-        test.equal(self.setNetworkSSID.callCount, 0);
-        test.equal(self.setNetworkPassword.callCount, 0);
-        test.equal(self.setNetworkEncryption.callCount, 0);
-        test.done();
+        test.fail(error);
       });
   },
   properCredentials: function(test) {
@@ -197,6 +197,39 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
         test.ok(self.setNetworkPassword.lastCall.calledWith(creds.password));
         test.ok(self.setNetworkEncryption.lastCall.calledWith('psk2'));
+        test.done();
+      })
+      .catch(function(error) {
+        test.fail(error);
+      });
+  },
+
+  properCredentialsWithSecurity: function(test) {
+    var self = this;
+    test.expect(8);
+    var creds = {
+      ssid: 'tank',
+      password: 'fish',
+      security: 'wpa2'
+    };
+
+    // Test is expecting two closes...;
+    self.tessel._rps.on('control', function() {
+      setImmediate(function() {
+        self.tessel._rps.emit('close');
+      });
+    });
+
+    this.tessel.connectToNetwork(creds)
+      .then(function() {
+        test.equal(self.setNetworkSSID.callCount, 1);
+        test.equal(self.setNetworkPassword.callCount, 1);
+        test.equal(self.setNetworkEncryption.callCount, 1);
+        test.equal(self.commitWirelessCredentials.callCount, 1);
+        test.equal(self.reconnectWifi.callCount, 1);
+        test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(self.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(self.setNetworkEncryption.lastCall.calledWith(creds.security));
         test.done();
       })
       .catch(function(error) {
