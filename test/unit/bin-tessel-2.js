@@ -30,7 +30,6 @@ var defaults = {
     name: 'usb',
     string: '--usb',
   },
-  key: Tessel.LOCAL_AUTH_KEY,
   lanPrefer: {
     flag: true,
     default: false,
@@ -149,7 +148,6 @@ exports['Tessel (cli: update)'] = {
       version: 42,
       _: ['update'],
       timeout: 5,
-      key: Tessel.LOCAL_AUTH_KEY,
       lanPrefer: false
     });
 
@@ -479,6 +477,67 @@ exports['Tessel (cli: push)'] = {
 
     setImmediate(test.done);
   },
+};
+
+exports['Tessel (cli: list)'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
+    this.controllerList = this.sandbox.spy(controller, 'listTessels');
+    this.tesselList = this.sandbox.stub(Tessel, 'list').returns(Promise.resolve());
+    this.setDefaultKey = this.sandbox.spy(provision, 'setDefaultKey');
+    this.processExit = this.sandbox.stub(process, 'exit');
+    this.closeSuccessful = this.sandbox.stub(cli, 'closeSuccessfulCommand');
+    this.closeFailed = this.sandbox.stub(cli, 'closeFailedCommand');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  listStandard: function(test) {
+
+    test.expect(4);
+
+    cli(['list', '--timeout', '0.001']);
+
+    setImmediate(function() {
+      // Ensure controller list was called
+      test.ok(this.controllerList.calledOnce);
+      // Ensure it did not have a key option
+      test.ok(this.controllerList.lastCall.args[0].key === undefined);
+      // We should not try to set the keypath if not specifically requested
+      test.ok(!this.setDefaultKey.called);
+      // Tessel list should have been called afterwards
+      test.ok(this.tesselList.called);
+      test.done();
+    }.bind(this));
+  },
+
+  listKey: function(test) {
+
+    test.expect(4);
+
+    var keyPath = './FAKE_KEY';
+
+    cli(['list', '--timeout', '0.001', '-i', keyPath]);
+
+    setImmediate(function() {
+      // Restore our func so other tests pass
+      // Ensure list was called
+      test.ok(this.controllerList.calledOnce);
+      // It was called with the keypath
+      test.ok(this.controllerList.lastCall.args[0].key === keyPath);
+      // We did try to set the key path
+      test.ok(this.setDefaultKey.called);
+      // It was called with the key path
+      test.ok(this.setDefaultKey.lastCall.args[0] === keyPath);
+      test.done();
+    }.bind(this));
+  }
 };
 
 exports['closeFailedCommand'] = {

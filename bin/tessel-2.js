@@ -11,7 +11,6 @@ var controller = require('../lib/controller');
 var init = require('../lib/init');
 var key = require('../lib/key');
 var logs = require('../lib/logs');
-var Tessel = require('../lib/tessel/tessel');
 var drivers = require('./tessel-install-drivers');
 
 function makeCommand(commandName) {
@@ -26,7 +25,6 @@ function makeCommand(commandName) {
       required: false,
       metavar: 'PRIVATEKEY',
       abbr: 'i',
-      default: Tessel.LOCAL_AUTH_KEY,
       help: 'SSH key for authorization with your Tessel'
     })
     .option('name', {
