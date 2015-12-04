@@ -33,6 +33,10 @@ function RemoteProcessSimulator() {
     // Keep recording what gets written
     self.stdin._write = stdinRecorder;
   });
+
+  this.close = function() {
+    this.emit('close');
+  }.bind(this);
 }
 
 util.inherits(RemoteProcessSimulator, Emitter);
