@@ -2,10 +2,10 @@
 
 exports['Tessel.prototype.findAvailableNetworks'] = {
   setUp: function(done) {
-
-    this.findAvailableNetworks = sinon.spy(Tessel.prototype, 'findAvailableNetworks');
-    this.logsWarn = sinon.stub(logs, 'warn', function() {});
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
+    this.sandbox = sinon.sandbox.create();
+    this.findAvailableNetworks = this.sandbox.spy(Tessel.prototype, 'findAvailableNetworks');
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
 
     this.tessel = TesselSimulator();
 
@@ -14,15 +14,12 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
 
   tearDown: function(done) {
     this.tessel.mockClose();
-    this.findAvailableNetworks.restore();
-    this.logsWarn.restore();
-    this.logsInfo.restore();
+    this.sandbox.restore();
     done();
   },
 
   noNetworks: function(test) {
     test.expect(1);
-    var self = this;
 
     this.tessel.findAvailableNetworks()
       .then(function(networks) {
@@ -36,14 +33,13 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
 
     this.tessel._rps.stdout.push(networks);
 
-    setImmediate(function() {
-      self.tessel._rps.emit('close');
+    setImmediate(() => {
+      this.tessel._rps.emit('close');
     });
   },
 
   someNetworks: function(test) {
     test.expect(2);
-    var self = this;
 
     var networks = {
       results: [{
@@ -58,22 +54,21 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
     };
 
     this.tessel.findAvailableNetworks()
-      .then(function(found) {
+      .then((found) => {
         test.equal(found.length, networks.results.length);
-        test.equal(self.findAvailableNetworks.callCount, 1);
+        test.equal(this.findAvailableNetworks.callCount, 1);
         test.done();
       });
 
     this.tessel._rps.stdout.push(JSON.stringify(networks));
 
-    setImmediate(function() {
-      self.tessel._rps.emit('close');
+    setImmediate(() => {
+      this.tessel._rps.emit('close');
     });
   },
 
   compareSignalStrengths: function(test) {
     test.expect(5);
-    var self = this;
 
     var bestNetwork = {
       ssid: 'best',
@@ -98,9 +93,9 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
     };
 
     this.tessel.findAvailableNetworks()
-      .then(function(found) {
+      .then((found) => {
         test.equal(found.length, networks.results.length);
-        test.equal(self.findAvailableNetworks.callCount, 1);
+        test.equal(this.findAvailableNetworks.callCount, 1);
         test.equal(found[0].ssid, bestNetwork.ssid);
         test.equal(found[1].ssid, middleNetwork.ssid);
         test.equal(found[2].ssid, worstNetwork.ssid);
@@ -109,215 +104,355 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
 
     this.tessel._rps.stdout.push(JSON.stringify(networks));
 
-    setImmediate(function() {
-      self.tessel._rps.emit('close');
+    setImmediate(() => {
+      this.tessel._rps.emit('close');
     });
   },
 };
 
 module.exports['Tessel.prototype.connectToNetwork'] = {
   setUp: function(done) {
-
-    this.connectToNetwork = sinon.spy(Tessel.prototype, 'connectToNetwork');
-    this.logsWarn = sinon.stub(logs, 'warn', function() {});
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
-    this.setNetworkSSID = sinon.spy(commands, 'setNetworkSSID');
-    this.setNetworkPassword = sinon.spy(commands, 'setNetworkPassword');
-    this.setNetworkEncryption = sinon.spy(commands, 'setNetworkEncryption');
-    this.commitWirelessCredentials = sinon.spy(commands, 'commitWirelessCredentials');
-    this.reconnectWifi = sinon.spy(commands, 'reconnectWifi');
+    this.sandbox = sinon.sandbox.create();
+    this.connectToNetwork = this.sandbox.spy(Tessel.prototype, 'connectToNetwork');
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.setNetworkSSID = this.sandbox.spy(commands, 'setNetworkSSID');
+    this.setNetworkPassword = this.sandbox.spy(commands, 'setNetworkPassword');
+    this.setNetworkEncryption = this.sandbox.spy(commands, 'setNetworkEncryption');
+    this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
+    this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
+    this.ubusListen = this.sandbox.spy(commands, 'ubusListen');
     this.tessel = TesselSimulator();
 
     done();
   },
   tearDown: function(done) {
     this.tessel.mockClose();
-    this.connectToNetwork.restore();
-    this.logsWarn.restore();
-    this.logsInfo.restore();
-    this.setNetworkSSID.restore();
-    this.setNetworkPassword.restore();
-    this.setNetworkEncryption.restore();
-    this.commitWirelessCredentials.restore();
-    this.reconnectWifi.restore();
+    this.sandbox.restore();
     done();
   },
   noPassword: function(test) {
-    var self = this;
-    test.expect(7);
+    test.expect(8);
     var creds = {
       ssid: 'tank',
       password: undefined
     };
 
-    // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
-      });
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus listen') {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', 'ifup');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+
+          // Continue
+          this.tessel._rps.emit('close');
+        });
+      }
     });
 
     this.tessel.connectToNetwork(creds)
-      .then(function() {
-        test.equal(self.setNetworkSSID.callCount, 1);
-        test.equal(self.setNetworkPassword.callCount, 0);
-        test.equal(self.setNetworkEncryption.callCount, 1);
-        test.equal(self.commitWirelessCredentials.callCount, 1);
-        test.equal(self.reconnectWifi.callCount, 1);
-        test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
-        test.ok(self.setNetworkEncryption.lastCall.calledWith('none'));
+      .then(() => {
+        test.equal(this.setNetworkSSID.callCount, 1);
+        test.equal(this.setNetworkPassword.callCount, 0);
+        test.equal(this.setNetworkEncryption.callCount, 1);
+        test.equal(this.commitWirelessCredentials.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.ok(this.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setNetworkEncryption.lastCall.calledWith('none'));
+        test.ok(this.ubusListen.callCount, 1);
         test.done();
       })
       .catch(function(error) {
         test.fail(error);
+        test.done();
       });
   },
   properCredentials: function(test) {
-    var self = this;
-    test.expect(8);
+    test.expect(9);
     var creds = {
       ssid: 'tank',
       password: 'fish'
     };
 
-    // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
-      });
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus listen') {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', 'ifup');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+
+          // Continue
+          this.tessel._rps.emit('close');
+        });
+      }
     });
 
     this.tessel.connectToNetwork(creds)
-      .then(function() {
-        test.equal(self.setNetworkSSID.callCount, 1);
-        test.equal(self.setNetworkPassword.callCount, 1);
-        test.equal(self.setNetworkEncryption.callCount, 1);
-        test.equal(self.commitWirelessCredentials.callCount, 1);
-        test.equal(self.reconnectWifi.callCount, 1);
-        test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
-        test.ok(self.setNetworkPassword.lastCall.calledWith(creds.password));
-        test.ok(self.setNetworkEncryption.lastCall.calledWith('psk2'));
+      .then(() => {
+        test.equal(this.setNetworkSSID.callCount, 1);
+        test.equal(this.setNetworkPassword.callCount, 1);
+        test.equal(this.setNetworkEncryption.callCount, 1);
+        test.equal(this.commitWirelessCredentials.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.ok(this.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(this.setNetworkEncryption.lastCall.calledWith('psk2'));
+        test.ok(this.ubusListen.callCount, 1);
         test.done();
       })
       .catch(function(error) {
         test.fail(error);
+        test.done();
       });
   },
 
   properCredentialsWithSecurity: function(test) {
-    var self = this;
-    test.expect(8);
+    test.expect(9);
     var creds = {
       ssid: 'tank',
       password: 'fish',
       security: 'wpa2'
     };
 
-    // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
-      });
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus listen') {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', 'ifup');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+
+          // Continue
+          this.tessel._rps.emit('close');
+        });
+      }
     });
 
     this.tessel.connectToNetwork(creds)
-      .then(function() {
-        test.equal(self.setNetworkSSID.callCount, 1);
-        test.equal(self.setNetworkPassword.callCount, 1);
-        test.equal(self.setNetworkEncryption.callCount, 1);
-        test.equal(self.commitWirelessCredentials.callCount, 1);
-        test.equal(self.reconnectWifi.callCount, 1);
-        test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
-        test.ok(self.setNetworkPassword.lastCall.calledWith(creds.password));
-        test.ok(self.setNetworkEncryption.lastCall.calledWith(creds.security));
+      .then(() => {
+        test.equal(this.setNetworkSSID.callCount, 1);
+        test.equal(this.setNetworkPassword.callCount, 1);
+        test.equal(this.setNetworkEncryption.callCount, 1);
+        test.equal(this.commitWirelessCredentials.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.ok(this.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(this.setNetworkEncryption.lastCall.calledWith(creds.security));
+        test.ok(this.ubusListen.callCount, 1);
         test.done();
       })
       .catch(function(error) {
         test.fail(error);
+        test.done();
+      });
+  },
+
+  connectionFails: function(test) {
+    test.expect(10);
+    var creds = {
+      ssid: 'tank',
+      password: 'not_gonna_work'
+    };
+    var errMessage = 'Unable to connect to the network.';
+
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus listen') {
+        // Write to stderr so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stderr.emit('data', errMessage);
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stderr so we don't break anything when we write to it
+          this.tessel._rps.stderr.removeAllListeners();
+
+          // Continue
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.connectToNetwork(creds)
+      .then(function() {
+        test.fail('Test should have rejected with an error.');
+        test.done();
+      })
+      .catch((error) => {
+        test.equal(error, errMessage);
+        test.equal(this.setNetworkSSID.callCount, 1);
+        test.equal(this.setNetworkPassword.callCount, 1);
+        test.equal(this.setNetworkEncryption.callCount, 1);
+        test.equal(this.commitWirelessCredentials.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.ok(this.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(this.setNetworkEncryption.lastCall.calledWith('psk2'));
+        test.ok(this.ubusListen.callCount, 1);
+        test.done();
+      });
+  },
+
+  connectionTimeout: function(test) {
+    test.expect(10);
+    var creds = {
+      ssid: 'tank',
+      password: 'not_gonna_work'
+    };
+
+    // Make it timeout super fast so this test doesn't take forever
+    Tessel.__wifiConnectionTimeout = 10;
+
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() !== 'ubus listen') {
+        setImmediate(() => {
+          // Remove any listeners on stderr so we don't break anything when we write to it
+          this.tessel._rps.stderr.removeAllListeners();
+
+          // Continue
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.connectToNetwork(creds)
+      .then(function() {
+        test.fail('Test should have rejected with an error.');
+        test.done();
+      })
+      .catch((error) => {
+        test.ok(error.toLowerCase().indexOf('timed out') !== -1);
+        test.equal(this.setNetworkSSID.callCount, 1);
+        test.equal(this.setNetworkPassword.callCount, 1);
+        test.equal(this.setNetworkEncryption.callCount, 1);
+        test.equal(this.commitWirelessCredentials.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.ok(this.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(this.setNetworkEncryption.lastCall.calledWith('psk2'));
+        test.ok(this.ubusListen.callCount, 1);
+        test.done();
       });
   }
 };
 
 module.exports['Tessel.setWifiState'] = {
   setUp: function(done) {
-    this.logsWarn = sinon.stub(logs, 'warn', function() {});
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
     this.tessel = TesselSimulator();
-    this.simpleExec = sinon.spy(this.tessel, 'simpleExec');
+    this.simpleExec = this.sandbox.spy(this.tessel, 'simpleExec');
+    this.turnOnWifi = this.sandbox.spy(commands, 'turnOnWifi');
+    this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
+    this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
+    this.ubusListen = this.sandbox.spy(commands, 'ubusListen');
 
     done();
   },
   tearDown: function(done) {
     this.tessel.mockClose();
-    this.logsWarn.restore();
-    this.logsInfo.restore();
+    this.sandbox.restore();
     done();
   },
 
   setWifiStateTruthy: function(test) {
-    var self = this;
-
-    test.expect(6);
+    test.expect(7);
     var state = true;
+
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus listen') {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', 'ifup');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+
+          // Continue
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
     this.tessel.setWiFiState(state)
-      .then(function() {
-        test.equal(self.simpleExec.calledThrice, true);
-        test.deepEqual(self.simpleExec.args[0][0], commands.turnOnWifi(state));
-        test.deepEqual(self.simpleExec.args[1][0], commands.commitWirelessCredentials());
-        test.deepEqual(self.simpleExec.args[2][0], commands.reconnectWifi());
-        test.equal(self.logsInfo.calledOnce, true);
-        test.equal(self.logsInfo.args[0][1].indexOf('Enabled.') !== -1, true);
+      .then(() => {
+        test.equal(this.simpleExec.calledThrice, true);
+        test.equal(this.turnOnWifi.callCount, 1);
+        test.equal(this.commitWirelessCredentials.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.logsInfo.calledTwice, true);
+        test.equal(this.logsInfo.lastCall.args[1].indexOf('Enabled.') !== -1, true);
+        test.ok(this.ubusListen.callCount, 1);
         test.done();
       })
       .catch(function(err) {
-        test.equal(undefined, err, 'an unexpected error was thrown');
+        test.fail(err);
+        test.done();
       });
-
-    setImmediate(function() {
-      // enable wifi completed
-      self.tessel._rps.emit('close');
-      setImmediate(function() {
-        // commit wifi settings completed
-        self.tessel._rps.emit('close');
-        setImmediate(function() {
-          // Reconnecting to wifi completed
-          self.tessel._rps.emit('close');
-        });
-      });
-    });
   },
   setWifiStateFalsy: function(test) {
-    var self = this;
-
-    test.expect(6);
+    test.expect(7);
     var state = false;
+
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus listen' && state) {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', 'ifup');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+
+          // Continue
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
     this.tessel.setWiFiState(state)
-      .then(function() {
-        test.equal(self.simpleExec.calledThrice, true);
-        test.deepEqual(self.simpleExec.args[0][0], commands.turnOnWifi(state));
-        test.deepEqual(self.simpleExec.args[1][0], commands.commitWirelessCredentials());
-        test.deepEqual(self.simpleExec.args[2][0], commands.reconnectWifi());
-        test.equal(self.logsInfo.calledOnce, true);
-        test.equal(self.logsInfo.args[0][1].indexOf('Disabled.') !== -1, true);
+      .then(() => {
+        test.equal(this.simpleExec.calledThrice, true);
+        test.equal(this.turnOnWifi.callCount, 1);
+        test.equal(this.commitWirelessCredentials.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.logsInfo.calledOnce, true);
+        test.equal(this.logsInfo.lastCall.args[1].indexOf('Disabled.') !== -1, true);
+        test.ok(this.ubusListen.callCount, 1);
         test.done();
       })
       .catch(function(err) {
-        test.equal(undefined, err, 'an unexpected error was thrown');
+        test.fail(err);
+        test.done();
       });
-
-    setImmediate(function() {
-      // enable wifi completed
-      self.tessel._rps.emit('close');
-      setImmediate(function() {
-        // commit wifi settings completed
-        self.tessel._rps.emit('close');
-        setImmediate(function() {
-          // Reconnecting to wifi completed
-          self.tessel._rps.emit('close');
-        });
-      });
-    });
-
   }
 
 };
