@@ -282,7 +282,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     };
 
     // Make it timeout super fast so this test doesn't take forever
-    Tessel.__wifiConnectionTimeout = 10;
+    Tessel._wifiConnectionTimeout = 10;
 
     // Test is expecting several closes...
     self.tessel._rps.on('control', function(command) {
