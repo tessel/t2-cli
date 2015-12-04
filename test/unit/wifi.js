@@ -126,6 +126,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     this.setNetworkEncryption = sinon.spy(commands, 'setNetworkEncryption');
     this.commitWirelessCredentials = sinon.spy(commands, 'commitWirelessCredentials');
     this.reconnectWifi = sinon.spy(commands, 'reconnectWifi');
+    this.ubusListen = sinon.spy(commands, 'ubusListen');
     this.tessel = TesselSimulator();
 
     done();
@@ -140,6 +141,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     this.setNetworkEncryption.restore();
     this.commitWirelessCredentials.restore();
     this.reconnectWifi.restore();
+    this.ubusListen.restore();
     done();
   },
   noSSID: function(test) {
@@ -172,21 +174,37 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.done();
       });
   },
+
+  // tests that the proper credentials and a positive report about connectivity
+  // will lead to a resolve
   properCredentials: function(test) {
     var self = this;
-    test.expect(8);
+    test.expect(9);
     var creds = {
       ssid: 'tank',
       password: 'fish'
     };
 
-    // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
-      });
+    // Test is expecting several closes...
+    self.tessel._rps.on('control', function(command) {
+      // If this is the ubus listen command
+      if (command.toString() === 'ubus listen') {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(function() {
+          self.tessel._rps.stdout.emit('data', 'ifup');
+        });
+      }
+      // If it's any other command
+      else {
+        setImmediate(function() {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          self.tessel._rps.stdout.removeAllListeners();
+          // Continue
+          self.tessel._rps.emit('close');
+        });
+      }
     });
-
     this.tessel.connectToNetwork(creds)
       .then(function() {
         test.equal(self.setNetworkSSID.callCount, 1);
@@ -197,10 +215,105 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
         test.ok(self.setNetworkPassword.lastCall.calledWith(creds.password));
         test.ok(self.setNetworkEncryption.lastCall.calledWith('psk2'));
+        test.ok(self.ubusListen.callCount, 1);
         test.done();
       })
       .catch(function(error) {
         test.fail(error);
+      });
+  },
+
+  // Tests that data on stderr after connecting will lead to a rejection
+  connectionFails: function(test) {
+    var self = this;
+    test.expect(10);
+    var creds = {
+      ssid: 'tank',
+      password: 'not_gonna_work'
+    };
+    var errMessage = 'Unable to connect to the network.';
+
+    // Test is expecting several closes...
+    self.tessel._rps.on('control', function(command) {
+      // If this is the ubus listen command
+      if (command.toString() === 'ubus listen') {
+        // Write to stderr so it throws an error
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(function() {
+          self.tessel._rps.stderr.emit('data', errMessage);
+        });
+      }
+      // If it's any other command
+      else {
+        setImmediate(function() {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          self.tessel._rps.stderr.removeAllListeners();
+          // Continue
+          self.tessel._rps.emit('close');
+        });
+      }
+    });
+    this.tessel.connectToNetwork(creds)
+      .then(function() {
+        test.fail('Test should have rejected with an error.');
+      })
+      .catch(function(error) {
+        test.equal(error, errMessage);
+        test.equal(self.setNetworkSSID.callCount, 1);
+        test.equal(self.setNetworkPassword.callCount, 1);
+        test.equal(self.setNetworkEncryption.callCount, 1);
+        test.equal(self.commitWirelessCredentials.callCount, 1);
+        test.equal(self.reconnectWifi.callCount, 1);
+        test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(self.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(self.setNetworkEncryption.lastCall.calledWith('psk2'));
+        test.ok(self.ubusListen.callCount, 1);
+        test.done();
+      });
+  },
+
+  // Tests that after a specific timeout, a connection attempt will reject
+  connectionTimeout: function(test) {
+    var self = this;
+    test.expect(10);
+    var creds = {
+      ssid: 'tank',
+      password: 'taking_too_long'
+    };
+
+    // Make it timeout super fast so this test doesn't take forever
+    Tessel._wifiConnectionTimeout = 10;
+
+    // Test is expecting several closes...
+    self.tessel._rps.on('control', function(command) {
+      // If this is not the ubus listen command
+      // If it is the ubus listen, we'll let it hang
+      if (command.toString() !== 'ubus listen') {
+        setImmediate(function() {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          self.tessel._rps.stderr.removeAllListeners();
+          // Continue
+          self.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.connectToNetwork(creds)
+      .then(function() {
+        test.fail('Test should have rejected with an error.');
+      })
+      .catch(function(error) {
+        test.ok(error.toLowerCase().indexOf('timed out') !== -1);
+        test.equal(self.setNetworkSSID.callCount, 1);
+        test.equal(self.setNetworkPassword.callCount, 1);
+        test.equal(self.setNetworkEncryption.callCount, 1);
+        test.equal(self.commitWirelessCredentials.callCount, 1);
+        test.equal(self.reconnectWifi.callCount, 1);
+        test.ok(self.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(self.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(self.setNetworkEncryption.lastCall.calledWith('psk2'));
+        test.ok(self.ubusListen.callCount, 1);
+        test.done();
       });
   }
 };
