@@ -507,6 +507,40 @@ exports['Tessel.list'] = {
       this.activeSeeker.emit('tessel', lan);
     }.bind(this));
   },
+
+  receiveSIGINTMultipleEmitted: function(test) {
+    test.expect(4);
+
+    var usb = newTessel({
+      sandbox: this.sandbox,
+      type: 'USB',
+      name: 'foo'
+    });
+
+    var lan = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN',
+      name: 'bar'
+    });
+
+    Tessel.list(this.standardOpts)
+      .then(function() {
+        test.equal(this.closeTesselConnections.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.equal(usb.close.callCount, 1);
+        test.equal(lan.close.callCount, 1);
+        test.done();
+      }.bind(this));
+
+    // We must emit the Tessel sometime after list is called
+    // but before the seeker stops searching
+    setImmediate(function() {
+      this.activeSeeker.emit('tessel', usb);
+      this.activeSeeker.emit('tessel', lan);
+      process.emit('SIGINT');
+    }.bind(this));
+  },
 };
 
 exports['Tessel.get'] = {

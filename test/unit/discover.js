@@ -132,7 +132,8 @@ exports['TesselSeeker.prototype.stop'] = {
 
   stop: function(test) {
     test.expect(1);
-    test.equal(this.seeker.stop(), this.seeker);
+    // seeker.stop returns a promise
+    test.equal(typeof this.seeker.stop(), 'object');
     test.done();
   },
 
