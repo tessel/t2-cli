@@ -92,6 +92,101 @@ exports['USB.Connection.prototype._write'] = {
   },
 };
 
+exports['USB.Connection.prototype.open'] = {
+  setUp: function(done) {
+    var self = this;
+    this.sandbox = sinon.sandbox.create();
+    this.err = this.sandbox.stub(logs, 'err');
+    this.processExit = this.sandbox.stub(process, 'exit');
+    this.usbConnection = new USB.Connection({});
+    this.usbConnection.epOut = new Emitter();
+    this.usbConnection.epOut.transfer = this.sandbox.spy();
+    this.usbConnection.epIn = new Emitter();
+    this.usbConnection.epIn.startPoll = this.sandbox.spy();
+    this.closeFunc = this.sandbox.spy(this.usbConnection, '_close');
+    this.fakeInterface = {
+      claim: function() {},
+      setAltSetting: function(arg1, cb) {
+        cb();
+      },
+      endpoints: [self.usbConnection.epIn, self.usbConnection.epOut],
+    };
+    this.sandbox.stub(this.usbConnection, 'device', {
+      open: function() {},
+      interface: function() {
+        return self.fakeInterface;
+      },
+      getStringDescriptor: function(arg1, cb) {
+        cb();
+      },
+      deviceDescriptor: {
+        iSerialNumber: 'blah',
+      }
+    });
+    this.openDevice = this.sandbox.spy(this.usbConnection.device, 'open');
+    this.interface = this.sandbox.spy(this.usbConnection.device, 'interface');
+    this.claim = this.sandbox.spy(this.fakeInterface, 'claim');
+    this.setAltSetting = this.sandbox.spy(this.fakeInterface, 'setAltSetting');
+    this.getStringDescriptor = this.sandbox.spy(this.usbConnection.device, 'getStringDescriptor');
+    this.daemonRegister = this.sandbox.spy(Daemon, 'register');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  standardOpen: function(test) {
+    test.expect(11);
+
+    this.usbConnection.open()
+      .then(() => {
+        test.ok(this.openDevice.calledOnce);
+        test.ok(this.interface.calledOnce);
+        test.ok(this.interface.alwaysCalledWith(0));
+        test.ok(this.claim.calledOnce);
+        test.ok(this.setAltSetting.calledTwice);
+        test.equal(this.setAltSetting.firstCall.args[0], 0);
+        test.equal(this.setAltSetting.secondCall.args[0], 2);
+        test.ok(this.getStringDescriptor.calledOnce);
+        test.ok(this.daemonRegister.calledOnce);
+        test.equal(this.closeFunc.called, false);
+        test.ok(this.usbConnection.epIn.startPoll.calledOnce);
+        test.done();
+      })
+      .catch(function() {
+        // It should not error
+        test.fail();
+      });
+  },
+
+  setAltSettingFails: function(test) {
+    test.expect(9);
+
+    this.connectionAltSetting = this.sandbox.stub(this.usbConnection, 'setAltSetting').returns(Promise.reject('bad usb things'));
+
+    this.usbConnection.open()
+      .then(() => {
+        // It should not succeed
+        test.fail();
+      })
+      .catch((err) => {
+        test.ok(err);
+        test.ok(this.openDevice.calledOnce);
+        test.equal(this.interface.called, true);
+        test.equal(this.claim.called, true);
+        test.equal(this.setAltSetting.called, false);
+        test.equal(this.getStringDescriptor.called, false);
+        test.equal(this.daemonRegister.called, false);
+        test.equal(this.closeFunc.called, false);
+        test.equal(this.usbConnection.epIn.startPoll.called, false);
+        test.done();
+      });
+  },
+
+};
+
 exports['USB.Connection.prototype._receiveMessages'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
