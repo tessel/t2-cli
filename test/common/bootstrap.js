@@ -48,6 +48,7 @@ global.usb = require('../../lib/usb_connection');
 
 // ./lib/usb/*
 global.Daemon = require('../../lib/usb/usb_daemon');
+global.USBProcess = require('../../lib/usb/usb_process');
 
 // ./test/common/*
 global.TesselSimulator = require('../common/tessel-simulator');
