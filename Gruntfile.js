@@ -26,6 +26,7 @@ module.exports = function(grunt) {
         src: [
           'test/**/*.js',
           '!test/unit/fixtures/syntax-error/**/*.js',
+          '!test/unit/fixtures/project-binary-modules/**/*'
         ]
       }
     },
@@ -36,7 +37,7 @@ module.exports = function(grunt) {
         'test/**/*.js',
         'Gruntfile.js',
         '!test/unit/fixtures/syntax-error/**/*.js',
-        // 'resources/**/*.js',
+        '!test/unit/fixtures/project-binary-modules/**/*',
       ],
       options: {
         config: '.jscsrc'
@@ -48,7 +49,6 @@ module.exports = function(grunt) {
         'lib/**/*.js',
         'test/**/*.js',
         'Gruntfile.js',
-        // 'resources/**/*.js',
       ],
       options: {
         js: {
