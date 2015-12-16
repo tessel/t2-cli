@@ -247,11 +247,6 @@ makeCommand('wifi')
   .help('Configure the wireless connection');
 
 parser.command('key')
-  .option('method', {
-    position: 1,
-    required: true,
-    choices: ['generate'],
-  })
   .callback(function(opts) {
     key(opts)
       .then(function() {
@@ -259,7 +254,12 @@ parser.command('key')
       })
       .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
   })
-  .help('Generate a local SSH keypair for authenticating a Tessel VM');
+  .option('generate', {
+    position: 1,
+    required: true,
+    help: 'Generate a local SSH keypair for authenticating to a Tessel'
+  })
+  .help('Manage ssh keys for connecting to a Tessel');
 
 makeCommand('rename')
   .option('newName', {
@@ -307,6 +307,7 @@ makeCommand('version')
 makeCommand('ap')
   .option('ssid', {
     abbr: 'n',
+    required: true,
     help: 'Name of the network.'
   })
   .option('pass', {
