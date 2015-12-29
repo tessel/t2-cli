@@ -336,6 +336,13 @@ makeCommand('ap')
   });
 
 makeCommand('root')
+  .option('key', {
+    required: false,
+    default: controller.LOCAL_AUTH_KEY,
+    metavar: 'PRIVATEKEY',
+    abbr: 'i',
+    help: 'SSH key for authorization with your Tessel'
+  })
   .callback(function(opts) {
     callControllerWith('root', opts);
   })
