@@ -501,7 +501,7 @@ exports['Tessel (cli: list)'] = {
 
   listStandard: function(test) {
 
-    test.expect(4);
+    test.expect(3);
 
     cli(['list', '--timeout', '0.001']);
 
@@ -510,8 +510,6 @@ exports['Tessel (cli: list)'] = {
       test.ok(this.controllerList.calledOnce);
       // Ensure it did not have a key option
       test.ok(this.controllerList.lastCall.args[0].key === controller.LOCAL_AUTH_KEY);
-      // We should not try to set the keypath if not specifically requested
-      test.ok(this.setDefaultKey.called);
       // Tessel list should have been called afterwards
       test.ok(this.tesselList.called);
       test.done();
