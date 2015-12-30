@@ -24,6 +24,7 @@ function makeCommand(commandName) {
     .option('key', {
       required: false,
       metavar: 'PRIVATEKEY',
+      default: controller.LOCAL_AUTH_KEY,
       abbr: 'i',
       help: 'SSH key for authorization with your Tessel'
     })
