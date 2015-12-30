@@ -510,8 +510,8 @@ exports['Tessel (cli: list)'] = {
       test.ok(this.controllerList.calledOnce);
       // Ensure it did not have a key option
       test.ok(this.controllerList.lastCall.args[0].key === controller.LOCAL_AUTH_KEY);
-      // Tessel list should have been called afterwards
-      test.ok(this.tesselList.called);
+      // We should not try to set the keypath if not specifically requested
+      test.ok(this.setDefaultKey.called);
       test.done();
     }.bind(this));
   },
