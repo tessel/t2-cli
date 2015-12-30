@@ -148,6 +148,7 @@ exports['Tessel (cli: update)'] = {
       version: 42,
       _: ['update'],
       timeout: 5,
+      key: controller.LOCAL_AUTH_KEY,
       lanPrefer: false
     });
 
@@ -500,7 +501,7 @@ exports['Tessel (cli: list)'] = {
 
   listStandard: function(test) {
 
-    test.expect(4);
+    test.expect(3);
 
     cli(['list', '--timeout', '0.001']);
 
@@ -508,11 +509,9 @@ exports['Tessel (cli: list)'] = {
       // Ensure controller list was called
       test.ok(this.controllerList.calledOnce);
       // Ensure it did not have a key option
-      test.ok(this.controllerList.lastCall.args[0].key === undefined);
+      test.ok(this.controllerList.lastCall.args[0].key === controller.LOCAL_AUTH_KEY);
       // We should not try to set the keypath if not specifically requested
-      test.ok(!this.setDefaultKey.called);
-      // Tessel list should have been called afterwards
-      test.ok(this.tesselList.called);
+      test.ok(this.setDefaultKey.called);
       test.done();
     }.bind(this));
   },
@@ -521,8 +520,7 @@ exports['Tessel (cli: list)'] = {
 
     test.expect(4);
 
-    var keyPath = './FAKE_KEY';
-
+    var keyPath = controller.LOCAL_AUTH_KEY;
     cli(['list', '--timeout', '0.001', '-i', keyPath]);
 
     setImmediate(function() {
@@ -531,6 +529,7 @@ exports['Tessel (cli: list)'] = {
       test.ok(this.controllerList.calledOnce);
       // It was called with the keypath
       test.ok(this.controllerList.lastCall.args[0].key === keyPath);
+
       // We did try to set the key path
       test.ok(this.setDefaultKey.called);
       // It was called with the key path
