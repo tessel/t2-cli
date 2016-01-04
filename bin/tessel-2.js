@@ -8,6 +8,7 @@ var parser = require('nomnom').script('t2');
 
 // Internal
 var controller = require('../lib/controller');
+var Tessel = require('../lib/tessel/tessel');
 var init = require('../lib/init');
 var key = require('../lib/key');
 var logs = require('../lib/logs');
@@ -23,6 +24,7 @@ function makeCommand(commandName) {
     })
     .option('key', {
       required: false,
+      default: Tessel.LOCAL_AUTH_KEY,
       metavar: 'PRIVATEKEY',
       abbr: 'i',
       help: 'SSH key for authorization with your Tessel'
