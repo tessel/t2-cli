@@ -182,7 +182,8 @@ exports['Tessel.prototype.deployScript'] = {
   },
 
   runScript: function(test) {
-    test.expect(10);
+    test.expect(11);
+    this.exec = sandbox.spy(this.tessel.connection, 'exec');
     deployTestCode(this.tessel, test, {
       push: false,
       single: false
@@ -197,6 +198,8 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.setExecutablePermissions.callCount, 0);
       test.equal(this.startPushedScript.callCount, 0);
       test.equal(this.end.callCount, 1);
+      // Ensure that the last call (to run Node) sets pty to true
+      test.equal(this.exec.lastCall.args[1].pty, true);
       test.done();
     }.bind(this));
   },
