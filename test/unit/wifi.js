@@ -27,9 +27,7 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
         test.done();
       });
 
-    var networks = JSON.stringify({
-      results: []
-    });
+    var networks = '';
 
     this.tessel._rps.stdout.push(networks);
 
@@ -41,26 +39,28 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
   someNetworks: function(test) {
     test.expect(2);
 
-    var networks = {
-      results: [{
-        ssid: 'ssid1',
-        quality: 21,
-        max_quality: 73,
-      }, {
-        ssid: 'ssid2',
-        quality: 5,
-        max_quality: 73,
-      }, ]
-    };
+    var networks =
+      `Cell 01 - Address: 14:35:8B:11:30:F0
+              ESSID: "technicallyHome"
+              Mode: Master  Channel: 11
+              Signal: -55 dBm  Quality: 55/70
+              Encryption: mixed WPA/WPA2 PSK (TKIP, CCMP)
 
+    Cell 02 - Address: 6C:70:9F:D9:7A:5C
+              ESSID: "Fried Chicken Sandwich"
+              Mode: Master  Channel: 2
+              Signal: -51 dBm  Quality: 59/70
+              Encryption: WPA2 PSK (CCMP)
+
+`;
     this.tessel.findAvailableNetworks()
       .then((found) => {
-        test.equal(found.length, networks.results.length);
+        test.equal(found.length, 2);
         test.equal(this.findAvailableNetworks.callCount, 1);
         test.done();
       });
 
-    this.tessel._rps.stdout.push(JSON.stringify(networks));
+    this.tessel._rps.stdout.push(networks);
 
     setImmediate(() => {
       this.tessel._rps.emit('close');
@@ -70,39 +70,37 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
   compareSignalStrengths: function(test) {
     test.expect(5);
 
-    var bestNetwork = {
-      ssid: 'best',
-      quality: 60,
-      quality_max: 73,
-    };
 
-    var worstNetwork = {
-      ssid: 'worst',
-      quality: 5,
-      quality_max: 73,
-    };
+    var networks = `Cell 01 - Address: 14:35:8B:11:30:F0
+              ESSID: "middle"
+              Mode: Master  Channel: 11
+              Signal: -55 dBm  Quality: 30/70
+              Encryption: mixed WPA/WPA2 PSK (TKIP, CCMP)
 
-    var middleNetwork = {
-      ssid: 'middle',
-      quality: 10,
-      quality_max: 73,
-    };
+    Cell 02 - Address: 6C:70:9F:D9:7A:5C
+              ESSID: "worst"
+              Mode: Master  Channel: 2
+              Signal: -57 dBm  Quality: 5/70
+              Encryption: WPA2 PSK (CCMP)
 
-    var networks = {
-      results: [bestNetwork, worstNetwork, middleNetwork]
-    };
+    Cell 03 - Address: 6C:70:9F:D9:7A:5C
+            ESSID: "best"
+            Mode: Master  Channel: 2
+            Signal: -57 dBm  Quality: 60/70
+            Encryption: WPA2 PSK (CCMP)
 
+`;
     this.tessel.findAvailableNetworks()
       .then((found) => {
-        test.equal(found.length, networks.results.length);
+        test.equal(found.length, 3);
         test.equal(this.findAvailableNetworks.callCount, 1);
-        test.equal(found[0].ssid, bestNetwork.ssid);
-        test.equal(found[1].ssid, middleNetwork.ssid);
-        test.equal(found[2].ssid, worstNetwork.ssid);
+        test.equal(found[0].ssid, 'best');
+        test.equal(found[1].ssid, 'middle');
+        test.equal(found[2].ssid, 'worst');
         test.done();
       });
 
-    this.tessel._rps.stdout.push(JSON.stringify(networks));
+    this.tessel._rps.stdout.push(networks);
 
     setImmediate(() => {
       this.tessel._rps.emit('close');
