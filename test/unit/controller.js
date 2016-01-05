@@ -957,6 +957,10 @@ exports['controller.root'] = {
       return callback(tessel);
     }.bind(this));
 
+    // Return our own local auth key (it won't be set because we have stubbed
+    // that functionality out of standardTesselCommand)
+    this.sandbox.stub(Tessel, 'LOCAL_AUTH_KEY', testKey);
+
     controller.root({
         key: testKey
       })
