@@ -53,6 +53,8 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
               Encryption: WPA2 PSK (CCMP)
 
 `;
+    // Do not remove the blank line at the end of preceding string!!
+
     this.tessel.findAvailableNetworks()
       .then((found) => {
         test.equal(found.length, 2);
@@ -90,6 +92,8 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
             Encryption: WPA2 PSK (CCMP)
 
 `;
+    // Do not remove the blank line at the end of preceding string!!
+
     this.tessel.findAvailableNetworks()
       .then((found) => {
         test.equal(found.length, 3);
@@ -97,6 +101,57 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
         test.equal(found[0].ssid, 'best');
         test.equal(found[1].ssid, 'middle');
         test.equal(found[2].ssid, 'worst');
+        test.done();
+      });
+
+    this.tessel._rps.stdout.push(networks);
+
+    setImmediate(() => {
+      this.tessel._rps.emit('close');
+    });
+  },
+
+  compareSignalStrengthSafe: function(test) {
+    test.expect(8);
+
+    // NOTE:
+    // "Signal: -55 dBm  Quality: 30/"
+    //
+    // is INTENTIONAL!!!
+    var networks = `Cell 01 - Address: 14:35:8B:11:30:F0
+              ESSID: "worst"
+              Mode: Master  Channel: 11
+              Signal: -55 dBm  Quality: 30/
+              Encryption: mixed WPA/WPA2 PSK (TKIP, CCMP)
+
+    Cell 02 - Address: 6C:70:9F:D9:7A:5C
+              ESSID: "middle"
+              Mode: Master  Channel: 2
+              Signal: -57 dBm  Quality: 5/70
+              Encryption: WPA2 PSK (CCMP)
+
+    Cell 03 - Address: 6C:70:9F:D9:7A:5C
+            ESSID: "best"
+            Mode: Master  Channel: 2
+            Signal: -57 dBm  Quality: 100
+            Encryption: WPA2 PSK (CCMP)
+
+`;
+    // Do not remove the blank line at the end of preceding string!!
+
+    this.tessel.findAvailableNetworks()
+      .then((found) => {
+
+        test.equal(found.length, 3);
+        test.equal(this.findAvailableNetworks.callCount, 1);
+        test.equal(found[0].ssid, 'best');
+        test.equal(found[1].ssid, 'middle');
+        test.equal(found[2].ssid, 'worst');
+
+        test.equal(found[0].quality, '100');
+        test.equal(found[1].quality, '5/70');
+        test.equal(found[2].quality, '30/');
+
         test.done();
       });
 
