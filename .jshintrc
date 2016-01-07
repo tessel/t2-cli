@@ -15,7 +15,6 @@
   "strict": false,
   "esnext": true,
   "unused": true,
-  "evil" : true,
   "globals": {
     "exports": true,
     "document": true,
