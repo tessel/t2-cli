@@ -232,8 +232,9 @@ exports['Tessel.prototype.deployScript'] = {
     }, function deployed(err) {
       test.ifError(err);
       test.equal(this.stopRunningScript.callCount, 1);
-      test.equal(this.deleteFolder.callCount, 1);
-      test.equal(this.createFolder.callCount, 1);
+      // Delete and create both the flash and ram folders
+      test.equal(this.deleteFolder.callCount, 2);
+      test.equal(this.createFolder.callCount, 2);
       test.equal(this.untarStdin.callCount, 1);
       test.equal(this.runScript.callCount, 0);
       test.equal(this.openStdinToFile.callCount, 1);
@@ -269,7 +270,7 @@ exports['Tessel.prototype.deployScript'] = {
 
     var shellScript = tags.stripIndent `
       #!/bin/sh
-      cd /app
+      cd /app/remote-script
       exec node index.js
     `;
     this.end.restore();
@@ -291,7 +292,7 @@ exports['Tessel.prototype.deployScript'] = {
 
     var shellScript = tags.stripIndent `
       #!/bin/sh
-      cd /app
+      cd /app/remote-script
       exec node __tessel_program__.js
     `;
     this.end.restore();
