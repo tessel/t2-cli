@@ -5,7 +5,6 @@
   "main": "./bin/tessel-2.js",
   "scripts": {
     "test": "grunt test",
-    "install": "hooks/install",
     "postinstall": "t2 install-drivers || true"
   },
   "bin": {

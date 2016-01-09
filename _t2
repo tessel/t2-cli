@@ -1,0 +1,33 @@
+#!/bin/zsh
+# Add tab completion for `t2` commands for zsh
+
+#compdef t2
+_t2() {
+  local -a commands
+  commands=(
+    'ap'
+    'erase'
+    'init'
+    'install-drivers'
+    'key'
+    'list'
+    'provision'
+    'push'
+    'rename'
+    'restart'
+    'root'
+    'run'
+    'update'
+    'version'
+    'wifi'
+  )
+
+  if (( CURRENT == 2 ));
+    then
+    _describe -t commands 'Commands' commands
+  fi
+
+  return 0
+}
+
+_t2
