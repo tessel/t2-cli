@@ -429,7 +429,7 @@ module.exports['Tessel.setWifiState'] = {
   },
 
   setWifiStateTruthy: function(test) {
-    test.expect(7);
+    test.expect(8);
     var state = true;
 
     // Test is expecting several closes...;
@@ -455,6 +455,7 @@ module.exports['Tessel.setWifiState'] = {
       .then(() => {
         test.equal(this.simpleExec.calledThrice, true);
         test.equal(this.turnOnWifi.callCount, 1);
+        test.deepEqual(this.turnOnWifi.lastCall.returnValue, ['uci', 'set', 'wireless.@wifi-iface[0].disabled=0']);
         test.equal(this.commitWirelessCredentials.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
         test.equal(this.logsInfo.calledTwice, true);
@@ -468,7 +469,7 @@ module.exports['Tessel.setWifiState'] = {
       });
   },
   setWifiStateFalsy: function(test) {
-    test.expect(7);
+    test.expect(8);
     var state = false;
 
     // Test is expecting several closes...;
@@ -494,6 +495,7 @@ module.exports['Tessel.setWifiState'] = {
       .then(() => {
         test.equal(this.simpleExec.calledThrice, true);
         test.equal(this.turnOnWifi.callCount, 1);
+        test.deepEqual(this.turnOnWifi.lastCall.returnValue, ['uci', 'set', 'wireless.@wifi-iface[0].disabled=1']);
         test.equal(this.commitWirelessCredentials.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
         test.equal(this.logsInfo.calledOnce, true);
