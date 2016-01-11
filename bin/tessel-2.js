@@ -129,10 +129,6 @@ makeCommand('run')
     default: true,
     help: 'Deploy a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from "slimPath" file (if not provided, a default name is given).',
   })
-  .option('slimPath', {
-    default: '__tessel_program__.js',
-    help: 'Specify the name of the --slim bundle file.',
-  })
   .option('full', {
     flag: true,
     default: false,
@@ -167,10 +163,6 @@ makeCommand('push')
     flag: true,
     default: true,
     help: 'Push a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from "slimPath" file (if not provided, a default name is given).'
-  })
-  .option('slimPath', {
-    default: '__tessel_program__.js',
-    help: 'Specify the name of the --slim bundle file.'
   })
   .option('full', {
     flag: true,

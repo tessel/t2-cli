@@ -1,0 +1,9 @@
+{
+  "name": "project-binary-modules",
+  "version": "0.0.1",
+  "description": "project-binary-modules",
+  "main": "index.js",
+  "dependencies": {
+    "bufferutil": "=1.2.1"
+  }
+}

@@ -14,7 +14,7 @@ global.Duplex = stream.Duplex;
 // Third Party Dependencies
 global._ = require('lodash');
 global.async = require('async');
-global.browserify = require('browserify');
+global.bindings = require('bindings');
 global.fs = require('fs-extra');
 global.fsTemp = require('fs-temp');
 global.Ignore = require('fstream-ignore');
@@ -23,12 +23,15 @@ global.mdns = require('mdns-js');
 global.mkdirp = require('mkdirp');
 global.NodeRSA = require('node-rsa');
 global.osenv = require('osenv');
+global.Project = require('t2-project');
+global.request = require('request');
 global.sinon = require('sinon');
 global.sshpk = require('sshpk');
 global.ssh = require('ssh2');
 global.tags = require('common-tags');
 global.tar = require('tar');
 global.uglify = require('uglify-js');
+global.zlib = require('zlib');
 
 
 // Internal

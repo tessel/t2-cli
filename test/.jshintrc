@@ -30,7 +30,8 @@
     "Duplex": true,
     "_": true,
     "async": true,
-    "browserify": true,
+    "bindings": true,
+    "Project": true,
     "fs": true,
     "fsTemp": true,
     "Ignore": true,
@@ -61,6 +62,8 @@
     "LAN": true,
     "TesselSeeker": true,
     "USB": true,
-    "tags": true
+    "tags": true,
+    "request": true,
+    "zlib": true
   }
 }
