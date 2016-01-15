@@ -48,6 +48,7 @@
     "Tessel": true,
     "commands": true,
     "deploy": true,
+    "deployLists": true,
     "provision": true,
     "controller": true,
     "discover": true,

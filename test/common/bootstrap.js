@@ -40,6 +40,7 @@ global.Tessel = require('../../lib/tessel/tessel');
 global.commands = require('../../lib/tessel/commands');
 global.deploy = require('../../lib/tessel/deploy');
 global.provision = require('../../lib/tessel/provision');
+global.deployLists = require('../../lib/tessel/deploy-lists');
 
 // ./lib/*
 global.controller = require('../../lib/controller');
