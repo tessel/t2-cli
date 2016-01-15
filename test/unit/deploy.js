@@ -130,6 +130,9 @@ exports['Tessel.prototype.deployScript'] = {
     this.setExecutablePermissions = sandbox.spy(commands, 'setExecutablePermissions');
     this.startPushedScript = sandbox.spy(commands, 'startPushedScript');
 
+    this.pushScript = sandbox.spy(deploy, 'pushScript');
+    this.writeToFile = sandbox.spy(deploy, 'writeToFile');
+
     this.injectBinaryModules = sandbox.stub(deploy, 'injectBinaryModules', function() {
       return Promise.resolve();
     });
@@ -236,12 +239,19 @@ exports['Tessel.prototype.deployScript'] = {
   },
 
   pushScript: function(test) {
-    test.expect(10);
+    test.expect(13);
     deployTestCode(this.tessel, test, {
       push: true,
       single: false
     }, function deployed(err) {
       test.ifError(err);
+
+      var expectedPath = path.normalize('test/unit/tmp/app.js');
+
+      test.equal(this.pushScript.lastCall.args[1], expectedPath);
+      test.equal(this.pushScript.lastCall.args[2].entryPoint, expectedPath);
+      test.equal(this.writeToFile.lastCall.args[1], expectedPath);
+
       test.equal(this.stopRunningScript.callCount, 1);
       // Delete and create both the flash and ram folders
       test.equal(this.deleteFolder.callCount, 2);
