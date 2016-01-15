@@ -368,6 +368,56 @@ exports['Tessel.prototype.deployScript'] = {
   }
 };
 
+exports['deploy.compress'] = {
+  setUp: function(done) {
+    this.parse = sandbox.spy(uglify, 'parse');
+    this.Compressor = sandbox.spy(uglify, 'Compressor');
+    this.OutputStream = sandbox.spy(uglify, 'OutputStream');
+
+    done();
+  },
+  tearDown: function(done) {
+    sandbox.restore();
+    done();
+  },
+
+  minifyFromBuffer: function(test) {
+    test.expect(1);
+    test.equal(deploy.compress(new Buffer(codeContents)), codeContents);
+    test.done();
+  },
+
+  minifyFromString: function(test) {
+    test.expect(1);
+    test.equal(deploy.compress(codeContents), codeContents);
+    test.done();
+  },
+
+  minifyInternalOperations: function(test) {
+    test.expect(3);
+
+    deploy.compress(new Buffer(codeContents));
+
+    test.equal(this.parse.callCount, 1);
+    test.equal(this.Compressor.callCount, 1);
+    test.equal(this.OutputStream.callCount, 1);
+    test.done();
+  },
+
+  minifyWithBareReturns: function(test) {
+    test.expect(1);
+
+    try {
+      deploy.compress('return;');
+      test.equal(this.parse.lastCall.args[1].bare_returns, true);
+    } catch (e) {
+      test.fail();
+    }
+
+    test.done();
+  }
+};
+
 exports['deploy.tarBundle'] = {
   setUp: function(done) {
     this.copySync = sandbox.spy(fs, 'copySync');
@@ -379,7 +429,6 @@ exports['deploy.tarBundle'] = {
     this.exclude = sandbox.spy(Project.prototype, 'exclude');
     this.mkdirSync = sandbox.spy(fsTemp, 'mkdirSync');
     this.addIgnoreRules = sandbox.spy(Ignore.prototype, 'addIgnoreRules');
-    this.minify = sandbox.spy(uglify, 'minify');
 
     this.project = sandbox.spy(deploy, 'project');
     this.compress = sandbox.spy(deploy, 'compress');
@@ -451,7 +500,7 @@ exports['deploy.tarBundle'] = {
   },
 
   full: function(test) {
-    test.expect(9);
+    test.expect(8);
 
     var target = 'test/unit/fixtures/project';
 
@@ -495,7 +544,6 @@ exports['deploy.tarBundle'] = {
       test.equal(this.project.callCount, 0);
       test.equal(this.exclude.callCount, 0);
       test.equal(this.compress.callCount, 0);
-      test.equal(this.minify.callCount, 0);
       test.equal(this.writeFileSync.callCount, 0);
       test.equal(this.remove.callCount, 0);
       // End
@@ -518,7 +566,7 @@ exports['deploy.tarBundle'] = {
   },
 
   slim: function(test) {
-    test.expect(11);
+    test.expect(9);
 
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/project';
@@ -549,7 +597,6 @@ exports['deploy.tarBundle'] = {
       // These things happen in the --slim path
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 2);
-      test.equal(this.minify.callCount, 2);
       test.equal(this.mkdirSync.callCount, 1);
       test.equal(this.outputFileSync.callCount, 3);
 
@@ -575,10 +622,6 @@ exports['deploy.tarBundle'] = {
       var minified = this.compress.lastCall.returnValue;
       test.equal(this.compress.callCount, 2);
       test.equal(minified.indexOf('!!mock-foo!!') === -1, true);
-
-      // Cannot deepEqual because uglify.minify(..., options) will
-      // mutate the options reference. No need to keep track of that.
-      test.equal(this.minify.lastCall.args[1].fromString, true);
 
       // Extract and inspect the bundle...
       extract(bundle, function(error, entries) {
@@ -619,7 +662,7 @@ exports['deploy.tarBundle'] = {
 
 
   slimTesselInit: function(test) {
-    test.expect(6);
+    test.expect(5);
 
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/init';
@@ -639,7 +682,6 @@ exports['deploy.tarBundle'] = {
     }).then(function(bundle) {
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 1);
-      test.equal(this.minify.callCount, 1);
       test.equal(this.mkdirSync.callCount, 1);
 
       var minified = this.compress.lastCall.returnValue;
@@ -659,7 +701,7 @@ exports['deploy.tarBundle'] = {
   },
 
   slimSingle: function(test) {
-    test.expect(5);
+    test.expect(4);
 
     var target = 'test/unit/fixtures/project';
     var entryPoint = 'index.js';
@@ -673,7 +715,6 @@ exports['deploy.tarBundle'] = {
     }).then(function(bundle) {
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 1);
-      test.equal(this.minify.callCount, 1);
 
       test.equal(bundle.length, 2048);
       extract(bundle, function(error, entries) {
@@ -688,7 +729,7 @@ exports['deploy.tarBundle'] = {
   },
 
   slimSingleNested: function(test) {
-    test.expect(5);
+    test.expect(4);
 
     var target = 'test/unit/fixtures/project';
     var entryPoint = 'another.js';
@@ -703,7 +744,6 @@ exports['deploy.tarBundle'] = {
     }).then(function(bundle) {
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 1);
-      test.equal(this.minify.callCount, 1);
       test.equal(bundle.length, 2560);
 
       extract(bundle, function(error, entries) {
@@ -770,7 +810,7 @@ exports['deploy.tarBundle'] = {
   },
 
   slimIncludeOverridesIgnore: function(test) {
-    test.expect(10);
+    test.expect(9);
 
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/project-include-overrides-ignore';
@@ -827,7 +867,6 @@ exports['deploy.tarBundle'] = {
       test.equal(this.project.callCount, 1);
       // 3 js files are compressed
       test.equal(this.compress.callCount, 3);
-      test.equal(this.minify.callCount, 3);
       test.equal(this.remove.callCount, 1);
 
       // Extract and inspect the bundle...
@@ -854,7 +893,7 @@ exports['deploy.tarBundle'] = {
   },
 
   fullIncludeOverridesIgnore: function(test) {
-    test.expect(9);
+    test.expect(8);
 
     var target = 'test/unit/fixtures/project-include-overrides-ignore';
 
@@ -905,7 +944,6 @@ exports['deploy.tarBundle'] = {
       // These things don't happen in the --full path
       test.equal(this.project.callCount, 0);
       test.equal(this.compress.callCount, 0);
-      test.equal(this.minify.callCount, 0);
       test.equal(this.writeFileSync.callCount, 0);
       test.equal(this.remove.callCount, 0);
       // End
@@ -932,7 +970,7 @@ exports['deploy.tarBundle'] = {
   },
 
   slimIncludeWithoutIgnore: function(test) {
-    test.expect(10);
+    test.expect(9);
 
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/project-include-without-ignore';
@@ -985,7 +1023,6 @@ exports['deploy.tarBundle'] = {
 
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 3);
-      test.equal(this.minify.callCount, 3);
       test.equal(this.remove.callCount, 1);
 
       // Extract and inspect the bundle...
@@ -1012,7 +1049,7 @@ exports['deploy.tarBundle'] = {
   },
 
   fullIncludeWithoutIgnore: function(test) {
-    test.expect(9);
+    test.expect(8);
 
     /*
       !! TAKE NOTE!!
@@ -1075,7 +1112,6 @@ exports['deploy.tarBundle'] = {
       // These things don't happen in the --full path
       test.equal(this.project.callCount, 0);
       test.equal(this.compress.callCount, 0);
-      test.equal(this.minify.callCount, 0);
       test.equal(this.writeFileSync.callCount, 0);
       test.equal(this.remove.callCount, 0);
       // End
@@ -1105,7 +1141,7 @@ exports['deploy.tarBundle'] = {
   },
 
   slimIncludeHasNegateRules: function(test) {
-    test.expect(9);
+    test.expect(8);
 
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/project-include-has-negate-rules';
@@ -1158,7 +1194,6 @@ exports['deploy.tarBundle'] = {
 
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 2);
-      test.equal(this.minify.callCount, 2);
       // The 4 files discovered and listed in the dependency graph
       // See bundle extraction below.
       test.equal(this.outputFileSync.callCount, 4);
@@ -1190,7 +1225,7 @@ exports['deploy.tarBundle'] = {
   },
 
   fullIncludeHasNegateRules: function(test) {
-    test.expect(9);
+    test.expect(8);
 
     var target = 'test/unit/fixtures/project-include-has-negate-rules';
 
@@ -1251,7 +1286,6 @@ exports['deploy.tarBundle'] = {
       // These things don't happen in the --full path
       test.equal(this.project.callCount, 0);
       test.equal(this.compress.callCount, 0);
-      test.equal(this.minify.callCount, 0);
       test.equal(this.writeFileSync.callCount, 0);
       test.equal(this.remove.callCount, 0);
       // End
