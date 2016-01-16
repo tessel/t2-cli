@@ -299,7 +299,6 @@ makeCommand('version')
 makeCommand('ap')
   .option('ssid', {
     abbr: 'n',
-    required: true,
     help: 'Name of the network.'
   })
   .option('pass', {
