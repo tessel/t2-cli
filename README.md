@@ -13,7 +13,7 @@ See docs on T2 CLI usage [on the t2-docs repo](https://github.com/tessel/t2-docs
 ## Contents
 
 * [Installation for development](#installation-for-development)
-* [Updating Tessel](#updating-tessel-2-on-board-osfirmware)
+* [Updating Tessel](#updating)
 * [Development milestones](#development-milestones)
 
 ## Installation for development
@@ -37,7 +37,23 @@ You may encounter the following error when executing `npm link` on windows:
 ```
 This error occurs because of windows folder permissions. To resolve this make sure you are running cmd or powershell as an administrator and that the permissions on the node_modules folder is set to full control for the user.
 
-### Updating
+####Source Tab Completion
+For bash users, add this line to your `~/.bashrc` or `~/.bash_profile` file:
+
+`source /PATH/TO/t2-cli/bash_completion`
+
+For zsh users, add these lines to your `~/.zshrc` file:
+
+```
+# Add custom completion scripts
+fpath=(/PATH/TO/t2-cli $fpath)
+
+# compsys initialization
+autoload -U compinit
+compinit
+```
+
+## Updating
 Just run `t2 update` to make sure you are running the most recent build of OpenWRT and firmware.
 
 ## Development Milestones

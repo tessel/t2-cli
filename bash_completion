@@ -1,0 +1,20 @@
+#!/bin/bash
+# Add tab completion for `t2` commands for bash
+
+_t2Completion () {
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+
+  case "$cur" in
+    *)
+    COMPREPLY=( $( compgen -W 'ap erase init install-drivers key list \
+                               provision push rename restart root run \
+                               update version wifi' -- $cur ) );;
+  esac
+
+  return 0
+}
+
+complete -F _t2Completion -o filenames t2
