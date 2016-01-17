@@ -1,3 +1,6 @@
+process.on('uncaughtException', function(err) {
+  console.error(err.stack);
+});
 // Test dependencies are required and exposed in common/bootstrap.js
 
 var meminfo = fs.readFileSync('test/unit/fixtures/proc-meminfo', 'utf8');
@@ -1676,9 +1679,41 @@ exports['deploy.injectBinaryModules'] = {
         );
 
         test.done();
-      }).catch(error => test.fail(error));
-    }).catch(error => test.fail(error));
+      }).catch(error => {
+        test.fail(error);
+        test.done();
+      });
+    }).catch(error => {
+      test.fail(error);
+      test.done();
+    });
   },
+
+  throwError: function(test) {
+    test.expect(1);
+
+    var errorMessage = 'Test Error';
+    this.copySync.onCall(0).throws(errorMessage);
+
+    this.getRoot = sandbox.stub(bindings, 'getRoot', () => {
+      return path.normalize('node_modules/bufferutil/');
+    });
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync()).then(() => {
+        test.fail('Should not pass');
+        test.done();
+      }).catch(error => {
+        test.equal(error, errorMessage);
+        test.done();
+      });
+    }).catch(error => {
+      test.fail(error);
+      test.done();
+    });
+  }
 };
 
 
