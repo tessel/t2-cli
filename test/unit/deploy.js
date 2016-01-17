@@ -1360,7 +1360,7 @@ exports['Tessel.prototype.restartScript'] = {
   },
 
   restartFromRam: function(test) {
-    test.expect(1);
+    test.expect(3);
     var opts = {
       type: 'ram',
       entryPoint: 'index.js',
@@ -1369,6 +1369,11 @@ exports['Tessel.prototype.restartScript'] = {
     this.tessel.restartScript(opts)
       .then(function() {
         test.equal(this.runScript.callCount, 1);
+        test.equal(this.runScript.lastCall.args[1], '/tmp/remote-script/');
+        test.deepEqual(this.runScript.lastCall.args[2], {
+          type: 'ram',
+          entryPoint: 'index.js'
+        });
         test.done();
       }.bind(this));
 
@@ -1378,7 +1383,7 @@ exports['Tessel.prototype.restartScript'] = {
   },
 
   restartFromFlash: function(test) {
-    test.expect(1);
+    test.expect(3);
     var opts = {
       type: 'flash',
       entryPoint: 'index.js',
@@ -1387,6 +1392,11 @@ exports['Tessel.prototype.restartScript'] = {
     this.tessel.restartScript(opts)
       .then(function() {
         test.equal(this.startPushedScript.callCount, 1);
+        test.equal(this.startPushedScript.lastCall.args[1], 'index.js');
+        test.deepEqual(this.startPushedScript.lastCall.args[2], {
+          type: 'flash',
+          entryPoint: 'index.js'
+        });
         test.done();
       }.bind(this));
 
