@@ -583,3 +583,30 @@ exports['Tessel (get); filter: unauthorized'] = {
     }.bind(this));
   },
 };
+
+exports['Tessel.simpleExec'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.tessel = new TesselSimulator();
+    done();
+  },
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  fastClose: function(test) {
+    // Stub exec so we can inject an immediate close
+    this.sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      // Return the remote process
+      callback(null, this.tessel._rps);
+      // Immediately close the remote process
+      this.tessel._rps.emit('close');
+    });
+
+    // Execute an arbitrary command
+    this.tessel.simpleExec('arbitrary command')
+      // If the callback gets called, it passes the test
+      .then(test.done);
+  }
+};

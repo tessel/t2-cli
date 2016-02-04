@@ -9,16 +9,26 @@ function TesselSimulator(options) {
   }
 
   var simConnection = {
-    exec: function(command) {
-      return new Promise(function(resolve) {
-        if (!Array.isArray(command)) {
-          throw new Error('Invalid command passed to exec.');
-        }
+    exec: function(command, options, callback) {
+      // Account for the case where options are not provided but a callback is
+      if (typeof options === 'function') {
+        callback = options;
+        options = {};
+      }
 
-        tessel._rps.control.write(command.join(' '));
+      // Account for the case where a callback wasn't provided
+      if (callback === undefined) {
+        // Dummy callback
+        callback = function() {};
+      }
 
-        resolve(tessel._rps);
-      });
+      if (!Array.isArray(command)) {
+        throw new Error('Invalid command passed to exec.');
+      }
+
+      tessel._rps.control.write(command.join(' '));
+
+      return callback(null, tessel._rps);
     },
 
     end: function() {
