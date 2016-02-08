@@ -578,7 +578,7 @@ exports['Tessel.get'] = {
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.equal(this.logsInfo.callCount, 2);
-        test.equal(_.contains(this.logsInfo.lastCall.args[0], 'the_name'), true);
+        test.equal(this.logsInfo.lastCall.args[0].includes('the_name'), true);
         test.done();
       }.bind(this));
 
@@ -608,7 +608,7 @@ exports['Tessel.get'] = {
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.equal(this.logsInfo.callCount, 2);
-        test.equal(_.contains(this.logsInfo.lastCall.args[0], 'the_name'), true);
+        test.equal(this.logsInfo.lastCall.args[0].includes('the_name'), true);
         test.done();
       }.bind(this));
 
@@ -647,7 +647,7 @@ exports['Tessel.get'] = {
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.equal(this.logsInfo.callCount, 2);
-        test.equal(_.contains(this.logsInfo.lastCall.args[0], 'samesies'), true);
+        test.equal(this.logsInfo.lastCall.args[0].includes('samesies'), true);
         test.done();
       }.bind(this));
 

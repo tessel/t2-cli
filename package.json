@@ -56,7 +56,6 @@
     "glob": "^5.0.15",
     "inquirer": "^0.8.5",
     "keypress": "^0.2.1",
-    "lodash": "^3.5.0",
     "mdns-js": "^0.4.0",
     "minimatch": "^3.0.0",
     "node-rsa": "^0.2.26",
