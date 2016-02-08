@@ -54,12 +54,15 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
     // tessel.receive is called twice but needs to be rejected the first time
     var count = 0;
-    this.sandbox.stub(this.tessel, 'receive', function() {
+    this.sandbox.stub(this.tessel, 'receive', function(remoteProcess, callback) {
+      if (typeof callback !== 'function') {
+        callback = function() {};
+      }
       if (count === 0) {
         count++;
-        return Promise.reject(new Error('uci: Entry not found'));
+        return callback(new Error('uci: Entry not found'));
       } else {
-        return Promise.resolve();
+        return callback(null, new Buffer(0));
       }
     });
 
@@ -222,21 +225,20 @@ exports['Tessel.prototype.enableAccessPoint'] = {
 
   turnsOn: function(test) {
     test.expect(4);
-    var self = this;
 
     // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
+    this.tessel._rps.on('control', () => {
+      setImmediate(() => {
+        this.tessel._rps.emit('close');
       });
     });
 
     this.tessel.enableAccessPoint()
-      .then(function() {
-        test.equal(self.turnAccessPointOn.callCount, 1);
-        test.equal(self.reconnectWifi.callCount, 1);
-        test.equal(self.reconnectDnsmasq.callCount, 1);
-        test.equal(self.reconnectDhcp.callCount, 1);
+      .then(() => {
+        test.equal(this.turnAccessPointOn.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.reconnectDnsmasq.callCount, 1);
+        test.equal(this.reconnectDhcp.callCount, 1);
         test.done();
       })
       .catch(function(error) {

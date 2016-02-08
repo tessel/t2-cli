@@ -300,8 +300,8 @@ exports['Tessel.prototype.deployScript'] = {
       test.done();
     }.bind(this));
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', function() {
-      return Promise.resolve(this.tessel._rps);
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', function(command, callback) {
+      return callback(null, this.tessel._rps);
     }.bind(this));
 
     deploy.writeToFile(this.tessel, 'index.js');
@@ -322,8 +322,8 @@ exports['Tessel.prototype.deployScript'] = {
       test.done();
     }.bind(this));
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', function() {
-      return Promise.resolve(this.tessel._rps);
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', function(command, callback) {
+      return callback(null, this.tessel._rps);
     }.bind(this));
 
     deploy.writeToFile(this.tessel, 'index.js');

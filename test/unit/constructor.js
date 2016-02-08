@@ -72,7 +72,7 @@ exports['Tessel.prototype.receive'] = {
   error: function(test) {
     test.expect(1);
 
-    this.tessel.receive(this.rps).catch(function(error) {
+    this.tessel.receive(this.rps, (error) => {
       test.equal(error.message, 'Some Error');
       test.done();
     });
@@ -84,7 +84,7 @@ exports['Tessel.prototype.receive'] = {
   dataReceived: function(test) {
     test.expect(1);
 
-    this.tessel.receive(this.rps).then(function(received) {
+    this.tessel.receive(this.rps, function(error, received) {
       test.equal(received.toString(), 'Some Data');
       test.done();
     });
@@ -102,9 +102,9 @@ exports['Tessel.prototype.simpleExec'] = {
     this.tessel = new TesselSimulator();
 
     this.receive = this.sandbox.spy(this.tessel, 'receive');
-    this.connectionExec = this.sandbox.stub(this.tessel.connection, 'exec', function() {
-      return Promise.resolve(this.rps);
-    }.bind(this));
+    this.connectionExec = this.sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      return callback(null, this.rps);
+    });
 
     done();
   },
@@ -117,46 +117,47 @@ exports['Tessel.prototype.simpleExec'] = {
   callsConnectionExecWithCommand: function(test) {
     test.expect(2);
 
-    this.tessel.simpleExec('some command').then(function() {
-      test.equal(this.connectionExec.callCount, 1);
-      test.equal(this.receive.callCount, 1);
-      test.done();
-    }.bind(this));
+    this.tessel.simpleExec('some command')
+      .then(() => {
+        test.equal(this.connectionExec.callCount, 1);
+        test.equal(this.receive.callCount, 1);
+        test.done();
+      });
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.rps.emit('close');
-    }.bind(this));
+    });
   },
 
   callsConnectionExecWithCommandAndErrors: function(test) {
     test.expect(3);
 
-    this.tessel.simpleExec('some command').catch(function(error) {
+    this.tessel.simpleExec('some command').catch((error) => {
       test.equal(error.message, 'Some Error');
       test.equal(this.connectionExec.callCount, 1);
       test.equal(this.receive.callCount, 1);
       test.done();
-    }.bind(this));
+    });
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.rps.stderr.emit('data', new Buffer('Some Error'));
       this.rps.emit('close');
-    }.bind(this));
+    });
   },
 
   callsConnectionExecWithCommandAndDataReceived: function(test) {
     test.expect(3);
 
-    this.tessel.simpleExec('some command').then(function(received) {
+    this.tessel.simpleExec('some command').then((received) => {
       test.equal(received, 'Some Data');
       test.equal(this.connectionExec.callCount, 1);
       test.equal(this.receive.callCount, 1);
       test.done();
-    }.bind(this));
+    });
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.rps.stdout.emit('data', new Buffer('Some Data'));
       this.rps.emit('close');
-    }.bind(this));
+    });
   },
 };
