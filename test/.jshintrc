@@ -29,6 +29,7 @@
     "Emitter": true,
     "Duplex": true,
     "_": true,
+    "acorn": true,
     "async": true,
     "bindings": true,
     "Project": true,

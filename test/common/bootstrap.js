@@ -12,6 +12,7 @@ global.Duplex = stream.Duplex;
 
 
 // Third Party Dependencies
+global.acorn = require('acorn');
 global.async = require('async');
 global.bindings = require('bindings');
 global.fs = require('fs-extra');
