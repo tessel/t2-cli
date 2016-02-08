@@ -62,7 +62,8 @@ parser.command('install-drivers')
     require('./tessel-install-drivers');
     drivers.install()
       .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
-  });
+  })
+  .help('Install drivers');
 
 parser.command('provision')
   .callback(callControllerCallback('provisionTessel'))
