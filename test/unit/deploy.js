@@ -1584,11 +1584,18 @@ exports['deploy.resolveBinaryModules'] = {
     this.globFiles = sandbox.spy(deploy.glob, 'files');
     this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
       return [
-        path.normalize('node_modules/bufferutil/build/Release/bufferutil.node'),
+        path.normalize('node_modules/release/build/Release/release.node'),
       ];
     });
-    this.getRoot = sandbox.stub(bindings, 'getRoot', () => {
-      return path.normalize('node_modules/bufferutil/');
+
+    this.readGypFileSync = sandbox.stub(deploy.resolveBinaryModules, 'readGypFileSync', () => {
+      return '{"targets": [{"target_name": "missing"}]}';
+    });
+
+    this.getRoot = sandbox.stub(bindings, 'getRoot', (file) => {
+      var pattern = /(?:node_modules)\/(\w.+)\/(?:build|binding\.)/;
+      var results = pattern.exec(file);
+      return path.normalize('node_modules/' + results[1] + '/');
     });
 
     done();
@@ -1597,6 +1604,108 @@ exports['deploy.resolveBinaryModules'] = {
   tearDown: function(done) {
     sandbox.restore();
     done();
+  },
+
+  findsModulesMissingBinaryNodeFiles: function(test) {
+    test.expect(2);
+
+
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+      return [
+        path.normalize('node_modules/release/build/Release/release.node'),
+        path.normalize('node_modules/release/binding.gyp'),
+        path.normalize('node_modules/missing/binding.gyp'),
+      ];
+    });
+
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+
+      test.deepEqual(
+        this.globFiles.lastCall.args[1], ['node_modules/**/*.node', 'node_modules/**/binding.gyp']
+      );
+
+      test.equal(this.readGypFileSync.callCount, 1);
+
+      test.done();
+    }).catch((error) => test.fail(error));
+  },
+
+  spawnPythonScript: function(test) {
+    test.expect(7);
+
+    this.readGypFileSync.restore();
+    this.readGypFileSync = sandbox.spy(deploy.resolveBinaryModules, 'readGypFileSync');
+
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+      return [
+        path.normalize('node_modules/release/build/Release/release.node'),
+        path.normalize('node_modules/release/binding.gyp'),
+        path.normalize('node_modules/missing/binding.gyp'),
+      ];
+    });
+
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.spawnSync = sandbox.stub(cp, 'spawnSync', () => {
+      return {
+        output: [
+          null, new Buffer('{"targets": [{"target_name": "missing","sources": ["capture.c", "missing.cc"]}]}', 'utf8')
+        ]
+      };
+    });
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+
+      test.deepEqual(
+        this.globFiles.lastCall.args[1], ['node_modules/**/*.node', 'node_modules/**/binding.gyp']
+      );
+
+      test.equal(this.readGypFileSync.callCount, 1);
+      test.equal(this.spawnSync.callCount, 1);
+      test.equal(this.spawnSync.lastCall.args[0], 'python');
+
+      var python = this.spawnSync.lastCall.args[1][1];
+
+      test.equal(python.startsWith('import ast, json; print json.dumps(ast.literal_eval(open('), true);
+      test.equal(python.endsWith(').read()));'), true);
+      test.equal(python.includes('missing'), true);
+
+      test.done();
+    }).catch((error) => test.fail(error));
+  },
+
+  failsWithMessage: function(test) {
+    test.expect(1);
+
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+      return [
+        path.normalize('node_modules/missing/binding.gyp'),
+      ];
+    });
+    this.readGypFileSync.restore();
+    this.readGypFileSync = sandbox.stub(deploy.resolveBinaryModules, 'readGypFileSync', () => {
+      return '{"targets": [{"target_name": "missing",}]}';
+      //                                               ^
+      //                                       That's intentional.
+    });
+
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.logsWarn = sandbox.stub(logs, 'warn');
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+      test.equal(this.logsWarn.called, true);
+      test.done();
+    }).catch((error) => test.fail(error));
   },
 
   existsInLocalCache: function(test) {
@@ -1609,6 +1718,71 @@ exports['deploy.resolveBinaryModules'] = {
     }).then(() => {
       test.equal(this.globFiles.callCount, 1);
       test.equal(this.exists.callCount, 1);
+      test.done();
+    }).catch((error) => test.fail(error));
+  },
+
+  existsInLocalCacheNodeGypLinkedBinPath: function(test) {
+    test.expect(1);
+
+    this.readGypFileSync.restore();
+
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+      return [
+        path.normalize('node_modules/release/build/Release/release.node'),
+        path.normalize('node_modules/linked/build/bindings/linked.node'),
+      ];
+    });
+
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+
+      test.equal(this.exists.callCount, 2);
+
+
+      // console.log(this.exists);
+      test.done();
+    }).catch((error) => test.fail(error));
+  },
+
+  resolveFromRealDirFixtures: function(test) {
+    test.expect(5);
+
+    // We WANT to read the actual gyp files if necessary
+    this.readGypFileSync.restore();
+    // We WANT to glob the actual target directory
+    this.globSync.restore();
+
+    // To avoid making an actual network request,
+    // make the program think these things are already
+    // cached. The test to pass is that it calls fs.existsSync
+    // with the correct things from the project directory (this.target)
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+
+      test.equal(this.exists.callCount, 4);
+
+      // test/unit/fixtures/project-binary-modules/ has the corresponding
+      // dependencies for the following binary modules:
+      var cachedBinaryPaths = [
+        '.tessel/binaries/debug-1.1.1-Debug',
+        '.tessel/binaries/linked-1.1.1-Release',
+        '.tessel/binaries/release-1.1.1-Release',
+        '.tessel/binaries/missing-1.1.1-Release',
+      ];
+
+      cachedBinaryPaths.forEach((cbp, callIndex) => {
+        test.equal(this.exists.getCall(callIndex).args[0].endsWith(path.normalize(cbp)), true);
+      });
+
+      // console.log(this.exists);
       test.done();
     }).catch((error) => test.fail(error));
   },
@@ -1635,12 +1809,12 @@ exports['deploy.resolveBinaryModules'] = {
       test.equal(this.globFiles.callCount, 1);
       test.equal(this.exists.callCount, 1);
       test.equal(this.mkdirp.callCount, 1);
-      test.equal(this.mkdirp.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/bufferutil-1.2.1-Release')), true);
+      test.equal(this.mkdirp.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/release-1.1.1-Release')), true);
 
       test.equal(this.request.callCount, 1);
 
       var requestArgs = this.request.lastCall.args[0];
-      test.equal(requestArgs.url, 'http://packages.tessel.io/npm/bufferutil-1.2.1-Release.tgz');
+      test.equal(requestArgs.url, 'http://packages.tessel.io/npm/release-1.1.1-Release.tgz');
       test.equal(requestArgs.gzip, true);
 
       test.equal(this.pipe.callCount, 2);
@@ -1661,11 +1835,19 @@ exports['deploy.injectBinaryModules'] = {
     this.globFiles = sandbox.spy(deploy.glob, 'files');
     this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
       return [
-        path.normalize('node_modules/bufferutil/build/Release/bufferutil.node'),
+        path.normalize('node_modules/release/build/Release/release.node'),
       ];
     });
+
+    this.getRoot = sandbox.stub(bindings, 'getRoot', (file) => {
+      var pattern = /(?:node_modules)\/(\w.+)\/(?:build|binding\.)/;
+      var results = pattern.exec(file);
+      return path.normalize('node_modules/' + results[1] + '/');
+    });
+
     this.globRoot = path.join(__dirname, '/../../test/unit/fixtures/project-binary-modules/');
     this.copySync = sandbox.stub(fs, 'copySync');
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
     done();
   },
 
@@ -1675,24 +1857,142 @@ exports['deploy.injectBinaryModules'] = {
   },
 
   copies: function(test) {
-    test.expect(3);
+    // test.expect(9);
 
-    this.getRoot = sandbox.stub(bindings, 'getRoot', () => {
-      return path.normalize('node_modules/bufferutil/');
+
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+      return [
+        path.normalize('node_modules/debug/build/Debug/debug.node'),
+        path.normalize('node_modules/debug/binding.gyp'),
+        path.normalize('node_modules/linked/build/bindings/linked.node'),
+        path.normalize('node_modules/linked/binding.gyp'),
+        path.normalize('node_modules/missing/build/Release/missing.node'),
+        path.normalize('node_modules/missing/binding.gyp'),
+        path.normalize('node_modules/release/build/Release/release.node'),
+        path.normalize('node_modules/release/binding.gyp'),
+      ];
     });
 
     deploy.resolveBinaryModules({
       target: this.target
     }).then(() => {
       deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync()).then(() => {
-        test.equal(this.copySync.callCount, 1);
-        var copyArgs = this.copySync.lastCall.args;
+        test.equal(this.copySync.callCount, 8);
+
+        var args = this.copySync.args;
+        /*
+
+        This is an abbreviated view of what should be copied by this operation:
+        [
+          [
+            'debug-1.1.1-Release/Debug/debug.node',
+            'debug/build/Debug/debug.node'
+          ],
+          [
+            'debug/package.json',
+            'debug/package.json'
+          ],
+          [
+            'linked-1.1.1-Release/bindings/linked.node',
+            'linked/build/bindings/linked.node'
+          ],
+          [
+            'linked/package.json',
+            'linked/package.json'
+          ],
+          [
+            'missing-1.1.1-Release/Release/missing.node',
+            'missing/build/Release/missing.node'
+          ],
+          [
+            'missing/package.json',
+            'missing/package.json'
+          ],
+          [
+            'release-1.1.1-Release/Release/release.node',
+            'release/build/Release/release.node'
+          ],
+          [
+            'release/package.json',
+            'release/package.json'
+          ]
+        ]
+        */
+
+        // ----- fixtures/project-binary-modules/node_modules/debug
         test.equal(
-          copyArgs[0].endsWith(path.normalize('bufferutil-1.2.1-Release/Release/bufferutil.node')),
+          args[0][0].endsWith(path.normalize('debug-1.1.1-Debug/Debug/debug.node')),
           true
         );
         test.equal(
-          copyArgs[1].endsWith(path.normalize('bufferutil/build/Release/bufferutil.node')),
+          args[0][1].endsWith(path.normalize('debug/build/Debug/debug.node')),
+          true
+        );
+
+        test.equal(
+          args[1][0].endsWith(path.normalize('debug/package.json')),
+          true
+        );
+        test.equal(
+          args[1][1].endsWith(path.normalize('debug/package.json')),
+          true
+        );
+
+        // ----- fixtures/project-binary-modules/node_modules/linked
+        test.equal(
+          args[2][0].endsWith(path.normalize('linked-1.1.1-Release/bindings/linked.node')),
+          true
+        );
+        test.equal(
+          args[2][1].endsWith(path.normalize('linked/build/bindings/linked.node')),
+          true
+        );
+
+        test.equal(
+          args[3][0].endsWith(path.normalize('linked/package.json')),
+          true
+        );
+        test.equal(
+          args[3][1].endsWith(path.normalize('linked/package.json')),
+          true
+        );
+
+        // ----- fixtures/project-binary-modules/node_modules/missing
+        test.equal(
+          args[4][0].endsWith(path.normalize('missing-1.1.1-Release/Release/missing.node')),
+          true
+        );
+        test.equal(
+          args[4][1].endsWith(path.normalize('missing/build/Release/missing.node')),
+          true
+        );
+
+        test.equal(
+          args[5][0].endsWith(path.normalize('missing/package.json')),
+          true
+        );
+        test.equal(
+          args[5][1].endsWith(path.normalize('missing/package.json')),
+          true
+        );
+
+        // ----- fixtures/project-binary-modules/node_modules/release
+        test.equal(
+          args[6][0].endsWith(path.normalize('release-1.1.1-Release/Release/release.node')),
+          true
+        );
+        test.equal(
+          args[6][1].endsWith(path.normalize('release/build/Release/release.node')),
+          true
+        );
+
+        test.equal(
+          args[7][0].endsWith(path.normalize('release/package.json')),
+          true
+        );
+        test.equal(
+          args[7][1].endsWith(path.normalize('release/package.json')),
           true
         );
 
@@ -1713,8 +2013,11 @@ exports['deploy.injectBinaryModules'] = {
     var errorMessage = 'Test Error';
     this.copySync.onCall(0).throws(errorMessage);
 
-    this.getRoot = sandbox.stub(bindings, 'getRoot', () => {
-      return path.normalize('node_modules/bufferutil/');
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+      return [
+        path.normalize('node_modules/release/build/Release/release.node'),
+      ];
     });
 
     deploy.resolveBinaryModules({
