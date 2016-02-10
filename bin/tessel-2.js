@@ -42,6 +42,11 @@ function makeCommand(commandName) {
       flag: true,
       default: false,
       help: 'Prefer a LAN connection when available, otherwise use USB.'
+    })
+    .option('verbose', {
+      flag: true,
+      abbr: 'v',
+      help: 'Choose to view command output'
     });
 }
 
