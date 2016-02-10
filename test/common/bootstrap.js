@@ -12,7 +12,6 @@ global.Duplex = stream.Duplex;
 
 
 // Third Party Dependencies
-global._ = require('lodash');
 global.async = require('async');
 global.bindings = require('bindings');
 global.fs = require('fs-extra');
