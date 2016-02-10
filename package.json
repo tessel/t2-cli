@@ -1,6 +1,6 @@
 {
   "name": "t2-cli",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "The starting point of Tessel 2's command line interface",
   "main": "./bin/tessel-2.js",
   "scripts": {
