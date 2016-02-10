@@ -9,7 +9,6 @@ var parser = require('nomnom').script('t2');
 // Internal
 var controller = require('../lib/controller');
 var init = require('../lib/init');
-var key = require('../lib/key');
 var logs = require('../lib/logs');
 var drivers = require('./tessel-install-drivers');
 
@@ -241,7 +240,7 @@ makeCommand('wifi')
 
 parser.command('key')
   .callback(function(opts) {
-    key(opts)
+    controller.setupLocal(opts)
       .then(function() {
         logs.info('Key successfully generated.');
       })
