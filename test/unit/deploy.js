@@ -291,8 +291,7 @@ exports['Tessel.prototype.deployScript'] = {
 
     var shellScript = tags.stripIndent `
       #!/bin/sh
-      cd /app/remote-script
-      exec node index.js
+      exec node /app/remote-script/index.js
     `;
     this.end.restore();
     this.end = sandbox.stub(this.tessel._rps.stdin, 'end', function(buffer) {
@@ -313,8 +312,7 @@ exports['Tessel.prototype.deployScript'] = {
 
     var shellScript = tags.stripIndent `
       #!/bin/sh
-      cd /app/remote-script
-      exec node index.js
+      exec node /app/remote-script/index.js
     `;
     this.end.restore();
     this.end = sandbox.stub(this.tessel._rps.stdin, 'end', function(buffer) {
