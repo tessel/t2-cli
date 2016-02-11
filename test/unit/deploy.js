@@ -385,7 +385,6 @@ exports['deploy.compress'] = {
   setUp: function(done) {
     this.parse = sandbox.spy(uglify, 'parse');
     this.Compressor = sandbox.spy(uglify, 'Compressor');
-    this.OutputStream = sandbox.spy(uglify, 'OutputStream');
 
     done();
   },
@@ -407,13 +406,12 @@ exports['deploy.compress'] = {
   },
 
   minifyInternalOperations: function(test) {
-    test.expect(3);
+    test.expect(2);
 
     deploy.compress(new Buffer(codeContents));
 
     test.equal(this.parse.callCount, 1);
     test.equal(this.Compressor.callCount, 1);
-    test.equal(this.OutputStream.callCount, 1);
     test.done();
   },
 
