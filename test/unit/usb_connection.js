@@ -103,16 +103,23 @@ exports['USB.Connection.prototype.open'] = {
     this.usbConnection.epOut.transfer = this.sandbox.spy();
     this.usbConnection.epIn = new Emitter();
     this.usbConnection.epIn.startPoll = this.sandbox.spy();
+    this.usbConnection.epIn.stopPoll = function(cb) {
+      cb();
+    };
     this.closeFunc = this.sandbox.spy(this.usbConnection, '_close');
     this.fakeInterface = {
       claim: function() {},
       setAltSetting: function(arg1, cb) {
         cb();
       },
+      release: function(val, cb) {
+        cb();
+      },
       endpoints: [self.usbConnection.epIn, self.usbConnection.epOut],
     };
     this.sandbox.stub(this.usbConnection, 'device', {
       open: function() {},
+      close: function() {},
       interface: function() {
         return self.fakeInterface;
       },
@@ -184,6 +191,20 @@ exports['USB.Connection.prototype.open'] = {
         test.done();
       });
   },
+  multipleOpens: function(test) {
+    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister', (val, cb) => {
+      // deregister was a success
+      cb();
+    });
+
+    this.usbConnection.open()
+      .then(() => test.ok(this.usbConnection.closed === false))
+      .then(() => this.usbConnection.end())
+      .then(() => test.ok(this.usbConnection.closed === true))
+      .then(() => this.usbConnection.open())
+      .then(() => test.ok(this.usbConnection.closed === false))
+      .then(() => test.done());
+  },
 
 };
 
@@ -198,16 +219,23 @@ exports['USB.Connection.prototype.end'] = {
     this.usbConnection.epOut.transfer = this.sandbox.spy();
     this.usbConnection.epIn = new Emitter();
     this.usbConnection.epIn.startPoll = this.sandbox.spy();
+    this.usbConnection.epIn.stopPoll = function(cb) {
+      cb();
+    };
     this.closeFunc = this.sandbox.spy(this.usbConnection, '_close');
     this.fakeInterface = {
       claim: function() {},
       setAltSetting: function(arg1, cb) {
         cb();
       },
+      release: function(val, cb) {
+        cb();
+      },
       endpoints: [self.usbConnection.epIn, self.usbConnection.epOut],
     };
     this.sandbox.stub(this.usbConnection, 'device', {
       open: function() {},
+      close: function() {},
       interface: function() {
         return self.fakeInterface;
       },
@@ -232,7 +260,7 @@ exports['USB.Connection.prototype.end'] = {
     done();
   },
 
-  deregistFailNoClose: function(test) {
+  deregisterFailNoClose: function(test) {
     test.expect(2);
 
     this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister', (val, cb) => {
@@ -263,7 +291,7 @@ exports['USB.Connection.prototype.end'] = {
     this.closeFunc.restore();
     this.closeFunc = this.sandbox.stub(this.usbConnection, '_close', (cb) => {
       waited = true;
-      cb();
+      setImmediate(cb);
     });
 
     this.usbConnection.open()
