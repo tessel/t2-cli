@@ -325,7 +325,8 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
       password: 'not_gonna_work'
     };
     var errMessage = 'Unable to connect to the network.';
-
+    // Set the timeout to be small so we don't wait forever for the test to complete
+    Tessel.__wifiConnectionTimeout = 10;
     // Test is expecting several closes...;
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === 'ubus call iwinfo info {"device":"wlan0"}') {
@@ -403,6 +404,54 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(this.setNetworkPassword.lastCall.calledWith(creds.password));
         test.ok(this.setNetworkEncryption.lastCall.calledWith('psk2'));
         test.ok(this.getWifiInfo.callCount, 1);
+        test.done();
+      });
+  },
+  // Sometimes the keyword for success (signal) is not in the first batch
+  // of stdout data
+  batchedResponse: function(test) {
+    test.expect(9);
+    var creds = {
+      ssid: 'tank',
+      password: 'should work'
+    };
+
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus call iwinfo info {"device":"wlan0"}') {
+        // Write to stderr so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          // First write some random data
+          this.tessel._rps.stdout.emit('data', 'do not have success yet');
+          // then write the keyword we're looking for for success
+          this.tessel._rps.stdout.emit('data', 'signal');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stderr so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+
+          // Continue
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.connectToNetwork(creds)
+      .then(() => {
+        test.equal(this.setNetworkSSID.callCount, 1);
+        test.equal(this.setNetworkPassword.callCount, 1);
+        test.equal(this.setNetworkEncryption.callCount, 1);
+        test.equal(this.commitWirelessCredentials.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.ok(this.setNetworkSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setNetworkPassword.lastCall.calledWith(creds.password));
+        test.ok(this.setNetworkEncryption.lastCall.calledWith('psk2'));
+        test.ok(this.getWifiInfo.callCount, 1);
+        test.done();
+      })
+      .catch((error) => {
+        test.fail('Should not have received an error with batched response', error);
         test.done();
       });
   }
