@@ -4,6 +4,9 @@
   "description": "project-binary-modules",
   "main": "index.js",
   "dependencies": {
-    "bufferutil": "=1.2.1"
+    "debug": "1.1.1",
+    "linked": "1.1.1",
+    "missing": "1.1.1",
+    "release": "1.1.1"
   }
 }
