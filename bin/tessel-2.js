@@ -42,6 +42,12 @@ function makeCommand(commandName) {
       flag: true,
       default: false,
       help: 'Prefer a LAN connection when available, otherwise use USB.'
+    })
+    .option('output', {
+      default: true,
+      choices: [true, false],
+      abbr: 'o',
+      help: 'Enable or disable writing command output to stdout/stderr. Useful for CLI API consumers.'
     });
 }
 

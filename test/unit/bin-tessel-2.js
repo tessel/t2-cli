@@ -148,7 +148,8 @@ exports['Tessel (cli: update)'] = {
       version: 42,
       _: ['update'],
       timeout: 5,
-      lanPrefer: false
+      lanPrefer: false,
+      output: true
     });
 
     cli(['update', '--list', ' ']);
@@ -609,5 +610,72 @@ exports['closeFailedCommand'] = {
     test.equal(this.processExit.lastCall.args[0], 'red');
 
     test.done();
+  },
+};
+
+exports['--output true/false'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    // console.error is used by the underlying logs.info/error/warn calls
+    this.logs = this.sandbox.stub(console, 'error');
+    this.controllerList = this.sandbox.spy(controller, 'listTessels');
+    this.tesselList = this.sandbox.stub(Tessel, 'list', () => {
+      // Simulating what actually happens in Tessel.list
+      // without the complexity of mocking a seeker
+      logs.info('Searching for devices...');
+      return Promise.reject('No devices found...');
+    });
+    this.outputHelper = this.sandbox.spy(controller, 'outputHelper');
+    this.processExit = this.sandbox.stub(process, 'exit');
+    this.closeSuccessful = this.sandbox.stub(cli, 'closeSuccessfulCommand');
+    this.closeFailed = this.sandbox.stub(cli, 'closeFailedCommand');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  defaultOutputTrue: function(test) {
+    test.expect(5);
+
+    cli(['list', '--timeout', '0.001']);
+
+    setImmediate(() => {
+      // Restore our func so other tests pass
+      // Ensure list was called
+      test.ok(this.controllerList.calledOnce);
+      // We did try to set the output
+      test.ok(this.outputHelper.calledOnce);
+      // It was called proper flag (default is true)
+      test.ok(this.outputHelper.lastCall.args[0].output === true);
+      // Ensure we called Tessel List
+      test.ok(this.tesselList.calledOnce);
+      // logs was called once at the start to indicate we're searching
+      test.equal(this.logs.callCount, 1);
+      test.done();
+    });
+  },
+
+  outputFalse: function(test) {
+    test.expect(5);
+
+    cli(['list', '--timeout', '0.001', '--output=false']);
+
+    setImmediate(() => {
+      // Restore our func so other tests pass
+      // Ensure list was called
+      test.ok(this.controllerList.calledOnce);
+      // We did try to set the output
+      test.ok(this.outputHelper.calledOnce);
+      // It was called proper flag (default is true)
+      test.ok(this.outputHelper.lastCall.args[0].output === false);
+      // Ensure we called Tessel List
+      test.ok(this.tesselList.calledOnce);
+      // logs was never called because we disabled it
+      test.equal(this.logs.callCount, 0);
+      test.done();
+    });
   },
 };
