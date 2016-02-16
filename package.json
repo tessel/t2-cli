@@ -42,6 +42,7 @@
     "sinon": "^1.14.1"
   },
   "dependencies": {
+    "acorn": "^3.0.2",
     "async": "^1.4.2",
     "bindings": "^1.2.1",
     "colors": "^1.1.0",

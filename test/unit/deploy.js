@@ -381,7 +381,8 @@ exports['Tessel.prototype.deployScript'] = {
 
 exports['deploy.compress'] = {
   setUp: function(done) {
-    this.parse = sandbox.spy(uglify, 'parse');
+    this.aparse = sandbox.spy(acorn, 'parse');
+    this.uparse = sandbox.spy(uglify, 'parse');
     this.Compressor = sandbox.spy(uglify, 'Compressor');
     this.OutputStream = sandbox.spy(uglify, 'OutputStream');
 
@@ -390,6 +391,136 @@ exports['deploy.compress'] = {
   tearDown: function(done) {
     sandbox.restore();
     done();
+  },
+
+  acornParse: function(test) {
+    test.expect(2);
+
+    deploy.compress('let f = 1');
+
+    test.equal(this.aparse.callCount, 1);
+    test.equal(this.uparse.callCount, 0);
+
+    test.done();
+  },
+
+  uglifyParseFallback: function(test) {
+    test.expect(2);
+
+    try {
+      // Force the acorn parse step of the
+      // compress operation to fail. This
+      // will ensure that that the uglify
+      // attempt is made.
+      deploy.compress('#$%^');
+    } catch (error) {
+      // there is nothing we can about this.
+    }
+
+    // Assert that we tried both parsers
+    test.equal(this.aparse.callCount, 1);
+    test.equal(this.uparse.callCount, 1);
+
+    test.done();
+  },
+
+  ourAcornParseOptions: function(test) {
+    test.expect(3);
+
+    var ourExplicitSettings = {
+      allowImportExportEverywhere: true,
+      allowReturnOutsideFunction: true,
+      ecmaVersion: 7,
+    };
+
+    var ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
+
+    try {
+      // Force the acorn parse step of the
+      // compress operation to fail. This
+      // will ensure that that the uglify
+      // attempt is made.
+      deploy.compress('#$%^');
+    } catch (error) {
+      // there is nothing we can about this.
+    }
+
+    var optionsSeen = this.aparse.lastCall.args[1];
+
+    ourExplicitSettingsKeys.forEach(function(key) {
+      test.equal(optionsSeen[key], ourExplicitSettings[key]);
+    });
+
+    test.done();
+  },
+
+  ourUglifyParseOptions: function(test) {
+    test.expect(3);
+
+    var ourExplicitSettings = {
+      bare_returns: true,
+      fromString: true,
+      warnings: false,
+    };
+
+    var ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
+
+    try {
+      // Force the acorn parse step of the
+      // compress operation to fail. This
+      // will ensure that that the uglify
+      // attempt is made.
+      deploy.compress('#$%^');
+    } catch (error) {
+      // there is nothing we can about this.
+    }
+
+    var optionsSeen = this.uparse.lastCall.args[1];
+
+    ourExplicitSettingsKeys.forEach(function(key) {
+      test.equal(optionsSeen[key], ourExplicitSettings[key]);
+    });
+
+    test.done();
+  },
+
+  ourCompressorOptions: function(test) {
+    test.expect(18);
+
+    var ourExplicitSettings = {
+      // ------
+      booleans: true,
+      cascade: true,
+      conditionals: true,
+      comparisons: true,
+      evaluate: true,
+      hoist_funs: true,
+      hoist_vars: true,
+      if_return: true,
+      join_vars: true,
+      loops: true,
+      properties: true,
+      screw_ie8: true,
+      sequences: true,
+      unsafe: true,
+      // ------
+      keep_fargs: false,
+      keep_fnames: false,
+      warnings: false,
+      drop_console: false,
+    };
+
+    var ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
+
+    deploy.compress('var a = 1;');
+
+    var optionsSeen = this.Compressor.lastCall.args[0];
+
+    ourExplicitSettingsKeys.forEach(function(key) {
+      test.equal(optionsSeen[key], ourExplicitSettings[key]);
+    });
+
+    test.done();
   },
 
   minifyFromBuffer: function(test) {
@@ -409,7 +540,7 @@ exports['deploy.compress'] = {
 
     deploy.compress(new Buffer(codeContents));
 
-    test.equal(this.parse.callCount, 1);
+    test.equal(this.aparse.callCount, 1);
     test.equal(this.Compressor.callCount, 1);
     test.equal(this.OutputStream.callCount, 1);
     test.done();
@@ -420,7 +551,7 @@ exports['deploy.compress'] = {
 
     try {
       deploy.compress('return;');
-      test.equal(this.parse.lastCall.args[1].bare_returns, true);
+      test.equal(this.aparse.lastCall.args[1].allowReturnOutsideFunction, true);
     } catch (e) {
       test.fail();
     }
@@ -697,7 +828,7 @@ exports['deploy.tarBundle'] = {
 
       var minified = this.compress.lastCall.returnValue;
 
-      test.equal(minified, 'var tessel=require("tessel");tessel.led[2].on(),setInterval(function(){tessel.led[2].toggle(),tessel.led[3].toggle()},100);');
+      test.equal(minified, 'var e=require("tessel");e.led[2].on(),setInterval(function(){e.led[2].toggle(),e.led[3].toggle()},100);');
 
       // Extract and inspect the bundle...
       extract(bundle, function(error, entries) {
