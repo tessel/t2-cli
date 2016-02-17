@@ -751,3 +751,76 @@ exports['update-fetch'] = {
       });
   }
 };
+
+exports['Tessel.update'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.tessel = TesselSimulator();
+
+    this.tessel.connection.enterBootloader = function() {};
+    this.updateFirmware = sinon.spy(this.tessel, 'updateFirmware');
+    this.enterBootloader = sinon.stub(this.tessel.connection, 'enterBootloader').returns(Promise.resolve());
+    this.tessel.writeFlash = function() {};
+    this.writeFlash = sinon.stub(this.tessel, 'writeFlash').returns(Promise.resolve());
+
+    this.newImage = {
+      openwrt: new Buffer(0),
+      firmware: new Buffer(0)
+    };
+
+    done();
+  },
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+  standardUpdate: function(test) {
+    var updatePath = path.join('/tmp/', updates.OPENWRT_BINARY_FILE);
+    // The exec commands that should be run to update OpenWRT
+    var expectedCommands = [commands.openStdinToFile(updatePath), commands.sysupgrade(updatePath)];
+    // Which command is being written
+    var commandsWritten = 0;
+    // When we get a command
+    this.tessel._rps.on('control', (data) => {
+      // Switch based on the number of command this is
+      switch (commandsWritten) {
+        // If it's the first command
+        case 0:
+          // Ensure that it's attempting to write the openwrt image to /tmp
+          test.equal(data.toString(), expectedCommands[commandsWritten].join(' '));
+          // Once we receive stdin of the image
+          this.tessel._rps.on('stdin', (data) => {
+            // Ensure it's the proper image
+            test.deepEqual(data, this.newImage.openwrt);
+            // Close the process to continue with updates
+            this.tessel._rps.emit('close');
+          });
+          break;
+        case 1:
+          // Ensure that it's attempting to run sysupgrade
+          test.equal(data.toString(), expectedCommands[commandsWritten].join(' '));
+          // Emit that the upgrade has complete to continue
+          setImmediate(() => this.tessel._rps.stdout.push('Upgrade completed'));
+      }
+
+      commandsWritten++;
+    });
+
+    // Begin the update
+    this.tessel.update(this.newImage)
+      // Update completed as expected
+      .then(() => {
+        test.ok(this.updateFirmware.callCount, 1);
+        test.ok(this.enterBootloader.callCount, 1);
+        test.ok(this.writeFlash.callCount, 1);
+        test.done();
+      })
+      .catch(() => {
+        test.fail('Update test failed with valid options and builds');
+        test.done();
+      });
+  }
+};
