@@ -103,16 +103,23 @@ exports['USB.Connection.prototype.open'] = {
     this.usbConnection.epOut.transfer = this.sandbox.spy();
     this.usbConnection.epIn = new Emitter();
     this.usbConnection.epIn.startPoll = this.sandbox.spy();
+    this.usbConnection.epIn.stopPoll = function(cb) {
+      cb();
+    };
     this.closeFunc = this.sandbox.spy(this.usbConnection, '_close');
     this.fakeInterface = {
       claim: function() {},
       setAltSetting: function(arg1, cb) {
         cb();
       },
+      release: function(val, cb) {
+        cb();
+      },
       endpoints: [self.usbConnection.epIn, self.usbConnection.epOut],
     };
     this.sandbox.stub(this.usbConnection, 'device', {
       open: function() {},
+      close: function() {},
       interface: function() {
         return self.fakeInterface;
       },
@@ -184,7 +191,124 @@ exports['USB.Connection.prototype.open'] = {
         test.done();
       });
   },
+  multipleOpens: function(test) {
+    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister', (val, cb) => {
+      // deregister was a success
+      cb();
+    });
 
+    this.usbConnection.open()
+      .then(() => test.ok(this.usbConnection.closed === false))
+      .then(() => this.usbConnection.end())
+      .then(() => test.ok(this.usbConnection.closed === true))
+      .then(() => this.usbConnection.open())
+      .then(() => test.ok(this.usbConnection.closed === false))
+      .then(() => test.done());
+  },
+
+};
+
+exports['USB.Connection.prototype.end'] = {
+  setUp: function(done) {
+    var self = this;
+    this.sandbox = sinon.sandbox.create();
+    this.err = this.sandbox.stub(logs, 'err');
+    this.processExit = this.sandbox.stub(process, 'exit');
+    this.usbConnection = new USB.Connection({});
+    this.usbConnection.epOut = new Emitter();
+    this.usbConnection.epOut.transfer = this.sandbox.spy();
+    this.usbConnection.epIn = new Emitter();
+    this.usbConnection.epIn.startPoll = this.sandbox.spy();
+    this.usbConnection.epIn.stopPoll = function(cb) {
+      cb();
+    };
+    this.closeFunc = this.sandbox.spy(this.usbConnection, '_close');
+    this.fakeInterface = {
+      claim: function() {},
+      setAltSetting: function(arg1, cb) {
+        cb();
+      },
+      release: function(val, cb) {
+        cb();
+      },
+      endpoints: [self.usbConnection.epIn, self.usbConnection.epOut],
+    };
+    this.sandbox.stub(this.usbConnection, 'device', {
+      open: function() {},
+      close: function() {},
+      interface: function() {
+        return self.fakeInterface;
+      },
+      getStringDescriptor: function(arg1, cb) {
+        cb();
+      },
+      deviceDescriptor: {
+        iSerialNumber: 'blah',
+      }
+    });
+    this.openDevice = this.sandbox.spy(this.usbConnection.device, 'open');
+    this.interface = this.sandbox.spy(this.usbConnection.device, 'interface');
+    this.claim = this.sandbox.spy(this.fakeInterface, 'claim');
+    this.setAltSetting = this.sandbox.spy(this.fakeInterface, 'setAltSetting');
+    this.getStringDescriptor = this.sandbox.spy(this.usbConnection.device, 'getStringDescriptor');
+    this.daemonRegister = this.sandbox.spy(Daemon, 'register');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  deregisterFailNoClose: function(test) {
+    test.expect(2);
+
+    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister', (val, cb) => {
+      cb('some error');
+    });
+    this.usbConnection.open()
+      .then(() => this.usbConnection.end())
+      .then(() => {
+        // It should not succeed
+        test.fail('End resolved even with failed deregister');
+        test.done();
+      })
+      .catch(() => {
+        test.equal(this.daemonDeregister.called, true);
+        test.equal(this.closeFunc.called, false);
+        test.done();
+      });
+  },
+  resolveWaitOnClose: function(test) {
+    test.expect(3);
+
+    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister', (val, cb) => {
+      // deregister was a success
+      cb();
+    });
+
+    var waited = false;
+    this.closeFunc.restore();
+    this.closeFunc = this.sandbox.stub(this.usbConnection, '_close', (cb) => {
+      waited = true;
+      setImmediate(cb);
+    });
+
+    this.usbConnection.open()
+      .then(() => this.usbConnection.end())
+      .then(() => {
+        test.equal(this.daemonDeregister.called, true);
+        // We did call the close function this time
+        test.equal(this.closeFunc.called, true);
+        test.equal(waited, true);
+        test.done();
+      })
+      .catch(() => {
+        // It should not succeed
+        test.fail('proper connection.end should not fail');
+        test.done();
+      });
+  },
 };
 
 exports['USB.Connection.prototype._receiveMessages'] = {
