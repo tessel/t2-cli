@@ -633,3 +633,55 @@ exports['controller.update'] = {
       }.bind(this));
   },
 };
+
+exports['update-fetch'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+
+    var mixedBuilds = [{
+      sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
+      released: '2015-05-18T02:21:57.856Z',
+      version: '0.0.0'
+    }, {
+      sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
+      released: '2015-08-12T03:01:57.856Z',
+      version: '0.0.4'
+    }, {
+      sha: '789432897cd7829a988888b8843274cd8de89a98',
+      released: '2015-06-12T03:01:57.856Z',
+      version: '0.0.1'
+    }];
+
+    this.requestGet = this.sandbox.stub(request, 'get', function(url, cb) {
+      cb(null, {
+        statusCode: 200
+      }, JSON.stringify(mixedBuilds));
+    });
+    done();
+  },
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+  buildsSorted: function(test) {
+    test.expect(4);
+
+    // Request the out of order builds
+    updates.requestBuildList()
+      .then((builds) => {
+        // Ensure they were put back in order
+        test.ok(builds.length === 3);
+        test.ok(builds[0].version === '0.0.0');
+        test.ok(builds[1].version === '0.0.1');
+        test.ok(builds[2].version === '0.0.4');
+        test.done();
+      })
+      .catch(() => {
+        test.fail('An error was returned when the list fetch should succeed');
+        test.done();
+      });
+  }
+};
