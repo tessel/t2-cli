@@ -632,6 +632,72 @@ exports['controller.update'] = {
         test.done();
       }.bind(this));
   },
+
+  properBuildCompare: function(test) {
+
+    // use builds where the string compare of the versions
+    // would lead to incorrect comparison ('0.0.7 > 0.0.10')
+    var mixedBuilds = [{
+      sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
+      released: '2015-05-18T02:21:57.856Z',
+      version: '0.0.7'
+    }, {
+      sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
+      released: '2015-08-12T03:01:57.856Z',
+      version: '0.0.10'
+    }];
+
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+
+    var binaries = {
+      firmware: new Buffer(0),
+      openwrt: new Buffer(0)
+    };
+
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+      // Resolve with earlier build (0.0.7)
+      return Promise.resolve(mixedBuilds[0].sha);
+    });
+
+
+    this.requestBuildList.restore();
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', function() {
+      // Return our two mixed builds
+      return Promise.resolve(mixedBuilds);
+    });
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+      return Promise.resolve(binaries);
+    });
+
+    controller.update({})
+      .then(function() {
+        // It should attempt to fetch a build
+        test.equal(this.fetchBuild.callCount, 1);
+        // We should be requesting the latest build
+        test.equal(this.fetchBuild.calledWith(mixedBuilds[1]), true);
+        test.done();
+      }.bind(this))
+      .catch(function() {
+        test.fail('Update should not reject with valid options and builds.');
+      });
+  }
 };
 
 exports['update-fetch'] = {
