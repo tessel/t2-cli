@@ -783,7 +783,7 @@ exports['deploy.tarBundle'] = {
   },
 
   slimSyntaxErrorRejects: function(test) {
-    test.expect(1);
+    test.expect(2);
 
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/syntax-error';
@@ -792,15 +792,38 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then(function() {
+    }).then(() => {
       test.fail();
       test.done();
-    }).catch(function(error) {
-      test.ok(error.message.indexOf('Unexpected token') !== -1);
+    }).catch((error) => {
+      var messages = error.message.split('\n');
+      test.equal(messages[0], 'Acorn Parser: Unexpected token (1:5)');
+      test.equal(messages[1], 'Uglify Parser: Unexpected token: name (is)');
       test.done();
-    }.bind(this));
+    });
   },
 
+  slimAcornSyntaxErrorUglifySuccess: function(test) {
+    test.expect(1);
+
+    // It's _possible_, but unlikely, that some ES6 thing
+    // will be supported in Uglify before it's supported
+    // in Acorn. To simulate that scenario, acorn.parse
+    // must fail and uglify.parse must be successful.
+
+    var uparse = uglify.parse;
+
+    this.uglifyParse = sandbox.stub(uglify, 'parse', (source, options) => {
+      return uparse('var a = 1;', options);
+    });
+
+    deploy.tarBundle({
+      target: path.normalize('test/unit/fixtures/syntax-error'),
+    }).then(() => {
+      test.ok(true);
+      test.done();
+    });
+  },
 
 
   slimTesselInit: function(test) {
