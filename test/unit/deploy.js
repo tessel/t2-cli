@@ -1737,6 +1737,44 @@ exports['deploy.resolveBinaryModules'] = {
     done();
   },
 
+  bailOnSkipBinary: function(test) {
+    test.expect(2);
+
+    this.target = path.normalize('test/unit/fixtures/project-skip-binary');
+
+    this.relative.restore();
+    this.relative = sandbox.stub(path, 'relative', () => {
+      return path.join(__dirname, '/../../test/unit/fixtures/project-skip-binary/');
+    });
+
+    // We WANT to read the actual gyp files if necessary
+    this.readGypFileSync.restore();
+
+    // We WANT to glob the actual target directory
+    this.globSync.restore();
+
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+
+      test.equal(this.exists.callCount, 1);
+      // test/unit/fixtures/skip-binary/ has the corresponding
+      // dependencies for the following binary modules:
+      //
+      //    debug-1.1.1-Debug
+      //    release-1.1.1-Release
+      //
+      // However, the latter has a "tessel.skipBinary = true" key in its package.json
+      //
+      //
+      test.equal(this.exists.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/debug-1.1.1-Debug')), true);
+
+      test.done();
+    }).catch((error) => test.fail(error));
+  },
+
   findsModulesMissingBinaryNodeFiles: function(test) {
     test.expect(2);
 
