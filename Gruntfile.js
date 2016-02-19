@@ -28,6 +28,7 @@ module.exports = function(grunt) {
           '!test/unit/fixtures/syntax-error/**/*.js',
           '!test/unit/fixtures/project-binary-modules/**/*',
           '!test/unit/fixtures/project-skip-binary/**/*',
+          '!test/unit/fixtures/project-ignore-binary/**/*',
         ]
       }
     },
@@ -40,6 +41,7 @@ module.exports = function(grunt) {
         '!test/unit/fixtures/syntax-error/**/*.js',
         '!test/unit/fixtures/project-binary-modules/**/*',
         '!test/unit/fixtures/project-skip-binary/**/*',
+        '!test/unit/fixtures/project-ignore-binary/**/*',
       ],
       options: {
         config: '.jscsrc'

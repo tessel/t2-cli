@@ -1868,12 +1868,11 @@ exports['deploy.resolveBinaryModules'] = {
     });
 
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
-    this.logsWarn = sandbox.stub(logs, 'warn');
 
     deploy.resolveBinaryModules({
       target: this.target
-    }).then(() => {
-      test.equal(this.logsWarn.called, true);
+    }).then(binaryModulesUsed => {
+      test.equal(binaryModulesUsed.get('missing').resolved, false);
       test.done();
     }).catch((error) => test.fail(error));
   },
@@ -2027,7 +2026,7 @@ exports['deploy.injectBinaryModules'] = {
   },
 
   copies: function(test) {
-    // test.expect(9);
+    test.expect(17);
 
 
     this.globSync.restore();
@@ -2174,6 +2173,25 @@ exports['deploy.injectBinaryModules'] = {
     }).catch(error => {
       test.fail(error);
       test.done();
+    });
+  },
+
+  doesNotCopyIgnoredBinaries: function(test) {
+    test.expect(1);
+    this.target = path.normalize('test/unit/fixtures/project-ignore-binary');
+    this.relative.restore();
+    this.relative = sandbox.stub(path, 'relative', () => {
+      return path.join(__dirname, '/../../test/unit/fixtures/project-ignore-binary/');
+    });
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync()).then(() => {
+        // Nothing gets copied!
+        test.equal(this.copySync.callCount, 0);
+        test.done();
+      });
     });
   },
 
