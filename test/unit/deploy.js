@@ -672,7 +672,8 @@ exports['deploy.tarBundle'] = {
       // One call for .tesselinclude
       // One call for the single rule found within
       // Three calls for the deploy lists
-      test.equal(this.globSync.callCount, 4);
+      // * 2 (We need all ignore rules ahead of time for ignoring binaries)
+      test.equal(this.globSync.callCount, 8);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1063,7 +1064,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       full: true,
     }).then(function(bundle) {
-      test.equal(this.globSync.callCount, 7);
+      test.equal(this.globSync.callCount, 11);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1225,7 +1226,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       full: true,
     }).then(function(bundle) {
-      test.equal(this.globSync.callCount, 7);
+      test.equal(this.globSync.callCount, 8);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1394,7 +1395,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       full: true,
     }).then(function(bundle) {
-      test.equal(this.globSync.callCount, 7);
+      test.equal(this.globSync.callCount, 9);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
