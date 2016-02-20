@@ -1,0 +1,9 @@
+{
+  "name": "project-ignore-binary",
+  "version": "0.0.1",
+  "description": "project-ignore-binary",
+  "main": "index.js",
+  "dependencies": {
+    "release": "1.1.1"
+  }
+}
