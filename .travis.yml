@@ -10,12 +10,8 @@ addons:
     packages:
     - g++-4.8
 before_install:
-  # - npm install -g npm@2.14.20
   - npm install -g grunt-cli
-  - npm install node-pre-gyp
   - sudo apt-get update -qq
   - sudo apt-get install pkg-config build-essential libusb-1.0-0-dev libudev-dev
-install:
-  - npm install usb
-  - npm install
+install: npm install
 script: grunt
