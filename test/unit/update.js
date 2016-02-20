@@ -632,4 +632,195 @@ exports['controller.update'] = {
         test.done();
       }.bind(this));
   },
+
+  properBuildCompare: function(test) {
+
+    // use builds where the string compare of the versions
+    // would lead to incorrect comparison ('0.0.7 > 0.0.10')
+    var mixedBuilds = [{
+      sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
+      released: '2015-05-18T02:21:57.856Z',
+      version: '0.0.7'
+    }, {
+      sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
+      released: '2015-08-12T03:01:57.856Z',
+      version: '0.0.10'
+    }];
+
+    // This Tessel instance MUST be connected via BOTH
+    //
+    // - USB
+    // - LAN (authorized)
+    //
+    this.tessel = TesselSimulator({
+      type: 'LAN',
+      authorized: true,
+    });
+
+    this.tessel.addConnection({
+      connectionType: 'USB',
+      end: function() {
+        return Promise.resolve();
+      }
+    });
+
+    var binaries = {
+      firmware: new Buffer(0),
+      openwrt: new Buffer(0)
+    };
+
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+      // Resolve with earlier build (0.0.7)
+      return Promise.resolve(mixedBuilds[0].sha);
+    });
+
+
+    this.requestBuildList.restore();
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', function() {
+      // Return our two mixed builds
+      return Promise.resolve(mixedBuilds);
+    });
+
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+      return Promise.resolve(binaries);
+    });
+
+    controller.update({})
+      .then(function() {
+        // It should attempt to fetch a build
+        test.equal(this.fetchBuild.callCount, 1);
+        // We should be requesting the latest build
+        test.equal(this.fetchBuild.calledWith(mixedBuilds[1]), true);
+        test.done();
+      }.bind(this))
+      .catch(function() {
+        test.fail('Update should not reject with valid options and builds.');
+      });
+  }
+};
+
+exports['update-fetch'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+
+    var mixedBuilds = [{
+      sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
+      released: '2015-05-18T02:21:57.856Z',
+      version: '0.0.0'
+    }, {
+      sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
+      released: '2015-08-12T03:01:57.856Z',
+      version: '0.0.4'
+    }, {
+      sha: '789432897cd7829a988888b8843274cd8de89a98',
+      released: '2015-06-12T03:01:57.856Z',
+      version: '0.0.1'
+    }];
+
+    this.requestGet = this.sandbox.stub(request, 'get', function(url, cb) {
+      cb(null, {
+        statusCode: 200
+      }, JSON.stringify(mixedBuilds));
+    });
+    done();
+  },
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+  buildsSorted: function(test) {
+    test.expect(4);
+
+    // Request the out of order builds
+    updates.requestBuildList()
+      .then((builds) => {
+        // Ensure they were put back in order
+        test.ok(builds.length === 3);
+        test.ok(builds[0].version === '0.0.0');
+        test.ok(builds[1].version === '0.0.1');
+        test.ok(builds[2].version === '0.0.4');
+        test.done();
+      })
+      .catch(() => {
+        test.fail('An error was returned when the list fetch should succeed');
+        test.done();
+      });
+  }
+};
+
+exports['Tessel.update'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.tessel = TesselSimulator();
+
+    this.tessel.connection.enterBootloader = function() {};
+    this.updateFirmware = sinon.spy(this.tessel, 'updateFirmware');
+    this.enterBootloader = sinon.stub(this.tessel.connection, 'enterBootloader').returns(Promise.resolve());
+    this.tessel.writeFlash = function() {};
+    this.writeFlash = sinon.stub(this.tessel, 'writeFlash').returns(Promise.resolve());
+
+    this.newImage = {
+      openwrt: new Buffer(0),
+      firmware: new Buffer(0)
+    };
+
+    done();
+  },
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+  standardUpdate: function(test) {
+    var updatePath = path.join('/tmp/', updates.OPENWRT_BINARY_FILE);
+    // The exec commands that should be run to update OpenWRT
+    var expectedCommands = [commands.openStdinToFile(updatePath), commands.sysupgrade(updatePath)];
+    // Which command is being written
+    var commandsWritten = 0;
+    // When we get a command
+    this.tessel._rps.on('control', (data) => {
+      // Switch based on the number of command this is
+      switch (commandsWritten) {
+        // If it's the first command
+        case 0:
+          // Ensure that it's attempting to write the openwrt image to /tmp
+          test.equal(data.toString(), expectedCommands[commandsWritten].join(' '));
+          // Once we receive stdin of the image
+          this.tessel._rps.on('stdin', (data) => {
+            // Ensure it's the proper image
+            test.deepEqual(data, this.newImage.openwrt);
+            // Close the process to continue with updates
+            this.tessel._rps.emit('close');
+          });
+          break;
+        case 1:
+          // Ensure that it's attempting to run sysupgrade
+          test.equal(data.toString(), expectedCommands[commandsWritten].join(' '));
+          // Emit that the upgrade has complete to continue
+          setImmediate(() => this.tessel._rps.stdout.push('Upgrade completed'));
+      }
+
+      commandsWritten++;
+    });
+
+    // Begin the update
+    this.tessel.update(this.newImage)
+      // Update completed as expected
+      .then(() => {
+        test.ok(this.updateFirmware.callCount, 1);
+        test.ok(this.enterBootloader.callCount, 1);
+        test.ok(this.writeFlash.callCount, 1);
+        test.done();
+      })
+      .catch(() => {
+        test.fail('Update test failed with valid options and builds');
+        test.done();
+      });
+  }
 };
