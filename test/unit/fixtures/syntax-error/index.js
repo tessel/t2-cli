@@ -1,9 +1,3 @@
 var tessel = require('tessel');
-var other = require('./other');
-
+var other = require('./arrow');
 tessel.led[2].on();
-
-setInterval(function() {
-  tessel.led[2].toggle();
-  tessel.led[3].toggle();
-}, 100);
