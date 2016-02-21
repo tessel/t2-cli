@@ -405,21 +405,18 @@ exports['deploy.compress'] = {
   },
 
   uglifyParseFallback: function(test) {
-    test.expect(2);
+    test.expect(3);
 
-    try {
-      // Force the acorn parse step of the
-      // compress operation to fail. This
-      // will ensure that that the uglify
-      // attempt is made.
-      deploy.compress('#$%^');
-    } catch (error) {
-      // there is nothing we can about this.
-    }
+    var result = deploy.compress('#$%^');
 
     // Assert that we tried both parsers
     test.equal(this.aparse.callCount, 1);
     test.equal(this.uparse.callCount, 1);
+
+    // Assert that compress just gave back
+    // the source as-is, even though the
+    // parsers failed.
+    test.equal(result, '#$%^');
 
     test.done();
   },
@@ -557,7 +554,7 @@ exports['deploy.compress'] = {
     }
 
     test.done();
-  }
+  },
 };
 
 exports['deploy.tarBundle'] = {
@@ -783,8 +780,8 @@ exports['deploy.tarBundle'] = {
     }.bind(this));
   },
 
-  slimSyntaxErrorRejects: function(test) {
-    test.expect(2);
+  compressionProducesNoErrors: function(test) {
+    test.expect(1);
 
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/syntax-error';
@@ -793,39 +790,23 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then(() => {
+    }).then(bundle => {
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.fail(error);
+        }
+        test.deepEqual(entries, [
+          'arrow.js',
+          'index.js',
+          'package.json',
+        ]);
+        test.done();
+      });
+    }).catch(() => {
       test.fail();
       test.done();
-    }).catch((error) => {
-      var messages = error.message.split('\n');
-      test.equal(messages[0], 'Acorn Parser: Unexpected token (1:5)');
-      test.equal(messages[1], 'Uglify Parser: Unexpected token: name (is)');
-      test.done();
     });
   },
-
-  slimAcornSyntaxErrorUglifySuccess: function(test) {
-    test.expect(1);
-
-    // It's _possible_, but unlikely, that some ES6 thing
-    // will be supported in Uglify before it's supported
-    // in Acorn. To simulate that scenario, acorn.parse
-    // must fail and uglify.parse must be successful.
-
-    var uparse = uglify.parse;
-
-    this.uglifyParse = sandbox.stub(uglify, 'parse', (source, options) => {
-      return uparse('var a = 1;', options);
-    });
-
-    deploy.tarBundle({
-      target: path.normalize('test/unit/fixtures/syntax-error'),
-    }).then(() => {
-      test.ok(true);
-      test.done();
-    });
-  },
-
 
   slimTesselInit: function(test) {
     test.expect(5);
