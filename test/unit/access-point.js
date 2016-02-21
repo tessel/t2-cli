@@ -38,7 +38,6 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
   newAccessPoint: function(test) {
     test.expect(20);
-    var self = this;
     var creds = {
       ssid: 'test',
       pass: 'test-password',
@@ -46,9 +45,9 @@ exports['Tessel.prototype.createAccessPoint'] = {
     };
 
     // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
+    this.tessel._rps.on('control', () => {
+      setImmediate(() => {
+        this.tessel._rps.emit('close');
       });
     });
 
@@ -67,38 +66,37 @@ exports['Tessel.prototype.createAccessPoint'] = {
     });
 
     this.tessel.createAccessPoint(creds)
-      .then(function() {
-        test.equal(self.getAccessPointSSID.callCount, 1);
-        test.equal(self.setAccessPoint.callCount, 1);
-        test.equal(self.setAccessPointDevice.callCount, 1);
-        test.equal(self.setAccessPointNetwork.callCount, 1);
-        test.equal(self.setAccessPointMode.callCount, 1);
-        test.equal(self.setAccessPointSSID.callCount, 1);
-        test.equal(self.setAccessPointPassword.callCount, 1);
-        test.equal(self.setAccessPointSecurity.callCount, 1);
-        test.equal(self.setLanNetwork.callCount, 1);
-        test.equal(self.setLanNetworkIfname.callCount, 1);
-        test.equal(self.setLanNetworkProto.callCount, 1);
-        test.equal(self.setLanNetworkIP.callCount, 1);
-        test.equal(self.setLanNetworkNetmask.callCount, 1);
-        test.equal(self.commitNetwork.callCount, 1);
-        test.equal(self.reconnectWifi.callCount, 1);
-        test.equal(self.reconnectDnsmasq.callCount, 1);
-        test.equal(self.reconnectDhcp.callCount, 1);
-        test.ok(self.setAccessPointSSID.lastCall.calledWith(creds.ssid));
-        test.ok(self.setAccessPointPassword.lastCall.calledWith(creds.pass));
-        test.ok(self.setAccessPointSecurity.lastCall.calledWith(creds.security));
+      .then(() => {
+        test.equal(this.getAccessPointSSID.callCount, 1);
+        test.equal(this.setAccessPoint.callCount, 1);
+        test.equal(this.setAccessPointDevice.callCount, 1);
+        test.equal(this.setAccessPointNetwork.callCount, 1);
+        test.equal(this.setAccessPointMode.callCount, 1);
+        test.equal(this.setAccessPointSSID.callCount, 1);
+        test.equal(this.setAccessPointPassword.callCount, 1);
+        test.equal(this.setAccessPointSecurity.callCount, 1);
+        test.equal(this.setLanNetwork.callCount, 1);
+        test.equal(this.setLanNetworkIfname.callCount, 1);
+        test.equal(this.setLanNetworkProto.callCount, 1);
+        test.equal(this.setLanNetworkIP.callCount, 1);
+        test.equal(this.setLanNetworkNetmask.callCount, 1);
+        test.equal(this.commitNetwork.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.reconnectDnsmasq.callCount, 1);
+        test.equal(this.reconnectDhcp.callCount, 1);
+        test.ok(this.setAccessPointSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.pass));
+        test.ok(this.setAccessPointSecurity.lastCall.calledWith(creds.security));
 
         test.done();
       })
-      .catch(function(error) {
+      .catch((error) => {
         test.fail(error);
       });
   },
 
   noPasswordNoSecurity: function(test) {
     test.expect(9);
-    var self = this;
     var creds = {
       ssid: 'test',
       pass: undefined,
@@ -106,33 +104,32 @@ exports['Tessel.prototype.createAccessPoint'] = {
     };
 
     // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
+    this.tessel._rps.on('control', () => {
+      setImmediate(() => {
+        this.tessel._rps.emit('close');
       });
     });
 
     this.tessel.createAccessPoint(creds)
-      .then(function() {
-        test.equal(self.getAccessPointSSID.callCount, 1);
-        test.equal(self.setAccessPointSSID.callCount, 1);
-        test.equal(self.setAccessPointPassword.callCount, 0);
-        test.equal(self.setAccessPointSecurity.callCount, 1);
-        test.equal(self.reconnectWifi.callCount, 1);
-        test.equal(self.reconnectDnsmasq.callCount, 1);
-        test.equal(self.reconnectDhcp.callCount, 1);
-        test.ok(self.setAccessPointSSID.lastCall.calledWith(creds.ssid));
-        test.ok(self.setAccessPointSecurity.lastCall.calledWith('none'));
+      .then(() => {
+        test.equal(this.getAccessPointSSID.callCount, 1);
+        test.equal(this.setAccessPointSSID.callCount, 1);
+        test.equal(this.setAccessPointPassword.callCount, 0);
+        test.equal(this.setAccessPointSecurity.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.reconnectDnsmasq.callCount, 1);
+        test.equal(this.reconnectDhcp.callCount, 1);
+        test.ok(this.setAccessPointSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setAccessPointSecurity.lastCall.calledWith('none'));
         test.done();
       })
-      .catch(function(error) {
+      .catch((error) => {
         test.fail(error);
       });
   },
 
   properCredentials: function(test) {
     test.expect(10);
-    var self = this;
     var creds = {
       ssid: 'test',
       pass: 'test-password',
@@ -140,34 +137,33 @@ exports['Tessel.prototype.createAccessPoint'] = {
     };
 
     // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
+    this.tessel._rps.on('control', () => {
+      setImmediate(() => {
+        this.tessel._rps.emit('close');
       });
     });
 
     this.tessel.createAccessPoint(creds)
-      .then(function() {
-        test.equal(self.getAccessPointSSID.callCount, 1);
-        test.equal(self.setAccessPointSSID.callCount, 1);
-        test.equal(self.setAccessPointPassword.callCount, 1);
-        test.equal(self.setAccessPointSecurity.callCount, 1);
-        test.equal(self.reconnectWifi.callCount, 1);
-        test.equal(self.reconnectDnsmasq.callCount, 1);
-        test.equal(self.reconnectDhcp.callCount, 1);
-        test.ok(self.setAccessPointSSID.lastCall.calledWith(creds.ssid));
-        test.ok(self.setAccessPointPassword.lastCall.calledWith(creds.pass));
-        test.ok(self.setAccessPointSecurity.lastCall.calledWith(creds.security));
+      .then(() => {
+        test.equal(this.getAccessPointSSID.callCount, 1);
+        test.equal(this.setAccessPointSSID.callCount, 1);
+        test.equal(this.setAccessPointPassword.callCount, 1);
+        test.equal(this.setAccessPointSecurity.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.reconnectDnsmasq.callCount, 1);
+        test.equal(this.reconnectDhcp.callCount, 1);
+        test.ok(this.setAccessPointSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.pass));
+        test.ok(this.setAccessPointSecurity.lastCall.calledWith(creds.security));
         test.done();
       })
-      .catch(function(error) {
+      .catch((error) => {
         test.fail(error);
       });
   },
 
   passwordNoSecurity: function(test) {
     test.expect(10);
-    var self = this;
     var creds = {
       ssid: 'test',
       pass: 'test-password',
@@ -175,27 +171,27 @@ exports['Tessel.prototype.createAccessPoint'] = {
     };
 
     // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
+    this.tessel._rps.on('control', () => {
+      setImmediate(() => {
+        this.tessel._rps.emit('close');
       });
     });
 
     this.tessel.createAccessPoint(creds)
-      .then(function() {
-        test.equal(self.getAccessPointSSID.callCount, 1);
-        test.equal(self.setAccessPointSSID.callCount, 1);
-        test.equal(self.setAccessPointPassword.callCount, 1);
-        test.equal(self.setAccessPointSecurity.callCount, 1);
-        test.equal(self.reconnectWifi.callCount, 1);
-        test.equal(self.reconnectDnsmasq.callCount, 1);
-        test.equal(self.reconnectDhcp.callCount, 1);
-        test.ok(self.setAccessPointSSID.lastCall.calledWith(creds.ssid));
-        test.ok(self.setAccessPointPassword.lastCall.calledWith(creds.pass));
-        test.ok(self.setAccessPointSecurity.lastCall.calledWith('psk2'));
+      .then(() => {
+        test.equal(this.getAccessPointSSID.callCount, 1);
+        test.equal(this.setAccessPointSSID.callCount, 1);
+        test.equal(this.setAccessPointPassword.callCount, 1);
+        test.equal(this.setAccessPointSecurity.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.reconnectDnsmasq.callCount, 1);
+        test.equal(this.reconnectDhcp.callCount, 1);
+        test.ok(this.setAccessPointSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.pass));
+        test.ok(this.setAccessPointSecurity.lastCall.calledWith('psk2'));
         test.done();
       })
-      .catch(function(error) {
+      .catch((error) => {
         test.fail(error);
       });
   }
@@ -271,24 +267,23 @@ exports['Tessel.prototype.disableAccessPoint'] = {
 
   turnsOn: function(test) {
     test.expect(4);
-    var self = this;
 
     // Test is expecting two closes...;
-    self.tessel._rps.on('control', function() {
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
+    this.tessel._rps.on('control', () => {
+      setImmediate(() => {
+        this.tessel._rps.emit('close');
       });
     });
 
     this.tessel.disableAccessPoint()
-      .then(function() {
-        test.equal(self.turnAccessPointOff.callCount, 1);
-        test.equal(self.reconnectWifi.callCount, 1);
-        test.equal(self.reconnectDnsmasq.callCount, 1);
-        test.equal(self.reconnectDhcp.callCount, 1);
+      .then(() => {
+        test.equal(this.turnAccessPointOff.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.reconnectDnsmasq.callCount, 1);
+        test.equal(this.reconnectDhcp.callCount, 1);
         test.done();
       })
-      .catch(function(error) {
+      .catch((error) => {
         test.fail(error);
       });
   }

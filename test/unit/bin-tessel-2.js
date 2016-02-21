@@ -109,13 +109,13 @@ exports['Tessel (cli: restart)'] = {
 
     cli(['restart', '--type=ram']);
 
-    restartOp.catch(function() {
+    restartOp.catch(() => {
       test.equal(this.restartScript.callCount, 1);
       test.equal(this.closeFailedCommand.callCount, 1);
       test.equal(this.closeFailedCommand.lastCall.args[0], error);
       test.equal(this.processExit.lastCall.args[0], 1);
       test.done();
-    }.bind(this));
+    });
   },
 
 };
@@ -185,13 +185,13 @@ exports['Tessel (cli: update)'] = {
 
     cli(['update']);
 
-    updateOp.catch(function() {
+    updateOp.catch(() => {
       test.equal(this.update.callCount, 1);
       test.equal(this.closeFailedCommand.callCount, 1);
       test.equal(this.closeFailedCommand.lastCall.args[0], error);
       test.equal(this.processExit.lastCall.args[0], 1);
       test.done();
-    }.bind(this));
+    });
   },
 };
 
@@ -235,13 +235,13 @@ exports['Tessel (cli: provision)'] = {
 
     cli(['provision']);
 
-    provisionOp.catch(function() {
+    provisionOp.catch(() => {
       test.equal(this.provisionTessel.callCount, 1);
       test.equal(this.closeFailedCommand.callCount, 1);
       test.equal(this.closeFailedCommand.lastCall.args[0], error);
       test.equal(this.processExit.lastCall.args[0], 1);
       test.done();
-    }.bind(this));
+    });
   },
 
 };
@@ -284,10 +284,10 @@ exports['Tessel (cli: wifi)'] = {
 
     cli(['wifi', '--list', ' ']);
 
-    resolve.then(function() {
+    resolve.then(() => {
       test.equal(this.successfulCommand.callCount, 1);
       test.done();
-    }.bind(this));
+    });
   },
 
   listErrorExitCodeOne: function(test) {
@@ -298,12 +298,12 @@ exports['Tessel (cli: wifi)'] = {
 
     cli(['wifi', '--list', ' ']);
 
-    reject.catch(function() {
+    reject.catch(() => {
       throw 'Without this, the catch in the test is invoked before the catch in the cli program.';
-    }).catch(function() {
+    }).catch(() => {
       test.equal(this.failedCommand.callCount, 1);
       test.done();
-    }.bind(this));
+    });
   },
 
   ssidPassNoError: function(test) {
@@ -314,10 +314,10 @@ exports['Tessel (cli: wifi)'] = {
 
     cli(['wifi', '--ssid', 'a', '--password', 'b']);
 
-    resolve.then(function() {
+    resolve.then(() => {
       test.equal(this.successfulCommand.callCount, 1);
       test.done();
-    }.bind(this));
+    });
   },
 
   ssidPassErrorExitCodeOne: function(test) {
@@ -328,12 +328,12 @@ exports['Tessel (cli: wifi)'] = {
 
     cli(['wifi', '--ssid', 'a', '--password', 'b']);
 
-    reject.catch(function() {
+    reject.catch(() => {
       throw 'Without this, the catch in the test is invoked before the catch in the cli program.';
-    }).catch(function() {
+    }).catch(() => {
       test.equal(this.failedCommand.callCount, 1);
       test.done();
-    }.bind(this));
+    });
   },
 };
 
@@ -360,11 +360,11 @@ exports['Tessel (cli: root)'] = {
 
     cli(['root']);
 
-    resolve.then(function() {
+    resolve.then(() => {
       test.equal(this.root.callCount, 1);
       test.equal(this.successfulCommand.callCount, 1);
       test.done();
-    }.bind(this));
+    });
   },
 
 };
@@ -505,7 +505,7 @@ exports['Tessel (cli: list)'] = {
 
     cli(['list', '--timeout', '0.001']);
 
-    setImmediate(function() {
+    setImmediate(() => {
       // Ensure controller list was called
       test.ok(this.controllerList.calledOnce);
       // Ensure it did not have a key option
@@ -515,7 +515,7 @@ exports['Tessel (cli: list)'] = {
       // Tessel list should have been called afterwards
       test.ok(this.tesselList.called);
       test.done();
-    }.bind(this));
+    });
   },
 
   listKey: function(test) {
@@ -526,7 +526,7 @@ exports['Tessel (cli: list)'] = {
 
     cli(['list', '--timeout', '0.001', '-i', keyPath]);
 
-    setImmediate(function() {
+    setImmediate(() => {
       // Restore our func so other tests pass
       // Ensure list was called
       test.ok(this.controllerList.calledOnce);
@@ -537,7 +537,7 @@ exports['Tessel (cli: list)'] = {
       // It was called with the key path
       test.ok(this.setDefaultKey.lastCall.args[0] === keyPath);
       test.done();
-    }.bind(this));
+    });
   }
 };
 

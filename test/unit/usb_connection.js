@@ -94,7 +94,7 @@ exports['USB.Connection.prototype._write'] = {
 
 exports['USB.Connection.prototype.open'] = {
   setUp: function(done) {
-    var self = this;
+    var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.err = this.sandbox.stub(logs, 'err');
     this.processExit = this.sandbox.stub(process, 'exit');
@@ -115,13 +115,13 @@ exports['USB.Connection.prototype.open'] = {
       release: function(val, cb) {
         cb();
       },
-      endpoints: [self.usbConnection.epIn, self.usbConnection.epOut],
+      endpoints: [this.usbConnection.epIn, this.usbConnection.epOut],
     };
     this.sandbox.stub(this.usbConnection, 'device', {
       open: function() {},
       close: function() {},
       interface: function() {
-        return self.fakeInterface;
+        return testContext.fakeInterface;
       },
       getStringDescriptor: function(arg1, cb) {
         cb();
@@ -210,7 +210,7 @@ exports['USB.Connection.prototype.open'] = {
 
 exports['USB.Connection.prototype.end'] = {
   setUp: function(done) {
-    var self = this;
+    var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.err = this.sandbox.stub(logs, 'err');
     this.processExit = this.sandbox.stub(process, 'exit');
@@ -231,13 +231,13 @@ exports['USB.Connection.prototype.end'] = {
       release: function(val, cb) {
         cb();
       },
-      endpoints: [self.usbConnection.epIn, self.usbConnection.epOut],
+      endpoints: [this.usbConnection.epIn, this.usbConnection.epOut],
     };
     this.sandbox.stub(this.usbConnection, 'device', {
       open: function() {},
       close: function() {},
       interface: function() {
-        return self.fakeInterface;
+        return testContext.fakeInterface;
       },
       getStringDescriptor: function(arg1, cb) {
         cb();
@@ -349,13 +349,12 @@ exports['USB.Connection.prototype._receiveMessages'] = {
   },
 
   errorOnOpen: function(test) {
-    var self = this;
     test.expect(2);
     var errorMessage = 'bad usb things!';
 
-    self.usbConnection.epIn.stopPoll = function() {};
-    this.sandbox.stub(this.usbConnection, '_receiveMessages', function() {
-      self.usbConnection.epIn.emit('error', errorMessage);
+    this.usbConnection.epIn.stopPoll = function() {};
+    this.sandbox.stub(this.usbConnection, '_receiveMessages', () => {
+      this.usbConnection.epIn.emit('error', errorMessage);
     });
 
     var closeFunc = this.sandbox.spy(this.usbConnection, '_close');
@@ -365,7 +364,7 @@ exports['USB.Connection.prototype._receiveMessages'] = {
       setAltSetting: function(arg1, cb) {
         cb();
       },
-      endpoints: [self.usbConnection.epIn, new Emitter()],
+      endpoints: [this.usbConnection.epIn, new Emitter()],
     };
     this.sandbox.stub(this.usbConnection, 'device', {
       open: function() {},

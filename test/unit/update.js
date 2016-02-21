@@ -18,22 +18,18 @@ exports['controller.update'] = {
     this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
     this.tessel = TesselSimulator();
 
-    this.getTessel = this.sandbox.stub(Tessel, 'get', function(opts) {
+    this.getTessel = this.sandbox.stub(Tessel, 'get', (opts) => {
       this.tessel.setLANConnectionPreference(opts.lanPrefer);
       return Promise.resolve(this.tessel);
-    }.bind(this));
-
-    this.update = this.sandbox.stub(Tessel.prototype, 'update', function() {
-      return Promise.resolve();
     });
 
-    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+    this.update = this.sandbox.stub(Tessel.prototype, 'update', () => Promise.resolve());
+
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', () => {
       return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
     });
 
-    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', function() {
-      return Promise.resolve(builds);
-    });
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', () => Promise.resolve(builds));
 
     this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
@@ -56,7 +52,7 @@ exports['controller.update'] = {
     test.expect(3);
 
     controller.printAvailableUpdates()
-      .then(function() {
+      .then(() => {
         test.equal(this.requestBuildList.callCount, 1);
         // Print info that these are logs
         // 'Latest builds:'
@@ -66,8 +62,8 @@ exports['controller.update'] = {
         test.equal(this.logsBasic.callCount, 2);
         // Finish
         test.done();
-      }.bind(this))
-      .catch(function(err) {
+      })
+      .catch((err) => {
         test.ifError(err);
       });
   },
@@ -83,16 +79,16 @@ exports['controller.update'] = {
     });
 
     controller.printAvailableUpdates()
-      .then(function() {
+      .then(() => {
         test.equal(true, false, 'Build fetch should have failed.');
       })
-      .catch(function(err) {
+      .catch((err) => {
         // We tried to fetch the builds
         test.equal(this.requestBuildList.callCount, 1);
         // But it failed with the error message we specified
         test.equal(err.message, errMessage);
         test.done();
-      }.bind(this));
+      });
   },
 
   buildOptionValid: function(test) {
@@ -127,7 +123,7 @@ exports['controller.update'] = {
       lanPrefer: true
     };
     controller.update(opts)
-      .then(function() {
+      .then(() => {
         // We have to fetch the build list to figure out what the sha is of this version
         test.equal(this.requestBuildList.callCount, 1);
         // We did fetch the specified build
@@ -147,8 +143,8 @@ exports['controller.update'] = {
         // We called the close function with an array
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this))
-      .catch(function(err) {
+      })
+      .catch((err) => {
         test.ifError(err);
       });
   },
@@ -198,7 +194,7 @@ exports['controller.update'] = {
       version: '0.0.1'
     };
     controller.update(opts)
-      .catch(function(err) {
+      .catch((err) => {
         // We attempted to fetch a build
         test.equal(this.fetchBuild.callCount, 1);
         // But it failed with the error we specified
@@ -206,7 +202,7 @@ exports['controller.update'] = {
         // We need to close all open Tessel connections
         test.equal(this.closeTesselConnections.callCount, 1);
         test.done();
-      }.bind(this));
+      });
   },
 
   buildLatest: function(test) {
@@ -245,7 +241,7 @@ exports['controller.update'] = {
       lanPrefer: true
     };
     controller.update(opts)
-      .then(function() {
+      .then(() => {
         // Make sure we checked what the Tessel version is currently at
         test.equal(this.fetchCurrentBuildInfo.callCount, 1);
         // We fetched only one build
@@ -263,8 +259,8 @@ exports['controller.update'] = {
         // We called the close function with an array
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this))
-      .catch(function(err) {
+      })
+      .catch((err) => {
         test.ifError(err);
         test.done();
       });
@@ -303,7 +299,7 @@ exports['controller.update'] = {
       lanPrefer: true
     };
     controller.update(opts)
-      .then(function() {
+      .then(() => {
         // Make sure we checked what the Tessel version is currently at
         test.equal(this.fetchCurrentBuildInfo.callCount, 1);
         // We fetched the build list once
@@ -319,7 +315,7 @@ exports['controller.update'] = {
         // We called the close function with an array
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this));
+      });
   },
 
   buildLatestUpdateFailed: function(test) {
@@ -358,15 +354,15 @@ exports['controller.update'] = {
 
     var errMessage = 'Something absolutely dreadful happened. Your Tessel is bricked.';
     this.update.restore();
-    this.update = this.sandbox.stub(Tessel.prototype, 'update', function() {
+    this.update = this.sandbox.stub(Tessel.prototype, 'update', () => {
       return Promise.reject(new Error(errMessage));
-    }.bind(this));
+    });
 
     var opts = {
       lanPrefer: true
     };
     controller.update(opts)
-      .catch(function(err) {
+      .catch((err) => {
         // We fetched only one build
         test.equal(this.fetchBuild.callCount, 1);
         // It was the latest build
@@ -382,7 +378,7 @@ exports['controller.update'] = {
         // We called the close function with an array
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this));
+      });
   },
 
   buildLatestForce: function(test) {
@@ -420,7 +416,7 @@ exports['controller.update'] = {
     };
 
     controller.update(opts)
-      .then(function() {
+      .then(() => {
         // We fetched only one build
         test.equal(this.fetchBuild.callCount, 1);
         // It was the latest build
@@ -436,8 +432,8 @@ exports['controller.update'] = {
         // We called the close function with an array
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this))
-      .catch(function(err) {
+      })
+      .catch((err) => {
         test.ifError(err);
       });
   },
@@ -477,15 +473,15 @@ exports['controller.update'] = {
     };
 
     controller.update(opts)
-      .then(function() {
+      .then(() => {
         test.equal(this.updateTesselWithVersion.callCount, 0);
         // We closed all open Tessel connections
         test.equal(this.closeTesselConnections.callCount, 1);
         // We called the close function with an array
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this))
-      .catch(function(err) {
+      })
+      .catch((err) => {
         test.ifError(err);
       });
   },
@@ -515,12 +511,12 @@ exports['controller.update'] = {
       lanPrefer: true
     };
     controller.update(opts)
-      .catch(function(message) {
+      .catch((message) => {
         test.equal(message, 'The requested build was not found. Please see the available builds with `t2 update -l`.');
         // We need to close all open Tessel connections
         test.equal(this.closeTesselConnections.callCount, 1);
         test.done();
-      }.bind(this));
+      });
   },
 
   noVersionForcedUpdate: function(test) {
@@ -561,7 +557,7 @@ exports['controller.update'] = {
       lanPrefer: true
     };
     controller.update(opts)
-      .then(function() {
+      .then(() => {
         // It should attempt to fetch a build
         test.equal(this.fetchBuild.callCount, 1);
         // We should be requesting the latest build
@@ -571,8 +567,8 @@ exports['controller.update'] = {
         // We called the close function with an array
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this))
-      .catch(function() {
+      })
+      .catch(() => {
         test.fail('It should force an update if the file version is not found');
       });
   },
@@ -617,10 +613,10 @@ exports['controller.update'] = {
       lanPrefer: true
     };
     controller.update(opts)
-      .then(function() {
+      .then(() => {
         test.fail('It should throw an error if we get an unknown error');
       })
-      .catch(function(err) {
+      .catch((err) => {
         // Make sure this error has the proper error message
         test.equal(err.message, unknownError.message);
         // It should not attempt to fetch any builds
@@ -630,7 +626,7 @@ exports['controller.update'] = {
         // We called the close function with an array
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this));
+      });
   },
 
   properBuildCompare: function(test) {
@@ -687,14 +683,14 @@ exports['controller.update'] = {
     });
 
     controller.update({})
-      .then(function() {
+      .then(() => {
         // It should attempt to fetch a build
         test.equal(this.fetchBuild.callCount, 1);
         // We should be requesting the latest build
         test.equal(this.fetchBuild.calledWith(mixedBuilds[1]), true);
         test.done();
-      }.bind(this))
-      .catch(function() {
+      })
+      .catch(() => {
         test.fail('Update should not reject with valid options and builds.');
       });
   }

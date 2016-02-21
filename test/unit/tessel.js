@@ -3,15 +3,15 @@
 exports['Tessel (get)'] = {
 
   setUp: function(done) {
-    var self = this;
+    var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.activeSeeker = undefined;
     // This is necessary to prevent an Emitter memory leak warning
     this.processOn = this.sandbox.stub(process, 'on');
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
       this.start = function(options) {
-        self.activeSeeker = this;
-        setTimeout(this.stop.bind(this), options.timeout);
+        testContext.activeSeeker = this;
+        setTimeout(() => this.stop(), options.timeout);
         return this;
       };
       this.stop = function() {
@@ -42,10 +42,10 @@ exports['Tessel (get)'] = {
   infoOutput: function(test) {
     test.expect(1);
     Tessel.get(this.standardOpts)
-      .catch(function() {
+      .catch(() => {
         test.equal(this.logsInfo.firstCall.args[0], 'Looking for your Tessel...');
         test.done();
-      }.bind(this));
+      });
   },
 
   noTessels: function(test) {
@@ -86,9 +86,7 @@ exports['Tessel (get)'] = {
     });
     tessel.name = testName;
 
-    setImmediate(function() {
-      this.activeSeeker.emit('tessel', tessel);
-    }.bind(this));
+    setImmediate(() => this.activeSeeker.emit('tessel', tessel));
   },
 
   oneUSB: function(test) {
@@ -111,9 +109,7 @@ exports['Tessel (get)'] = {
     });
     tessel.name = testName;
 
-    setImmediate(function() {
-      this.activeSeeker.emit('tessel', tessel);
-    }.bind(this));
+    setImmediate(() => this.activeSeeker.emit('tessel', tessel));
   },
 
   multipleUSBNoName: function(test) {
@@ -126,9 +122,9 @@ exports['Tessel (get)'] = {
         test.equal(tessel.connection.connectionType, a.connection.connectionType);
         test.done();
       })
-      .catch(function(reason) {
+      .catch((reason) => {
         test.equal(reason, undefined, 'Neither USB device was found');
-      }.bind(this));
+      });
 
     var a = new Tessel({
       connectionType: 'USB',
@@ -146,10 +142,10 @@ exports['Tessel (get)'] = {
     a.name = 'a';
     b.name = 'b';
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', a);
       this.activeSeeker.emit('tessel', b);
-    }.bind(this));
+    });
   },
 
   multipleUSBHasName: function(test) {
@@ -185,10 +181,10 @@ exports['Tessel (get)'] = {
     a.name = 'a';
     b.name = 'b';
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', a);
       this.activeSeeker.emit('tessel', b);
-    }.bind(this));
+    });
   },
 
   usbAndNonAuthorizedLANSameTessel: function(test) {
@@ -225,10 +221,10 @@ exports['Tessel (get)'] = {
     usb.name = 'a';
     lan.name = 'a';
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', usb);
       this.activeSeeker.emit('tessel', lan);
-    }.bind(this));
+    });
   },
 
   usbAndNonAuthorizedLANSameTesselLANFirst: function(test) {
@@ -261,13 +257,13 @@ exports['Tessel (get)'] = {
     usb.name = 'a';
     lan.name = 'a';
 
-    setImmediate(function() {
+    setImmediate(() => {
       // "Detect" the lan first. This order is intentional
       // 1
       this.activeSeeker.emit('tessel', lan);
       // 2
       this.activeSeeker.emit('tessel', usb);
-    }.bind(this));
+    });
 
   },
 
@@ -304,23 +300,23 @@ exports['Tessel (get)'] = {
 
     lan.connection.authorized = true;
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', usb);
       this.activeSeeker.emit('tessel', lan);
-    }.bind(this));
+    });
   },
 
   multipleLANNoName: function(test) {
     test.expect(2);
     // Try to get Tessels but return none
     Tessel.get(this.standardOpts)
-      .catch(function(reason) {
+      .catch((reason) => {
         test.equal(reason, 'No Tessel selected, mission aborted!');
         test.equal(this.menu.calledOnce, 1);
         a.close();
         b.close();
         test.done();
-      }.bind(this));
+      });
 
     var a = new Tessel({
       connectionType: 'LAN',
@@ -340,10 +336,10 @@ exports['Tessel (get)'] = {
     a.name = 'a';
     b.name = 'b';
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', a);
       this.activeSeeker.emit('tessel', b);
-    }.bind(this));
+    });
   },
 
   multipleLANHasName: function(test) {
@@ -383,10 +379,10 @@ exports['Tessel (get)'] = {
     a.name = 'a';
     b.name = 'b';
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', a);
       this.activeSeeker.emit('tessel', b);
-    }.bind(this));
+    });
   },
 
   // Tests that Tessel.get will return a USB connection
@@ -425,10 +421,10 @@ exports['Tessel (get)'] = {
     a.name = 'a';
     b.name = 'b';
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', a);
       this.activeSeeker.emit('tessel', b);
-    }.bind(this));
+    });
   },
 
   // Tests that Tessel.get will return a LAN connection
@@ -469,10 +465,10 @@ exports['Tessel (get)'] = {
     lan.name = 'a';
 
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', usb);
       this.activeSeeker.emit('tessel', lan);
-    }.bind(this));
+    });
   },
 
   // Tests that Tessel.get will return a LAN connection
@@ -504,9 +500,7 @@ exports['Tessel (get)'] = {
 
     lan.name = 'a';
 
-    setImmediate(function() {
-      this.activeSeeker.emit('tessel', lan);
-    }.bind(this));
+    setImmediate(() => this.activeSeeker.emit('tessel', lan));
   }
 };
 
@@ -514,7 +508,7 @@ exports['Tessel (get)'] = {
 exports['Tessel (get); filter: unauthorized'] = {
 
   setUp: function(done) {
-    var self = this;
+    var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.activeSeeker = undefined;
     // This is necessary to prevent an Emitter memory leak warning
@@ -525,8 +519,8 @@ exports['Tessel (get); filter: unauthorized'] = {
     this.start = this.sandbox.spy(Seeker.prototype, 'start');
 
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function() {
-      self.activeSeeker = new Seeker();
-      return self.activeSeeker;
+      testContext.activeSeeker = new Seeker();
+      return testContext.activeSeeker;
     });
 
     this.startScan = this.sandbox.stub(lan, 'startScan', function() {
@@ -562,10 +556,10 @@ exports['Tessel (get); filter: unauthorized'] = {
     };
 
     Tessel.get(customOpts)
-      .then(function() {
+      .then(() => {
         test.fail();
-      }.bind(this))
-      .catch(function(message) {
+      })
+      .catch((message) => {
         test.equal(message, 'No Authorized Tessels Found.');
         test.done();
       });
@@ -577,10 +571,10 @@ exports['Tessel (get); filter: unauthorized'] = {
 
     lan.connection.host = 'TestTessel';
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.lanScan.emit('connection', lan.connection);
       this.activeSeeker.emit('end');
-    }.bind(this));
+    });
   },
 };
 
