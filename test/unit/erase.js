@@ -49,8 +49,9 @@ exports['Tessel.prototype.erase'] = {
         // This test completed satisfactorily
         test.done();
       })
-      .catch(() => {
-        test.fail('Error thrown on proper flash erase');
+      .catch(function() {
+        test.ok(false, 'Error thrown on proper flash erase');
+        test.done();
       });
   },
 
@@ -62,7 +63,8 @@ exports['Tessel.prototype.erase'] = {
       // If it completes without issue
       .then(() => {
         // Fail the test
-        test.fail('Error should have been returned on useless flash erase');
+        test.ok(false, 'Error should have been returned on useless flash erase');
+        test.done();
       })
       // If it fails (as it should)
       .catch((err) => {

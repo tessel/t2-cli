@@ -66,8 +66,8 @@ exports['controller.provisionTessel'] = {
 
     this.provisionTessel = sinon.spy(controller, 'provisionTessel');
 
-    this.exec = sinon.stub(cp, 'exec', (command, cb) => {
-      cb();
+    this.exec = sinon.stub(cp, 'exec', (command, callback) => {
+      callback();
     });
 
     this.provisionSpy = sinon.spy(Tessel.prototype, 'provisionTessel');
@@ -117,7 +117,7 @@ exports['controller.provisionTessel'] = {
     this.provisionTessel({
         force: true
       })
-      .then(() => {
+      .then(function() {
         test.equal(this.exec.callCount, 1);
         test.equal(this.exec.lastCall.args[0], 'rm -r ' + Tessel.LOCAL_AUTH_PATH);
         test.equal(this.provisionSpy.callCount, 1);
@@ -128,7 +128,7 @@ exports['controller.provisionTessel'] = {
           Tessel.LOCAL_AUTH_PATH = tesselAuthPath;
           test.done();
         });
-      });
+      }.bind(this));
   },
 
   completeUnprovisioned: function(test) {
@@ -181,8 +181,8 @@ exports['controller.provisionTessel'] = {
 
     this.provisionTessel({
       force: true
-    }).catch((err) => {
-      test.equal(err, 'some error');
+    }).catch(error => {
+      test.equal(error, 'some error');
       test.equal(this.closeTesselConnections.callCount, 0);
       test.done();
     });
@@ -233,7 +233,7 @@ exports['Tessel.prototype.provisionTessel'] = {
         test.done();
       })
       .catch(() => {
-        test.fail('The AlreadyAuthenticatedError will resolve, not reject.');
+        test.ok(false, 'The AlreadyAuthenticatedError will resolve, not reject.');
         test.done();
       });
 
@@ -249,7 +249,10 @@ exports['Tessel.prototype.provisionTessel'] = {
     // Attempt to provision
     this.tessel.provisionTessel()
       // If an error is not thrown, this test failed
-      .then(test.fail)
+      .then(() => {
+        test.ok(false, 'provisionTessel should not have been successful');
+        test.done();
+      })
       // If the error was thrown, continue to the next test
       .catch((err) => {
         test.equal(err !== undefined, true);
@@ -270,7 +273,8 @@ exports['Tessel.prototype.provisionTessel'] = {
     // Create folders for the folder that we'd like to
     createKeyTestFolder((err) => {
       if (err) {
-        test.fail();
+        test.ok(false, `createKeyTestFolder failed: ${err.toString()}`);
+        test.done();
       }
       // Attempt to set up local keys
       provision.setupLocal( /* intentionally empty */ )
@@ -288,7 +292,8 @@ exports['Tessel.prototype.provisionTessel'] = {
           test.done();
         })
         .catch(() => {
-          test.fail('Key write failed.');
+          test.ok(false, 'Key write failed.');
+          test.done();
         });
     });
   },
@@ -301,7 +306,8 @@ exports['Tessel.prototype.provisionTessel'] = {
     // Create folders for the folder that we'd like to
     createKeyTestFolder((err) => {
       if (err) {
-        test.fail();
+        test.ok(false, `createKeyTestFolder failed: ${err.toString()}`);
+        test.done();
       }
       // Attempt to set up local keys
       provision.setupLocal(testPath)
@@ -314,7 +320,8 @@ exports['Tessel.prototype.provisionTessel'] = {
           test.done();
         })
         .catch(() => {
-          test.fail('Key write failed.');
+          test.ok(false, 'Key write failed.');
+          test.done();
         });
     });
   },
@@ -330,7 +337,8 @@ exports['Tessel.prototype.provisionTessel'] = {
     // Create folders for the folder that we'd like to
     createKeyTestFolder((err) => {
       if (err) {
-        test.fail();
+        test.ok(false, `createKeyTestFolder failed: ${err.toString()}`);
+        test.done();
       }
       // Attempt to set up local keys
       provision.setupLocal( /* intentionally empty */ )
@@ -350,7 +358,8 @@ exports['Tessel.prototype.provisionTessel'] = {
           test.done();
         })
         .catch(() => {
-          test.fail('Key write failed.');
+          test.ok(false, 'Key write failed.');
+          test.done();
         });
     });
   },
@@ -360,79 +369,84 @@ exports['Tessel.prototype.provisionTessel'] = {
 
     createTestKeys((err) => {
       if (err) {
-        test.fail(err);
-      }
+        test.ok(false, `createTestKeys failed: ${err.toString()}`);
+        test.done();
+      } else {
+        provision.authTessel(this.tessel, testPath)
+          .then(() => {
+            test.ok(false, 'Authorize did not return fail even though remote Tessel already listed user key.');
+            test.done();
+          })
+          .catch(error => {
+            test.equal(error !== undefined, true);
+            // We should have checked that the remote file exists
+            test.equal(this.fileExistsSpy.callCount, 1);
+            // We should not have tried to write anything to the file
+            test.equal(this.appendStdinToFile.callCount, 0);
 
-      provision.authTessel(this.tessel, testPath)
-        .then(() => {
-          test.fail('Authorize did not return fail even though remote Tessel already listed user key.');
-        })
-        .catch((err) => {
-          test.equal(err !== undefined, true);
-          // We should have checked that the remote file exists
-          test.equal(this.fileExistsSpy.callCount, 1);
-          // We should not have tried to write anything to the file
-          test.equal(this.appendStdinToFile.callCount, 0);
+            test.done();
+          });
 
-          test.done();
-        });
-
-      // Emit close for ensuring remote file exists
-      setTimeout(() => {
-        this.tessel._rps.emit('close');
-        // Write out fake key file data
+        // Emit close for ensuring remote file exists
         setTimeout(() => {
-          this.tessel._rps.stdout.push(fakeKeyFileData);
-          // Finish key file data process
+          this.tessel._rps.emit('close');
+          // Write out fake key file data
           setTimeout(() => {
-            this.tessel._rps.emit('close');
+            this.tessel._rps.stdout.push(fakeKeyFileData);
+            // Finish key file data process
+            setTimeout(() => {
+              this.tessel._rps.emit('close');
+            }, 10);
           }, 10);
         }, 10);
-      }, 10);
+      }
     });
   },
 
   deviceReadyForProvision: function(test) {
     test.expect(3);
 
-    createTestKeys((err) => {
-      if (err) {
-        test.fail(err);
-      }
-      // Attempt to authorize the remote Tessel by writing the SSH keys
-      provision.authTessel(this.tessel, testPath)
-        .then(() => {
-          // We should have checked that the remote file exists
-          test.equal(this.fileExistsSpy.callCount, 1);
-          // We should not have tried to write anything to the file
-          test.equal(this.appendStdinToFile.callCount, 1);
-          // Ensure the proper key was provided to the authorized_keys file
-          test.done();
-        })
-        .catch(() => {
-          test.fail('Provision did not copy keys to remote device when it should have.');
-        });
+    createTestKeys(error => {
+      if (error) {
+        test.ok(false, `createTestKeys failed: ${error.toString()}`);
+        test.done();
+      } else {
+        // Attempt to authorize the remote Tessel by writing the SSH keys
+        provision.authTessel(this.tessel, testPath)
+          .then(() => {
+            // We should have checked that the remote file exists
+            test.equal(this.fileExistsSpy.callCount, 1);
+            // We should not have tried to write anything to the file
+            test.equal(this.appendStdinToFile.callCount, 1);
+            // Ensure the proper key was provided to the authorized_keys file
+            test.done();
+          })
+          .catch(function unexpectedRoute() {
+            test.ok(false, 'Provision did not copy keys to remote device when it should have.');
+            test.done();
+          });
 
-      // Emit close for ensuring remote file exists
-      setTimeout(() => {
-        this.tessel._rps.emit('close');
-        // Write out no keys so it's forced to write a new one
+        // Emit close for ensuring remote file exists
         setTimeout(() => {
-          this.tessel._rps.stdout.push('');
-          // Finish key file read back process
+          this.tessel._rps.emit('close');
+          // Write out no keys so it's forced to write a new one
           setTimeout(() => {
-            this.tessel._rps.emit('close');
-            // Ensure the fake key file data was sent to stdin
-            this.tessel._rps.on('stdin', (data) => {
-              test.equal(data.toString(), fakeKeyFileData);
-            });
-            // Finish key copy process
+            this.tessel._rps.stdout.push('');
+            // Finish key file read back process
             setTimeout(() => {
               this.tessel._rps.emit('close');
+              // Ensure the fake key file data was sent to stdin
+              this.tessel._rps.on('stdin', function(data) {
+                test.equal(data.toString(), fakeKeyFileData);
+              });
+              // Finish key copy process
+              setTimeout(() => {
+                this.tessel._rps.emit('close');
+              }, 1);
             }, 1);
           }, 1);
         }, 1);
-      }, 1);
+      }
     });
   }
 };
@@ -459,7 +473,8 @@ exports['provision.setDefaultKey'] = {
     provision.setDefaultKey()
       .then(function noCall() {
         // This test should throw an error. Fail if it didn't
-        test.fail();
+        test.ok(false, 'provision.setDefaultKey should not have been successful');
+        test.done();
       })
       .catch(function doCall(err) {
         test.ok(err, 'Returned error is undefined');
@@ -474,7 +489,8 @@ exports['provision.setDefaultKey'] = {
     provision.setDefaultKey(path.parse('~/.tessel/id_rsa'))
       .then(function noCall() {
         // This test should throw an error. Fail if it didn't
-        test.fail();
+        test.ok(false, 'provision.setDefaultKey should not have been successful');
+        test.done();
       })
       .catch(function doCall(err) {
         test.ok(err, 'Returned error is undefined');
@@ -488,7 +504,8 @@ exports['provision.setDefaultKey'] = {
     provision.setDefaultKey('./no_files_here')
       .then(function noCall() {
         // This test should throw an error. Fail if it didn't
-        test.fail();
+        test.ok(false, 'provision.setDefaultKey should not have been successful');
+        test.done();
       })
       .catch(function doCall(err) {
         test.ok(err, 'Returned error is undefined');
@@ -513,24 +530,25 @@ exports['provision.setDefaultKey'] = {
       })
       .catch(function noCall() {
         // This test should not throw an error. Fail if it did
-        test.fail();
+        test.ok(false, 'provision.setDefaultKey should have been successful');
+        test.done();
       });
   }
 };
 
-function createTestKeys(cb) {
+function createTestKeys(callback) {
   // Create the test folder
   createKeyTestFolder(function createKeys(err) {
     if (err) {
-      if (typeof cb === 'function') {
-        cb(err);
+      if (typeof callback === 'function') {
+        callback(err);
       }
       return;
     }
     // Create fake keys
     async.parallel([
-      (cb) => fs.writeFile(testPath + '.pub', fakeKeyFileData, cb), (cb) => fs.writeFile(testPath, fakeKeyFileData, cb),
-    ], cb);
+      (next) => fs.writeFile(testPath + '.pub', fakeKeyFileData, next), (next) => fs.writeFile(testPath, fakeKeyFileData, next),
+    ], callback);
   });
 }
 

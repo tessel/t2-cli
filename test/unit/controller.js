@@ -312,11 +312,12 @@ exports['controller.runHeuristics'] = {
     });
 
     controller.runHeuristics({}, [a, b])
-      .then(function() {
-        test.fail('Should have thrown an error');
+      .then(() => {
+        test.ok(false, 'Test failed because expected HeuristicAmbiguityError did not occur.');
+        test.done();
       })
-      .catch(function(err) {
-        test.equal(err instanceof controller.HeuristicAmbiguityError, true);
+      .catch(error => {
+        test.equal(error instanceof controller.HeuristicAmbiguityError, true);
         test.done();
       });
   },
@@ -338,11 +339,12 @@ exports['controller.runHeuristics'] = {
     });
 
     controller.runHeuristics({}, [a, b])
-      .then(function() {
-        test.fail('Should have thrown an error');
+      .then(() => {
+        test.ok(false, 'Test failed because expected HeuristicAmbiguityError did not occur.');
+        test.done();
       })
-      .catch(function(err) {
-        test.equal(err instanceof controller.HeuristicAmbiguityError, true);
+      .catch(error => {
+        test.equal(error instanceof controller.HeuristicAmbiguityError, true);
         test.done();
       });
   }
@@ -357,8 +359,8 @@ exports['Tessel.list'] = {
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function() {
-      this.start = function(opts) {
-        testContext.activeSeeker = this;
+      testContext.activeSeeker = this;
+      this.start = (opts) => {
         if (opts.timeout && typeof opts.timeout === 'number') {
           setTimeout(this.stop, opts.timeout);
         }
@@ -517,7 +519,7 @@ exports['Tessel.get'] = {
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
-      this.start = function(opts) {
+      this.start = (opts) => {
         testContext.activeSeeker = this;
         this.msg = {
           noAuth: 'No Authorized Tessels Found.',
@@ -667,10 +669,10 @@ exports['Tessel.get'] = {
         // Doesn't matter what this function does b/c Tessel.get will fail
         return Promise.resolve();
       })
-      .catch((err) => {
+      .catch(error => {
         // We don't need to close any connections because none were found
         test.equal(this.closeTesselConnections.callCount, 0);
-        test.equal(typeof err, 'string');
+        test.equal(typeof error, 'string');
         test.done();
       });
   },
@@ -686,7 +688,7 @@ exports['Tessel.get'] = {
         // Finish the command
         return Promise.resolve(optionalValue);
       })
-      .then((returnedValue) => {
+      .then(returnedValue => {
         // We need to close the connection of the Tessel we found
         // We close once at the end of Tessel.get and again after the standard command
         test.equal(this.closeTesselConnections.callCount, 2);
@@ -696,7 +698,10 @@ exports['Tessel.get'] = {
         test.equal(optionalValue, returnedValue);
         test.done();
       })
-      .catch(test.fail);
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
+      });
 
     var usb = newTessel({
       sandbox: this.sandbox,
@@ -724,10 +729,13 @@ exports['Tessel.get'] = {
         // Finish the command
         return Promise.reject(errMessage);
       })
-      .then(test.fail)
-      .catch((err) => {
+      .then(() => {
+        test.ok(false, 'standardTesselCommand was expected to fail, but did not.');
+        test.done();
+      })
+      .catch(error => {
         // Make sure the error messages are passed through properly
-        test.equal(errMessage, err);
+        test.equal(errMessage, error);
         // We need to close the connection of the Tessel we found
         // We close once at the end of Tessel.get and again after the standard command
         test.equal(this.closeTesselConnections.callCount, 2);
@@ -766,7 +774,10 @@ exports['Tessel.get'] = {
         test.equal(this.closeTesselConnections.args[1][0][0], usb);
         test.done();
       })
-      .catch(test.fail);
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
+      });
 
     var usb = newTessel({
       sandbox: this.sandbox,
@@ -804,7 +815,7 @@ exports['controller.closeTesselConnections'] = {
     controller.connectToNetwork({
         ssid: undefined
       })
-      .catch(function(error) {
+      .catch(error => {
         test.ok(error);
         test.done();
       });
@@ -818,7 +829,7 @@ exports['controller.closeTesselConnections'] = {
         password: undefined,
         security: 'psk2'
       })
-      .catch(function(error) {
+      .catch(error => {
         test.ok(error);
         test.done();
       });
@@ -832,7 +843,7 @@ exports['controller.closeTesselConnections'] = {
         password: undefined,
         security: 'reallySecure'
       })
-      .catch(function(error) {
+      .catch(error => {
         test.ok(error);
         test.done();
       });
@@ -844,7 +855,7 @@ exports['controller.closeTesselConnections'] = {
     controller.createAccessPoint({
         ssid: undefined
       })
-      .catch(function(error) {
+      .catch(error => {
         test.ok(error);
         test.done();
       });
@@ -858,7 +869,7 @@ exports['controller.closeTesselConnections'] = {
         password: undefined,
         security: 'psk2'
       })
-      .catch(function(error) {
+      .catch(error => {
         test.ok(error);
         test.done();
       });
@@ -872,8 +883,8 @@ exports['controller.closeTesselConnections'] = {
         password: undefined,
         security: 'reallySecure'
       })
-      .catch(function(error) {
-        test.ok(error);
+      .catch(error => {
+        test.ok(true, error.toString());
         test.done();
       });
   },
@@ -951,7 +962,9 @@ exports['controller.root'] = {
     var testKey = '~/fake';
 
     this.standardTesselCommand.restore();
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, cb) => cb(tessel));
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+      return callback(tessel);
+    });
 
     // Return our own local auth key (it won't be set because we have stubbed
     // that functionality out of standardTesselCommand)
@@ -992,17 +1005,20 @@ exports['controller.root'] = {
     });
 
     this.standardTesselCommand.restore();
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, cb) => cb(tessel));
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+      return callback(tessel);
+    });
 
     var errMessage = 'Your child is a fake!';
 
     controller.root({})
       .then(() => {
         // Only spawn one process
-        test.fail('Should have rejected the root promise.');
+        test.ok(false, 'Should have rejected the root promise.');
+        test.done();
       })
-      .catch((err) => {
-        test.ok(err.indexOf(errMessage) !== -1);
+      .catch(error => {
+        test.ok(error.includes(errMessage));
         test.done();
       });
 

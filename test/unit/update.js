@@ -63,8 +63,9 @@ exports['controller.update'] = {
         // Finish
         test.done();
       })
-      .catch((err) => {
-        test.ifError(err);
+      .catch(error => {
+        test.ok(false, `printAvailableUpdates failed: ${error.toString()}`);
+        test.done();
       });
   },
 
@@ -81,12 +82,13 @@ exports['controller.update'] = {
     controller.printAvailableUpdates()
       .then(() => {
         test.equal(true, false, 'Build fetch should have failed.');
+        test.done();
       })
-      .catch((err) => {
+      .catch(error => {
         // We tried to fetch the builds
         test.equal(this.requestBuildList.callCount, 1);
-        // But it failed with the error message we specified
-        test.equal(err.message, errMessage);
+        // But it failed with the erroror message we specified
+        test.equal(error.message, errMessage);
         test.done();
       });
   },
@@ -144,8 +146,9 @@ exports['controller.update'] = {
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       })
-      .catch((err) => {
-        test.ifError(err);
+      .catch(error => {
+        test.ok(false, `update failed: ${error.toString()}`);
+        test.done();
       });
   },
 
@@ -194,11 +197,11 @@ exports['controller.update'] = {
       version: '0.0.1'
     };
     controller.update(opts)
-      .catch((err) => {
+      .catch(error => {
         // We attempted to fetch a build
         test.equal(this.fetchBuild.callCount, 1);
         // But it failed with the error we specified
-        test.equal(err.message, errMessage);
+        test.equal(error.message, errMessage);
         // We need to close all open Tessel connections
         test.equal(this.closeTesselConnections.callCount, 1);
         test.done();
@@ -260,8 +263,8 @@ exports['controller.update'] = {
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       })
-      .catch((err) => {
-        test.ifError(err);
+      .catch(error => {
+        test.ok(false, `update failed: ${error.toString()}`);
         test.done();
       });
   },
@@ -362,7 +365,7 @@ exports['controller.update'] = {
       lanPrefer: true
     };
     controller.update(opts)
-      .catch((err) => {
+      .catch(error => {
         // We fetched only one build
         test.equal(this.fetchBuild.callCount, 1);
         // It was the latest build
@@ -370,7 +373,7 @@ exports['controller.update'] = {
         // Update Tessel was not called because it was already up to date
         test.equal(this.update.callCount, 1);
         // The update failed with our error message
-        test.equal(err.message, errMessage);
+        test.equal(error.message, errMessage);
         // Then Tessel was closed
         test.equal(this.tessel.closed, true);
         // We closed all open Tessel connections
@@ -433,8 +436,9 @@ exports['controller.update'] = {
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       })
-      .catch((err) => {
-        test.ifError(err);
+      .catch(error => {
+        test.ok(false, `update failed: ${error.toString()}`);
+        test.done();
       });
   },
 
@@ -481,8 +485,9 @@ exports['controller.update'] = {
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
       })
-      .catch((err) => {
-        test.ifError(err);
+      .catch(error => {
+        test.ok(false, `update failed: ${error.toString()}`);
+        test.done();
       });
   },
 
@@ -511,8 +516,8 @@ exports['controller.update'] = {
       lanPrefer: true
     };
     controller.update(opts)
-      .catch((message) => {
-        test.equal(message, 'The requested build was not found. Please see the available builds with `t2 update -l`.');
+      .catch(error => {
+        test.equal(error, 'The requested build was not found. Please see the available builds with `t2 update -l`.');
         // We need to close all open Tessel connections
         test.equal(this.closeTesselConnections.callCount, 1);
         test.done();
@@ -569,7 +574,8 @@ exports['controller.update'] = {
         test.done();
       })
       .catch(() => {
-        test.fail('It should force an update if the file version is not found');
+        test.ok(false, 'It should force an update if the file version is not found');
+        test.done();
       });
   },
 
@@ -614,11 +620,12 @@ exports['controller.update'] = {
     };
     controller.update(opts)
       .then(() => {
-        test.fail('It should throw an error if we get an unknown error');
+        test.ok(false, 'It should throw an error if we get an unknown error');
+        test.done();
       })
-      .catch((err) => {
+      .catch(error => {
         // Make sure this error has the proper error message
-        test.equal(err.message, unknownError.message);
+        test.equal(error.message, unknownError.message);
         // It should not attempt to fetch any builds
         test.equal(this.fetchBuild.callCount, 0);
         // We closed all open Tessel connections
@@ -691,7 +698,8 @@ exports['controller.update'] = {
         test.done();
       })
       .catch(() => {
-        test.fail('Update should not reject with valid options and builds.');
+        test.ok(false, 'Update should not reject with valid options and builds.');
+        test.done();
       });
   }
 };
@@ -742,7 +750,7 @@ exports['update-fetch'] = {
         test.done();
       })
       .catch(() => {
-        test.fail('An error was returned when the list fetch should succeed');
+        test.ok(false, 'An error was returned when the list fetch should succeed');
         test.done();
       });
   }
@@ -815,7 +823,7 @@ exports['Tessel.update'] = {
         test.done();
       })
       .catch(() => {
-        test.fail('Update test failed with valid options and builds');
+        test.ok(false, 'Update test failed with valid options and builds');
         test.done();
       });
   }

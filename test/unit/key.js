@@ -24,16 +24,16 @@ exports['provision.setDefaultKey'] = {
 
   tearDown: function(done) {
     this.sandbox.restore();
-    done();
+    fs.remove(testDir, done);
   },
 
   noKeyPath: function(test) {
     test.expect(3);
     provision.setDefaultKey()
       .then(() => {
-        test.fail('noKeyPath - should not pass because provision.setDefaultKey should return rejection');
-      })
-      .catch(() => {
+        test.ok(false, 'noKeyPath - should not pass because provision.setDefaultKey should return rejection');
+        test.done();
+      }).catch(() => {
         test.equal(this.setDefaultKeySpy.callCount, 1);
         // ensure the Tessel.LOCAL_AUTH_PATH has a default when using options without presetting key s
         test.equal(Tessel.LOCAL_AUTH_PATH, authPath);
@@ -46,9 +46,9 @@ exports['provision.setDefaultKey'] = {
     test.expect(3);
     provision.setDefaultKey(1234)
       .then(() => {
-        test.fail('...');
-      })
-      .catch(() => {
+        test.ok(false, 'setDefaultKey was expected to fail, but did not');
+        test.done();
+      }).catch(() => {
         test.equal(this.setDefaultKeySpy.callCount, 1);
         // ensure the Tessel.LOCAL_AUTH_PATH has a default when using options without presetting key s
         test.equal(Tessel.LOCAL_AUTH_PATH, authPath);
@@ -61,9 +61,9 @@ exports['provision.setDefaultKey'] = {
     test.expect(3);
     provision.setDefaultKey('wrongkeypath')
       .then(() => {
-        test.fail('keyNotPresent - wrongkeypath seams to exist');
-      })
-      .catch(() => {
+        test.ok(false, 'keyNotPresent - wrongkeypath seams to exist');
+        test.done();
+      }).catch(() => {
         //console.log('test failed ?', fs.statSync.firstCall);
         test.equal(this.setDefaultKeySpy.callCount, 1);
         test.equal(fs.statSync.callCount, 1);
@@ -97,7 +97,7 @@ exports['provision.setDefaultKey'] = {
       };
 
       async.parallel([
-        (cb) => fs.writeFile(testPath + '.pub', publicKey, fileOpts, cb), (cb) => fs.writeFile(testPath, privateKey, fileOpts, cb),
+        (next) => fs.writeFile(testPath + '.pub', publicKey, fileOpts, next), (next) => fs.writeFile(testPath, privateKey, fileOpts, next),
       ], (err) => {
         if (err) {
           console.log('parallel writer: ' + err);
@@ -117,7 +117,8 @@ exports['provision.setDefaultKey'] = {
               test.done();
             });
           }).catch(() => {
-            test.fail('validAlternateKey - provision.setDefaultKey promize rejection');
+            test.ok(false, 'validAlternateKey - provision.setDefaultKey promize rejection');
+            test.done();
           });
       });
     });
