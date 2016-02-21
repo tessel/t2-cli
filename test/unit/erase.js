@@ -21,15 +21,13 @@ exports['Tessel.prototype.erase'] = {
   },
 
   eraseAsUsual: function(test) {
-    var self = this;
-
     test.expect(10);
 
     var expected = [commands.stopRunningScript(), commands.disablePushedScript(), commands.deleteFolder(Tessel.REMOTE_PUSH_PATH)];
     var commandNumber = 0;
 
     // Test that we received the proper command
-    self.tessel._rps.on('control', function(command) {
+    this.tessel._rps.on('control', (command) => {
       var receivedCommands = command.toString().split(' ');
       // Test that the command has the proper number of args
       test.equal(receivedCommands.length, expected[commandNumber].length);
@@ -41,46 +39,44 @@ exports['Tessel.prototype.erase'] = {
 
       commandNumber++;
 
-      setImmediate(function() {
-        self.tessel._rps.emit('close');
+      setImmediate(() => {
+        this.tessel._rps.emit('close');
       });
     });
 
-    self.tessel.eraseScript()
-      .then(function() {
+    this.tessel.eraseScript()
+      .then(() => {
         // This test completed satisfactorily
         test.done();
       })
-      .catch(function() {
+      .catch(() => {
         test.fail('Error thrown on proper flash erase');
       });
   },
 
   noCodeInFlash: function(test) {
-    var self = this;
-
     test.expect(1);
 
     // Attempt to erase the script
-    self.tessel.eraseScript()
+    this.tessel.eraseScript()
       // If it completes without issue
-      .then(function() {
+      .then(() => {
         // Fail the test
         test.fail('Error should have been returned on useless flash erase');
       })
       // If it fails (as it should)
-      .catch(function(err) {
+      .catch((err) => {
         test.ok(err);
         // Pass the test
         test.done();
       });
 
     // Write the error message we get when there is no code in flash
-    self.tessel._rps.stderr.push('Command failed: Not found');
+    this.tessel._rps.stderr.push('Command failed: Not found');
 
     // End the process once the error has time to propogate
-    setImmediate(function() {
-      self.tessel._rps.emit('close');
+    setImmediate(() => {
+      this.tessel._rps.emit('close');
     });
   }
 };

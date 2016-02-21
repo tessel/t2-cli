@@ -1,8 +1,8 @@
 exports['tessel.root'] = {
   setUp: function(done) {
-    var self = this;
+    var testContext = this;
     this.sandbox = sinon.sandbox.create();
-    this.spawn = this.sandbox.stub(cp, 'spawn', function() {
+    this.spawn = this.sandbox.stub(cp, 'spawn', () => {
       var child = new Emitter();
 
       setImmediate(() => {
@@ -17,8 +17,8 @@ exports['tessel.root'] = {
 
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
       this.start = function(options) {
-        self.activeSeeker = this;
-        setTimeout(this.stop.bind(this), options.timeout);
+        testContext.activeSeeker = this;
+        setTimeout(() => this.stop(), options.timeout);
         return this;
       };
       this.stop = function() {

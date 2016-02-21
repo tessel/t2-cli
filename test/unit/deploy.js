@@ -12,11 +12,7 @@ var sandbox = sinon.sandbox.create();
 
 exports['Tessel.prototype.memoryInfo'] = {
   setUp: function(done) {
-    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', function() {
-      return new Promise(function(resolve) {
-        resolve(meminfo);
-      });
-    });
+    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', () => Promise.resolve(meminfo));
 
     this.logsWarn = sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = sandbox.stub(logs, 'info', function() {});
@@ -73,13 +69,13 @@ exports['Tessel.prototype.memoryInfo'] = {
 
   meminfo: function(test) {
     test.expect(4);
-    this.tessel.memoryInfo().then(function(memory) {
+    this.tessel.memoryInfo().then((memory) => {
       test.equal(this.execRemoteCommand.callCount, 1);
       test.equal(this.execRemoteCommand.lastCall.args[0], this.tessel);
       test.equal(this.execRemoteCommand.lastCall.args[1], 'getMemoryInfo');
       test.deepEqual(memory, this.expect);
       test.done();
-    }.bind(this));
+    });
   },
 
   failureNoResponse: function(test) {
@@ -87,16 +83,12 @@ exports['Tessel.prototype.memoryInfo'] = {
 
     this.execRemoteCommand.restore();
 
-    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', function() {
-      return new Promise(function(resolve) {
-        resolve();
-      });
-    });
+    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', () => Promise.resolve());
 
-    this.tessel.memoryInfo().catch(function(error) {
+    this.tessel.memoryInfo().catch((error) => {
       test.equal(error, 'Could not read device memory information.');
       test.done();
-    }.bind(this));
+    });
   },
 
   failureEmptyResponse: function(test) {
@@ -104,16 +96,12 @@ exports['Tessel.prototype.memoryInfo'] = {
 
     this.execRemoteCommand.restore();
 
-    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', function() {
-      return new Promise(function(resolve) {
-        resolve('');
-      });
-    });
+    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', () => Promise.resolve(''));
 
-    this.tessel.memoryInfo().catch(function(error) {
+    this.tessel.memoryInfo().catch((error) => {
       test.equal(error, 'Could not read device memory information.');
       test.done();
-    }.bind(this));
+    });
   },
 
 };
@@ -133,13 +121,9 @@ exports['Tessel.prototype.deployScript'] = {
     this.pushScript = sandbox.spy(deploy, 'pushScript');
     this.writeToFile = sandbox.spy(deploy, 'writeToFile');
 
-    this.injectBinaryModules = sandbox.stub(deploy, 'injectBinaryModules', function() {
-      return Promise.resolve();
-    });
+    this.injectBinaryModules = sandbox.stub(deploy, 'injectBinaryModules', () => Promise.resolve());
 
-    this.resolveBinaryModules = sandbox.stub(deploy, 'resolveBinaryModules', function() {
-      return Promise.resolve();
-    });
+    this.resolveBinaryModules = sandbox.stub(deploy, 'resolveBinaryModules', () => Promise.resolve());
     this.tarBundle = sandbox.stub(deploy, 'tarBundle', function() {
       return new Promise(function(resolve) {
         resolve(reference);
@@ -176,7 +160,7 @@ exports['Tessel.prototype.deployScript'] = {
     createTemporaryDeployCode().then(function() {
       deploy.tarBundle({
         target: deployFolder
-      }).then(function(bundle) {
+      }).then((bundle) => {
         /*
           $ t2 run app.js
           INFO Looking for your Tessel...
@@ -201,7 +185,7 @@ exports['Tessel.prototype.deployScript'] = {
     deployTestCode(this.tessel, test, {
       push: false,
       single: false
-    }, function deployed(err) {
+    }, (err) => {
       test.ifError(err);
       test.equal(this.stopRunningScript.callCount, 1);
       test.equal(this.deleteFolder.callCount, 1);
@@ -215,7 +199,7 @@ exports['Tessel.prototype.deployScript'] = {
       // Ensure that the last call (to run Node) sets pty to true
       test.equal(this.exec.lastCall.args[1].pty, true);
       test.done();
-    }.bind(this));
+    });
   },
 
   runScriptSingle: function(test) {
@@ -223,7 +207,7 @@ exports['Tessel.prototype.deployScript'] = {
     deployTestCode(this.tessel, test, {
       push: false,
       single: true
-    }, function deployed(err) {
+    }, (err) => {
       test.ifError(err);
       test.equal(this.stopRunningScript.callCount, 1);
       test.equal(this.deleteFolder.callCount, 0);
@@ -235,7 +219,7 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.startPushedScript.callCount, 0);
       test.equal(this.end.callCount, 1);
       test.done();
-    }.bind(this));
+    });
   },
 
   pushScript: function(test) {
@@ -243,7 +227,7 @@ exports['Tessel.prototype.deployScript'] = {
     deployTestCode(this.tessel, test, {
       push: true,
       single: false
-    }, function deployed(err) {
+    }, (err) => {
       test.ifError(err);
 
       var expectedPath = path.normalize('test/unit/tmp/app.js');
@@ -263,7 +247,7 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.startPushedScript.callCount, 1);
       test.equal(this.end.callCount, 1);
       test.done();
-    }.bind(this));
+    });
   },
 
   pushScriptSingle: function(test) {
@@ -271,7 +255,7 @@ exports['Tessel.prototype.deployScript'] = {
     deployTestCode(this.tessel, test, {
       push: true,
       single: true
-    }, function deployed(err) {
+    }, (err) => {
       test.ifError(err);
       test.equal(this.stopRunningScript.callCount, 1);
       test.equal(this.deleteFolder.callCount, 0);
@@ -283,7 +267,7 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.startPushedScript.callCount, 1);
       test.equal(this.end.callCount, 1);
       test.done();
-    }.bind(this));
+    });
   },
 
   writeToFileDefaultEntryPoint: function(test) {
@@ -294,18 +278,15 @@ exports['Tessel.prototype.deployScript'] = {
       exec node /app/remote-script/index.js
     `;
     this.end.restore();
-    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', function(buffer) {
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
       test.equal(buffer.toString(), shellScript);
       test.done();
-    }.bind(this));
+    });
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', function(command, callback) {
-      return callback(null, this.tessel._rps);
-    }.bind(this));
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, cb) => cb(null, this.tessel._rps));
 
     deploy.writeToFile(this.tessel, 'index.js');
   },
-
 
   writeToFileSendsCorrectEntryPoint: function(test) {
     test.expect(1);
@@ -315,60 +296,55 @@ exports['Tessel.prototype.deployScript'] = {
       exec node /app/remote-script/index.js
     `;
     this.end.restore();
-    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', function(buffer) {
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
       test.equal(buffer.toString(), shellScript);
       test.done();
-    }.bind(this));
+    });
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', function(command, callback) {
-      return callback(null, this.tessel._rps);
-    }.bind(this));
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, cb) => cb(null, this.tessel._rps));
 
     deploy.writeToFile(this.tessel, 'index.js');
   },
 
   processCompletionOrder: function(test) {
-
-    var self = this;
-
     // Array of processes we've started but haven't completed yet
     var processesAwaitingCompletion = [];
-    self.tessel._rps.on('control', function(data) {
+    this.tessel._rps.on('control', (data) => {
       // Push new commands into the queue
       processesAwaitingCompletion.push(data);
     });
 
     // Create the temporary folder with example code
     createTemporaryDeployCode()
-      .then(function deploy() {
+      .then(() => {
 
-        function closeAdvance(event) {
+        var closeAdvance = (event) => {
           // If we get an event listener for the close event of a process
           if (event === 'close') {
             // Wait some time before actually closing it
-            setTimeout(function() {
+            setTimeout(() => {
               // We should only have one process waiting for completion
               test.equal(processesAwaitingCompletion.length, 1);
               // Pop that process off
               processesAwaitingCompletion.shift();
               // Emit the close event to keep it going
-              self.tessel._rps.emit('close');
+              this.tessel._rps.emit('close');
             }, 200);
           }
-        }
+        };
 
         // When we get a listener that the Tessel process needs to close before advancing
-        self.tessel._rps.on('newListener', closeAdvance);
+        this.tessel._rps.on('newListener', closeAdvance);
 
         // Actually deploy the script
-        self.tessel.deployScript({
+        this.tessel.deployScript({
             entryPoint: path.relative(process.cwd(), deployFile),
             push: false,
             single: false
           })
           // If it finishes, it was successful
-          .then(function success() {
-            self.tessel._rps.removeListener('newListener', closeAdvance);
+          .then(() => {
+            this.tessel._rps.removeListener('newListener', closeAdvance);
             test.done();
           })
           // If not, there was an issue
@@ -667,7 +643,7 @@ exports['deploy.tarBundle'] = {
     deploy.tarBundle({
       target: path.normalize(target),
       full: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
 
       // One call for .tesselinclude
       // One call for the single rule found within
@@ -692,9 +668,9 @@ exports['deploy.tarBundle'] = {
       // End
 
       // Extract and inspect the bundle...
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         test.deepEqual(entries, [
@@ -705,7 +681,7 @@ exports['deploy.tarBundle'] = {
         ]);
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   slim: function(test) {
@@ -736,7 +712,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       // These things happen in the --slim path
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 2);
@@ -767,9 +743,9 @@ exports['deploy.tarBundle'] = {
       test.equal(minified.indexOf('!!mock-foo!!') === -1, true);
 
       // Extract and inspect the bundle...
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         test.deepEqual(entries, [
@@ -780,7 +756,7 @@ exports['deploy.tarBundle'] = {
         test.done();
       });
 
-    }.bind(this));
+    });
   },
 
   slimSyntaxErrorRejects: function(test) {
@@ -845,7 +821,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 1);
       test.equal(this.mkdirSync.callCount, 1);
@@ -855,15 +831,15 @@ exports['deploy.tarBundle'] = {
       test.equal(minified, 'var e=require("tessel");e.led[2].on(),setInterval(function(){e.led[2].toggle(),e.led[3].toggle()},100);');
 
       // Extract and inspect the bundle...
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         test.deepEqual(entries, ['index.js', 'package.json']);
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   slimSingle: function(test) {
@@ -878,12 +854,12 @@ exports['deploy.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       single: true,
       slim: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 1);
 
       test.equal(bundle.length, 2048);
-      extract(bundle, function(error, entries) {
+      extract(bundle, (error, entries) => {
         if (error) {
           test.fail(error);
         }
@@ -891,7 +867,7 @@ exports['deploy.tarBundle'] = {
         test.deepEqual(entries, ['index.js']);
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   slimSingleNested: function(test) {
@@ -907,20 +883,20 @@ exports['deploy.tarBundle'] = {
       single: true,
       slim: true,
 
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 1);
       test.equal(bundle.length, 2560);
 
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         test.deepEqual(entries, ['nested/another.js']);
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   fullSingle: function(test) {
@@ -935,19 +911,19 @@ exports['deploy.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       single: true,
       full: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
 
       test.equal(this.addIgnoreRules.callCount, 3);
       test.equal(bundle.length, 2048);
 
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
         test.deepEqual(entries, ['index.js']);
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   fullSingleNested: function(test) {
@@ -962,17 +938,17 @@ exports['deploy.tarBundle'] = {
       resolvedEntryPoint: path.join('nested', entryPoint),
       single: true,
       full: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(bundle.length, 2560);
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
         test.deepEqual(entries, ['nested/another.js']);
         test.done();
       });
 
-    }.bind(this));
+    });
   },
 
   slimIncludeOverridesIgnore: function(test) {
@@ -1005,7 +981,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(this.globSync.callCount, 11);
 
       /*
@@ -1036,9 +1012,9 @@ exports['deploy.tarBundle'] = {
       test.equal(this.remove.callCount, 1);
 
       // Extract and inspect the bundle...
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         // Since the .tesselignore rules are ALL negated by .tesselinclude rules,
@@ -1055,7 +1031,7 @@ exports['deploy.tarBundle'] = {
 
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   fullIncludeOverridesIgnore: function(test) {
@@ -1086,7 +1062,7 @@ exports['deploy.tarBundle'] = {
     deploy.tarBundle({
       target: path.normalize(target),
       full: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(this.globSync.callCount, 11);
 
       // addIgnoreRules might be called many times, but we only
@@ -1115,9 +1091,9 @@ exports['deploy.tarBundle'] = {
       // End
 
       // Extract and inspect the bundle...
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         // The .tesselignore rules are ALL overridden by .tesselinclude rules
@@ -1132,7 +1108,7 @@ exports['deploy.tarBundle'] = {
 
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   slimIncludeWithoutIgnore: function(test) {
@@ -1163,7 +1139,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(this.globSync.callCount, 8);
 
       /*
@@ -1192,9 +1168,9 @@ exports['deploy.tarBundle'] = {
       test.equal(this.remove.callCount, 1);
 
       // Extract and inspect the bundle...
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         // There are no .tesselignore rules, all .tesselinclude rules are
@@ -1211,7 +1187,7 @@ exports['deploy.tarBundle'] = {
 
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   fullIncludeWithoutIgnore: function(test) {
@@ -1248,7 +1224,7 @@ exports['deploy.tarBundle'] = {
     deploy.tarBundle({
       target: path.normalize(target),
       full: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(this.globSync.callCount, 8);
 
       // addIgnoreRules might be called many times, but we only
@@ -1283,9 +1259,9 @@ exports['deploy.tarBundle'] = {
       // End
 
       // Extract and inspect the bundle...
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         // There are no .tesselignore rules, all .tesselinclude rules are
@@ -1303,7 +1279,7 @@ exports['deploy.tarBundle'] = {
 
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   slimIncludeHasNegateRules: function(test) {
@@ -1334,7 +1310,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(this.globSync.callCount, 9);
 
       /*
@@ -1367,9 +1343,9 @@ exports['deploy.tarBundle'] = {
       test.equal(this.remove.callCount, 1);
 
       // Extract and inspect the bundle...
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         // There are no .tesselignore rules, but the .tesselinclude rules
@@ -1387,7 +1363,7 @@ exports['deploy.tarBundle'] = {
 
         test.done();
       });
-    }.bind(this));
+    });
   },
 
   fullIncludeHasNegateRules: function(test) {
@@ -1417,7 +1393,7 @@ exports['deploy.tarBundle'] = {
     deploy.tarBundle({
       target: path.normalize(target),
       full: true,
-    }).then(function(bundle) {
+    }).then((bundle) => {
       test.equal(this.globSync.callCount, 9);
 
       // addIgnoreRules might be called many times, but we only
@@ -1457,9 +1433,9 @@ exports['deploy.tarBundle'] = {
       // End
 
       // Extract and inspect the bundle...
-      extract(bundle, function(error, entries) {
-        if (error) {
-          test.fail(error);
+      extract(bundle, (err, entries) => {
+        if (err) {
+          test.fail(err);
         }
 
         // There are no .tesselignore rules, all .tesselinclude rules are
@@ -1477,24 +1453,15 @@ exports['deploy.tarBundle'] = {
 
         test.done();
       });
-    }.bind(this));
+    });
   },
 };
 
 exports['Tessel.prototype.restartScript'] = {
   setUp: function(done) {
-    this.runScript = sandbox.stub(deploy, 'runScript', function() {
-      return Promise.resolve();
-    });
-    this.startPushedScript = sandbox.stub(deploy, 'startPushedScript', function() {
-      return Promise.resolve();
-    });
-
-    this.findProject = sandbox.stub(deploy, 'findProject', function(entryPoint) {
-      return Promise.resolve({
-        entryPoint: entryPoint
-      });
-    });
+    this.runScript = sandbox.stub(deploy, 'runScript', () => Promise.resolve());
+    this.startPushedScript = sandbox.stub(deploy, 'startPushedScript', () => Promise.resolve());
+    this.findProject = sandbox.stub(deploy, 'findProject', (entryPoint) => Promise.resolve({ entryPoint }));
 
     this.logsWarn = sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = sandbox.stub(logs, 'info', function() {});
@@ -1520,7 +1487,7 @@ exports['Tessel.prototype.restartScript'] = {
     };
 
     this.tessel.restartScript(opts)
-      .then(function() {
+      .then(() => {
         test.equal(this.runScript.callCount, 1);
         test.equal(this.runScript.lastCall.args[1], '/tmp/remote-script/');
         test.deepEqual(this.runScript.lastCall.args[2], {
@@ -1528,11 +1495,11 @@ exports['Tessel.prototype.restartScript'] = {
           entryPoint: 'index.js'
         });
         test.done();
-      }.bind(this));
+      });
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.tessel._rps.emit('close');
-    }.bind(this));
+    });
   },
 
   restartFromFlash: function(test) {
@@ -1543,7 +1510,7 @@ exports['Tessel.prototype.restartScript'] = {
     };
 
     this.tessel.restartScript(opts)
-      .then(function() {
+      .then(() => {
         test.equal(this.startPushedScript.callCount, 1);
         test.equal(this.startPushedScript.lastCall.args[1], 'index.js');
         test.deepEqual(this.startPushedScript.lastCall.args[2], {
@@ -1551,11 +1518,11 @@ exports['Tessel.prototype.restartScript'] = {
           entryPoint: 'index.js'
         });
         test.done();
-      }.bind(this));
+      });
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.tessel._rps.emit('close');
-    }.bind(this));
+    });
   },
 
   restartNonExistent: function(test) {
@@ -1566,15 +1533,15 @@ exports['Tessel.prototype.restartScript'] = {
     };
 
     this.tessel.restartScript(opts)
-      .catch(function(error) {
+      .catch((error) => {
         test.equal(error, '"index.js" not found on undefined');
         test.done();
-      }.bind(this));
+      });
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.tessel._rps.stderr.emit('data', new Buffer('No such file or directory'));
       this.tessel._rps.emit('close');
-    }.bind(this));
+    });
   },
 };
 

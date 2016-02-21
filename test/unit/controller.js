@@ -56,12 +56,12 @@ exports['controller.closeTesselConnections'] = {
     });
 
     controller.closeTesselConnections([a, b, c])
-      .then(function() {
+      .then(() => {
         test.equal(a.close.callCount, 1);
         test.equal(b.close.callCount, 1);
         test.equal(c.close.callCount, 0);
         test.done();
-      }.bind(this));
+      });
   },
 
   callsCloseOnAllUSBConnections: function(test) {
@@ -84,12 +84,12 @@ exports['controller.closeTesselConnections'] = {
     });
 
     controller.closeTesselConnections([a, b, c])
-      .then(function() {
+      .then(() => {
         test.equal(a.close.callCount, 1);
         test.equal(b.close.callCount, 1);
         test.equal(c.close.callCount, 1);
         test.done();
-      }.bind(this));
+      });
   },
 
   resolvesForUnauthorizedLANConnections: function(test) {
@@ -102,10 +102,10 @@ exports['controller.closeTesselConnections'] = {
     });
 
     controller.closeTesselConnections([a])
-      .then(function() {
+      .then(() => {
         test.equal(a.close.callCount, 0);
         test.done();
-      }.bind(this));
+      });
   },
 };
 
@@ -352,22 +352,22 @@ exports['controller.runHeuristics'] = {
 exports['Tessel.list'] = {
 
   setUp: function(done) {
-    var self = this;
+    var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function() {
       this.start = function(opts) {
-        self.activeSeeker = this;
+        testContext.activeSeeker = this;
         if (opts.timeout && typeof opts.timeout === 'number') {
           setTimeout(this.stop, opts.timeout);
         }
         return this;
       };
-      this.stop = function() {
+      this.stop = () => {
         this.emit('end');
         return this;
-      }.bind(this);
+      };
     });
     util.inherits(this.seeker, Emitter);
 
@@ -400,19 +400,19 @@ exports['Tessel.list'] = {
     });
 
     Tessel.list(this.standardOpts)
-      .then(function() {
+      .then(() => {
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(a.close.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this));
+      });
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', a);
-    }.bind(this));
+    });
   },
 
   oneLANTessel: function(test) {
@@ -425,19 +425,19 @@ exports['Tessel.list'] = {
     });
 
     Tessel.list(this.standardOpts)
-      .then(function() {
+      .then(() => {
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(a.close.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this));
+      });
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', a);
-    }.bind(this));
+    });
   },
 
   oneTesselTwoConnections: function(test) {
@@ -457,21 +457,21 @@ exports['Tessel.list'] = {
     });
 
     Tessel.list(this.standardOpts)
-      .then(function() {
+      .then(() => {
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(usb.close.callCount, 1);
         test.equal(lan.close.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.done();
-      }.bind(this));
+      });
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', usb);
       this.activeSeeker.emit('tessel', lan);
-    }.bind(this));
+    });
   },
 
   multipleDifferentTessels: function(test) {
@@ -491,34 +491,34 @@ exports['Tessel.list'] = {
     });
 
     Tessel.list(this.standardOpts)
-      .then(function() {
+      .then(() => {
         test.equal(this.runHeuristics.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
         test.equal(usb.close.callCount, 1);
         test.equal(lan.close.callCount, 1);
         test.done();
-      }.bind(this));
+      });
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', usb);
       this.activeSeeker.emit('tessel', lan);
-    }.bind(this));
+    });
   },
 };
 
 exports['Tessel.get'] = {
 
   setUp: function(done) {
-    var self = this;
+    var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
       this.start = function(opts) {
-        self.activeSeeker = this;
+        testContext.activeSeeker = this;
         this.msg = {
           noAuth: 'No Authorized Tessels Found.',
           auth: 'No Tessels Found.'
@@ -528,10 +528,10 @@ exports['Tessel.get'] = {
         }
         return this;
       };
-      this.stop = function() {
-        self.activeSeeker.emit('end');
+      this.stop = () => {
+        testContext.activeSeeker.emit('end');
         return this;
-      }.bind(this);
+      };
     });
     util.inherits(this.seeker, Emitter);
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
@@ -572,7 +572,7 @@ exports['Tessel.get'] = {
     };
 
     Tessel.get(customOpts)
-      .then(function() {
+      .then(() => {
         test.equal(this.reconcileTessels.callCount, 0);
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
@@ -580,13 +580,13 @@ exports['Tessel.get'] = {
         test.equal(this.logsInfo.callCount, 2);
         test.equal(this.logsInfo.lastCall.args[0].includes('the_name'), true);
         test.done();
-      }.bind(this));
+      });
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', a);
-    }.bind(this));
+    });
   },
 
   oneUnNamedTessel: function(test) {
@@ -602,7 +602,7 @@ exports['Tessel.get'] = {
     });
 
     Tessel.get(this.standardOpts)
-      .then(function() {
+      .then(() => {
         test.equal(this.reconcileTessels.callCount, 0);
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
@@ -610,13 +610,13 @@ exports['Tessel.get'] = {
         test.equal(this.logsInfo.callCount, 2);
         test.equal(this.logsInfo.lastCall.args[0].includes('the_name'), true);
         test.done();
-      }.bind(this));
+      });
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', a);
-    }.bind(this));
+    });
   },
 
   oneUnamedTesselTwoConnections: function(test) {
@@ -641,7 +641,7 @@ exports['Tessel.get'] = {
     customOpts.lanPrefer = true;
 
     Tessel.get(customOpts)
-      .then(function() {
+      .then(() => {
         test.equal(this.reconcileTessels.callCount, 1);
         test.equal(this.runHeuristics.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
@@ -649,14 +649,14 @@ exports['Tessel.get'] = {
         test.equal(this.logsInfo.callCount, 2);
         test.equal(this.logsInfo.lastCall.args[0].includes('samesies'), true);
         test.done();
-      }.bind(this));
+      });
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', usb);
       this.activeSeeker.emit('tessel', lan);
-    }.bind(this));
+    });
 
   },
 
@@ -667,12 +667,12 @@ exports['Tessel.get'] = {
         // Doesn't matter what this function does b/c Tessel.get will fail
         return Promise.resolve();
       })
-      .catch(function(err) {
+      .catch((err) => {
         // We don't need to close any connections because none were found
         test.equal(this.closeTesselConnections.callCount, 0);
         test.equal(typeof err, 'string');
         test.done();
-      }.bind(this));
+      });
   },
 
   standardCommandSuccess: function(test) {
@@ -686,7 +686,7 @@ exports['Tessel.get'] = {
         // Finish the command
         return Promise.resolve(optionalValue);
       })
-      .then(function(returnedValue) {
+      .then((returnedValue) => {
         // We need to close the connection of the Tessel we found
         // We close once at the end of Tessel.get and again after the standard command
         test.equal(this.closeTesselConnections.callCount, 2);
@@ -695,7 +695,7 @@ exports['Tessel.get'] = {
         // Ensure we got the optional returned value
         test.equal(optionalValue, returnedValue);
         test.done();
-      }.bind(this))
+      })
       .catch(test.fail);
 
     var usb = newTessel({
@@ -706,9 +706,9 @@ exports['Tessel.get'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', usb);
-    }.bind(this));
+    });
   },
 
   standardCommandFailed: function(test) {
@@ -725,7 +725,7 @@ exports['Tessel.get'] = {
         return Promise.reject(errMessage);
       })
       .then(test.fail)
-      .catch(function(err) {
+      .catch((err) => {
         // Make sure the error messages are passed through properly
         test.equal(errMessage, err);
         // We need to close the connection of the Tessel we found
@@ -734,7 +734,7 @@ exports['Tessel.get'] = {
         // Make sure we closed the connection of the exact Tessel we emitted
         test.equal(this.closeTesselConnections.args[1][0][0], usb);
         test.done();
-      }.bind(this));
+      });
 
     var usb = newTessel({
       sandbox: this.sandbox,
@@ -744,9 +744,9 @@ exports['Tessel.get'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', usb);
-    }.bind(this));
+    });
   },
 
   standardCommandSigInt: function(test) {
@@ -758,14 +758,14 @@ exports['Tessel.get'] = {
         // This command doesn't do anything. It won't resolve so if we do get
         // to the next clause, it's due to the sigint
       })
-      .then(function() {
+      .then(() => {
         // We need to close the connection of the Tessel we found
         // We close once at the end of Tessel.get and again after the standard command
         test.equal(this.closeTesselConnections.callCount, 2);
         // Make sure we closed the connection of the exact Tessel we emitted
         test.equal(this.closeTesselConnections.args[1][0][0], usb);
         test.done();
-      }.bind(this))
+      })
       .catch(test.fail);
 
     var usb = newTessel({
@@ -776,10 +776,10 @@ exports['Tessel.get'] = {
 
     // We must emit the Tessel sometime after list is called
     // but before the seeker stops searching
-    setImmediate(function() {
+    setImmediate(() => {
       this.activeSeeker.emit('tessel', usb);
       process.emit('SIGINT');
-    }.bind(this));
+    });
   },
 };
 
@@ -894,9 +894,7 @@ exports['controller.root'] = {
 
     this.child = new FakeChild();
 
-    this.spawn = this.sandbox.stub(cp, 'spawn', function() {
-      return this.child;
-    }.bind(this));
+    this.spawn = this.sandbox.stub(cp, 'spawn', () => this.child);
 
     done();
   },
@@ -912,14 +910,14 @@ exports['controller.root'] = {
     var opts = {};
 
     controller.root(opts)
-      .then(function() {
+      .then(() => {
         var options = this.standardTesselCommand.lastCall.args[0];
 
         test.equal(this.standardTesselCommand.callCount, 1);
         test.equal(options, opts);
         test.equal(options.lan, true);
         test.done();
-      }.bind(this));
+      });
   },
 
   setsAuthorizedTrue: function(test) {
@@ -928,14 +926,14 @@ exports['controller.root'] = {
     var opts = {};
 
     controller.root(opts)
-      .then(function() {
+      .then(() => {
         var options = this.standardTesselCommand.lastCall.args[0];
 
         test.equal(this.standardTesselCommand.callCount, 1);
         test.equal(options, opts);
         test.equal(options.authorized, true);
         test.done();
-      }.bind(this));
+      });
   },
 
   openShell: function(test) {
@@ -953,9 +951,7 @@ exports['controller.root'] = {
     var testKey = '~/fake';
 
     this.standardTesselCommand.restore();
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', function(opts, callback) {
-      return callback(tessel);
-    }.bind(this));
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, cb) => cb(tessel));
 
     // Return our own local auth key (it won't be set because we have stubbed
     // that functionality out of standardTesselCommand)
@@ -964,7 +960,7 @@ exports['controller.root'] = {
     controller.root({
         key: testKey
       })
-      .then(function() {
+      .then(() => {
         // Only spawn one process
         test.ok(this.spawn.calledOnce);
         // That process is ssh
@@ -978,11 +974,11 @@ exports['controller.root'] = {
         // We want to ensure stdio streams are piped to the console
         test.equal(this.spawn.firstCall.args[2].stdio, 'inherit');
         test.done();
-      }.bind(this));
+      });
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.child.emit('close');
-    }.bind(this));
+    });
   },
 
   shellOpenError: function(test) {
@@ -996,24 +992,22 @@ exports['controller.root'] = {
     });
 
     this.standardTesselCommand.restore();
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', function(opts, callback) {
-      return callback(tessel);
-    }.bind(this));
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, cb) => cb(tessel));
 
     var errMessage = 'Your child is a fake!';
 
     controller.root({})
-      .then(function() {
+      .then(() => {
         // Only spawn one process
         test.fail('Should have rejected the root promise.');
-      }.bind(this))
-      .catch(function(err) {
+      })
+      .catch((err) => {
         test.ok(err.indexOf(errMessage) !== -1);
         test.done();
       });
 
-    setImmediate(function() {
+    setImmediate(() => {
       this.child.emit('error', new Error(errMessage));
-    }.bind(this));
+    });
   }
 };

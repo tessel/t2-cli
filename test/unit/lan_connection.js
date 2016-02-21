@@ -95,18 +95,14 @@ exports['LAN.Connection.prototype.exec'] = {
 exports['LAN.Scanner.prototype.start'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.setImmediate = this.sandbox.stub(global, 'setImmediate', function(callback) {
-      callback();
-    });
-    this.createBrowser = this.sandbox.stub(mdns, 'createBrowser', function() {
+    this.setImmediate = this.sandbox.stub(global, 'setImmediate', (cb) => cb());
+    this.createBrowser = this.sandbox.stub(mdns, 'createBrowser', () => {
       var emitter = new Emitter();
       emitter.discover = this.sandbox.spy();
       return emitter;
-    }.bind(this));
-
-    this.readFileSync = this.sandbox.stub(fs, 'readFileSync', function() {
-      return 'this is the contents of id_rsa';
     });
+
+    this.readFileSync = this.sandbox.stub(fs, 'readFileSync', () => 'this is the contents of id_rsa');
 
     this.scanner = new LAN.Scanner();
 
