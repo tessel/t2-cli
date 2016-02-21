@@ -162,9 +162,10 @@ exports['USB.Connection.prototype.open'] = {
         test.ok(this.usbConnection.epIn.startPoll.calledOnce);
         test.done();
       })
-      .catch(function() {
+      .catch(error => {
         // It should not error
-        test.fail();
+        test.ok(false, error.toString());
+        test.done();
       });
   },
 
@@ -176,7 +177,8 @@ exports['USB.Connection.prototype.open'] = {
     this.usbConnection.open()
       .then(() => {
         // It should not succeed
-        test.fail();
+        test.ok(false, 'Expected to fail');
+        test.done();
       })
       .catch((err) => {
         test.ok(err);
@@ -270,7 +272,7 @@ exports['USB.Connection.prototype.end'] = {
       .then(() => this.usbConnection.end())
       .then(() => {
         // It should not succeed
-        test.fail('End resolved even with failed deregister');
+        test.ok(false, 'End resolved even with failed deregister');
         test.done();
       })
       .catch(() => {
@@ -305,7 +307,7 @@ exports['USB.Connection.prototype.end'] = {
       })
       .catch(() => {
         // It should not succeed
-        test.fail('proper connection.end should not fail');
+        test.ok(false, 'proper connection.end should not fail');
         test.done();
       });
   },
@@ -380,13 +382,14 @@ exports['USB.Connection.prototype._receiveMessages'] = {
     });
 
     this.usbConnection.open()
-      .then(function() {
+      .then(() => {
         // It should not resolve
-        test.fail();
+        test.ok(false, 'Expected to fail');
+        test.done();
       })
-      .catch(function(err) {
+      .catch(error => {
         // It should throw the error;
-        test.equal(err, errorMessage);
+        test.equal(error, errorMessage);
         test.equal(closeFunc.callCount, 1);
         test.done();
       });

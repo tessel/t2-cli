@@ -222,8 +222,8 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(this.getWifiInfo.callCount, 1);
         test.done();
       })
-      .catch(function(error) {
-        test.fail(error);
+      .catch(error => {
+        test.ok(false, error.toString());
         test.done();
       });
   },
@@ -266,8 +266,8 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(this.getWifiInfo.callCount, 1);
         test.done();
       })
-      .catch(function(error) {
-        test.fail(error);
+      .catch(error => {
+        test.ok(false, error.toString());
         test.done();
       });
   },
@@ -312,8 +312,8 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(this.getWifiInfo.callCount, 1);
         test.done();
       })
-      .catch(function(error) {
-        test.fail(error);
+      .catch(error => {
+        test.ok(false, error.toString());
         test.done();
       });
   },
@@ -348,7 +348,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
 
     this.tessel.connectToNetwork(creds)
       .then(function() {
-        test.fail('Test should have rejected with an error.');
+        test.ok(false, 'Test should have rejected with an error.');
         test.done();
       })
       .catch(() => {
@@ -390,7 +390,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
 
     this.tessel.connectToNetwork(creds)
       .then(function() {
-        test.fail('Test should have rejected with an error.');
+        test.ok(false, 'Test should have rejected with an error.');
         test.done();
       })
       .catch((error) => {
@@ -451,7 +451,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.done();
       })
       .catch((error) => {
-        test.fail('Should not have received an error with batched response', error);
+        test.ok(false, 'Should not have received an error with batched response', error);
         test.done();
       });
   }
@@ -512,8 +512,8 @@ module.exports['Tessel.setWifiState'] = {
         test.ok(this.getWifiInfo.callCount, 1);
         test.done();
       })
-      .catch(function(err) {
-        test.fail(err);
+      .catch(error => {
+        test.ok(false, error.toString());
         test.done();
       });
   },
@@ -552,8 +552,8 @@ module.exports['Tessel.setWifiState'] = {
         test.ok(this.getWifiInfo.callCount, 1);
         test.done();
       })
-      .catch(function(err) {
-        test.fail(err);
+      .catch(error => {
+        test.ok(false, error.toString());
         test.done();
       });
   }
