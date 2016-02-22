@@ -1442,7 +1442,9 @@ exports['Tessel.prototype.restartScript'] = {
   setUp: function(done) {
     this.runScript = sandbox.stub(deploy, 'runScript', () => Promise.resolve());
     this.startPushedScript = sandbox.stub(deploy, 'startPushedScript', () => Promise.resolve());
-    this.findProject = sandbox.stub(deploy, 'findProject', (entryPoint) => Promise.resolve({ entryPoint }));
+    this.findProject = sandbox.stub(deploy, 'findProject', (entryPoint) => Promise.resolve({
+      entryPoint
+    }));
 
     this.logsWarn = sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = sandbox.stub(logs, 'info', function() {});

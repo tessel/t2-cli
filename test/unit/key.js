@@ -97,8 +97,7 @@ exports['provision.setDefaultKey'] = {
       };
 
       async.parallel([
-        (cb) => fs.writeFile(testPath + '.pub', publicKey, fileOpts, cb),
-        (cb) => fs.writeFile(testPath, privateKey, fileOpts, cb),
+        (cb) => fs.writeFile(testPath + '.pub', publicKey, fileOpts, cb), (cb) => fs.writeFile(testPath, privateKey, fileOpts, cb),
       ], (err) => {
         if (err) {
           console.log('parallel writer: ' + err);

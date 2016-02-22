@@ -529,8 +529,7 @@ function createTestKeys(cb) {
     }
     // Create fake keys
     async.parallel([
-      (cb) => fs.writeFile(testPath + '.pub', fakeKeyFileData, cb),
-      (cb) => fs.writeFile(testPath, fakeKeyFileData, cb),
+      (cb) => fs.writeFile(testPath + '.pub', fakeKeyFileData, cb), (cb) => fs.writeFile(testPath, fakeKeyFileData, cb),
     ], cb);
   });
 }
