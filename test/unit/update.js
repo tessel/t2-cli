@@ -96,19 +96,10 @@ exports['controller.update'] = {
   buildOptionValid: function(test) {
     test.expect(9);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {}
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var binaries = {
@@ -152,39 +143,13 @@ exports['controller.update'] = {
       });
   },
 
-  buildWillNotUpdateOverUSB: function(test) {
-    test.expect(1);
-
-    var opts = {
-      version: '0.0.1',
-      lanPrefer: true
-    };
-
-    controller.update(opts)
-      .catch(function(error) {
-        test.equal(error, 'No LAN connection found. USB-only updates do not work yet. Please ensure Tessel is connected to wifi and try again');
-        test.done();
-      });
-  },
-
   buildOptionInvalid: function(test) {
     test.expect(3);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {
-        return Promise.resolve();
-      }
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var errMessage = 'No such build exists';
@@ -211,19 +176,10 @@ exports['controller.update'] = {
   buildLatest: function(test) {
     test.expect(8);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {}
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var binaries = {
@@ -272,21 +228,10 @@ exports['controller.update'] = {
   buildLatestAlreadyCurrent: function(test) {
     test.expect(7);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {
-        return Promise.resolve();
-      }
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var binaries = {
@@ -324,21 +269,10 @@ exports['controller.update'] = {
   buildLatestUpdateFailed: function(test) {
     test.expect(7);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {
-        return Promise.resolve();
-      }
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var binaries = {
@@ -387,21 +321,10 @@ exports['controller.update'] = {
   buildLatestForce: function(test) {
     test.expect(7);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {
-        return Promise.resolve();
-      }
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var binaries = {
@@ -445,21 +368,10 @@ exports['controller.update'] = {
   explicitLatestDoesntImmediatelyUpdate: function(test) {
     test.expect(3);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {
-        return Promise.resolve();
-      }
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var binaries = {
@@ -494,21 +406,10 @@ exports['controller.update'] = {
   noVerifiedVersion: function(test) {
     test.expect(2);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {
-        return Promise.resolve();
-      }
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var opts = {
@@ -527,21 +428,10 @@ exports['controller.update'] = {
   noVersionForcedUpdate: function(test) {
     test.expect(4);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {
-        return Promise.resolve();
-      }
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     this.fetchCurrentBuildInfo.restore();
@@ -582,21 +472,10 @@ exports['controller.update'] = {
   noVersionUnknownError: function(test) {
     test.expect(4);
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {
-        return Promise.resolve();
-      }
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var unknownError = new Error('Something totally weird happened.');
@@ -650,21 +529,10 @@ exports['controller.update'] = {
       version: '0.0.10'
     }];
 
-    // This Tessel instance MUST be connected via BOTH
-    //
-    // - USB
-    // - LAN (authorized)
-    //
+    // Create a Tessel sim
     this.tessel = TesselSimulator({
-      type: 'LAN',
-      authorized: true,
-    });
-
-    this.tessel.addConnection({
-      connectionType: 'USB',
-      end: function() {
-        return Promise.resolve();
-      }
+      type: 'USB',
+      end: () => Promise.resolve()
     });
 
     var binaries = {
@@ -769,10 +637,11 @@ exports['Tessel.update'] = {
     this.enterBootloader = sinon.stub(this.tessel.connection, 'enterBootloader').returns(Promise.resolve());
     this.tessel.writeFlash = function() {};
     this.writeFlash = sinon.stub(this.tessel, 'writeFlash').returns(Promise.resolve());
+    this.fixOldUpdateScripts = sinon.stub(this.tessel, 'fixOldUpdateScripts').returns(Promise.resolve());
 
     this.newImage = {
-      openwrt: new Buffer(0),
-      firmware: new Buffer(0)
+      openwrt: new Buffer(1),
+      firmware: new Buffer(1)
     };
 
     done();
@@ -811,6 +680,9 @@ exports['Tessel.update'] = {
   },
 
   standardUpdate: function(test) {
+    // Set the amount of time Tessel waits for the OpenWRT update
+    // to complete to 1ms so we don't wait forever
+    Tessel.openWRTUpdateTime = 1;
     var updatePath = `/tmp/${updates.OPENWRT_BINARY_FILE}`;
     // The exec commands that should be run to update OpenWRT
     var expectedCommands = [commands.openStdinToFile(updatePath), commands.sysupgrade(updatePath)];
@@ -846,9 +718,9 @@ exports['Tessel.update'] = {
     this.tessel.update(this.newImage)
       // Update completed as expected
       .then(() => {
-        test.ok(this.updateFirmware.callCount, 1);
-        test.ok(this.enterBootloader.callCount, 1);
-        test.ok(this.writeFlash.callCount, 1);
+        test.equal(this.updateFirmware.callCount, 1);
+        test.equal(this.enterBootloader.callCount, 1);
+        test.equal(this.writeFlash.callCount, 1);
         test.done();
       })
       .catch(() => {
