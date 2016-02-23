@@ -10,6 +10,7 @@ addons:
     packages:
     - g++-4.8
 before_install:
+  - npm install -g node-gyp
   - npm install -g grunt-cli
   - sudo apt-get update -qq
   - sudo apt-get install pkg-config build-essential libusb-1.0-0-dev libudev-dev
