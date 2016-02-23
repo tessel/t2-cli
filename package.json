@@ -5,7 +5,7 @@
   "main": "./index.js",
   "scripts": {
     "test": "grunt test",
-    "postinstall": "t2 install-drivers || true"
+    "postinstall": "node scripts/postinstall.js"
   },
   "bin": {
     "t2": "./bin/tessel-2.js"
@@ -75,9 +75,6 @@
     "uglify-js": "^2.5.0",
     "url-join": "0.0.1",
     "usb-daemon-parser": "0.0.2"
-  },
-  "optionalDependencies": {
-    "usb": "1.1.1"
   },
   "preferGlobal": true,
   "engines": {
