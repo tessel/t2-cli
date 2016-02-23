@@ -1676,6 +1676,66 @@ exports['deploy.findProject'] = {
 
 };
 
+
+exports['deploy.sendBundle, error handling'] = {
+  setUp: function(done) {
+    this.tessel = TesselSimulator();
+    this.pathResolve = sandbox.stub(path, 'resolve');
+    this.failure = 'FAIL';
+    done();
+  },
+
+  tearDown: function(done) {
+    sandbox.restore();
+    done();
+  },
+
+  findProject: function(test) {
+    test.expect(1);
+
+    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.reject(this.failure));
+
+    deploy.sendBundle(this.tessel, {}).catch(error => {
+      test.equal(error, this.failure);
+      test.done();
+    });
+  },
+
+  resolveBinaryModules: function(test) {
+    test.expect(1);
+
+    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
+      pushdir: '',
+      entryPoint: ''
+    }));
+
+    this.resolveBinaryModules = sandbox.stub(deploy, 'resolveBinaryModules', () => Promise.reject(this.failure));
+
+    deploy.sendBundle(this.tessel, {}).catch(error => {
+      test.equal(error, this.failure);
+      test.done();
+    });
+  },
+
+  tarBundle: function(test) {
+    test.expect(1);
+
+    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
+      pushdir: '',
+      entryPoint: ''
+    }));
+
+    this.resolveBinaryModules = sandbox.stub(deploy, 'resolveBinaryModules', () => Promise.resolve());
+
+    this.tarBundle = sandbox.stub(deploy, 'tarBundle', () => Promise.reject(this.failure));
+
+    deploy.sendBundle(this.tessel, {}).catch(error => {
+      test.equal(error, this.failure);
+      test.done();
+    });
+  },
+};
+
 function Request() {}
 util.inherits(Request, stream.Stream);
 
