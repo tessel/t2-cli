@@ -294,3 +294,120 @@ exports['Tessel.prototype.disableAccessPoint'] = {
       });
   }
 };
+
+exports['Tessel.prototype.getAccessPointInfo'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.getAccessPointInfo = this.sandbox.spy(Tessel.prototype, 'getAccessPointInfo');
+    this.getAccessPointConfig = this.sandbox.spy(commands, 'getAccessPointConfig');
+    this.getAccessPointIP = this.sandbox.spy(commands, 'getAccessPointIP');
+
+    this.tessel = TesselSimulator();
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  returnsActiveInfo: function(test) {
+    test.expect(3);
+    var results = {
+      ssid: 'TestSSID',
+      key: 'TestPass123',
+      encryption: 'psk2',
+      disabled: '0',
+      ip: '192.168.200.1'
+    };
+
+    // Test is expecting two closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
+        var info = new Buffer(tags.stripIndent `
+          wireless.cfg053579.ssid='${results.ssid}'
+          wireless.cfg053579.key='${results.key}'
+          wireless.cfg053579.encryption='${results.encryption}'
+          wireless.cfg053579.disabled='0'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
+          this.tessel._rps.emit('close');
+        });
+      } else if (command.toString() === 'uci get network.lan.ipaddr') {
+        var ipInfo = new Buffer(`${results.ip}\n`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', ipInfo);
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.getAccessPointInfo()
+      .then((info) => {
+        test.equal(this.getAccessPointConfig.callCount, 1);
+        test.equal(this.getAccessPointIP.callCount, 1);
+        test.deepEqual(info, results);
+        test.done();
+      })
+      .catch(function(error) {
+        test.fail(error);
+        test.done();
+      });
+  },
+
+  returnsNullValues: function(test) {
+    test.expect(3);
+    var results = {
+      ssid: null,
+      key: null,
+      encryption: null,
+      disabled: '1',
+      ip: '192.168.200.1'
+    };
+
+    // Test is expecting two closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
+        var info = new Buffer(`wireless.cfg053579.disabled='1'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
+          this.tessel._rps.emit('close');
+        });
+      } else if (command.toString() === 'uci get network.lan.ipaddr') {
+        var ipInfo = new Buffer(`${results.ip}\n`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', ipInfo);
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.getAccessPointInfo()
+      .then((info) => {
+        test.equal(this.getAccessPointConfig.callCount, 1);
+        test.equal(this.getAccessPointIP.callCount, 1);
+        test.deepEqual(info, results);
+        test.done();
+      })
+      .catch(function(error) {
+        test.fail(error);
+        test.done();
+      });
+  }
+};
