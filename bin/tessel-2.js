@@ -315,20 +315,26 @@ makeCommand('ap')
     abbr: 's',
     help: 'Encryption to use on network (i.e. wep, psk, psk2, wpa, wpa2).'
   })
-  .option('trigger', {
-    position: 1,
-    help: 'Trigger, i.e. on OR off, the access point'
+  .option('off', {
+    flag: true,
+    help: 'Disable the access point'
+  })
+  .option('on', {
+    flag: true,
+    help: 'Enable the access point'
   })
   .help('Configure the Tessel as an access point')
   .callback(function(opts) {
-    if (opts.trigger) {
-      if (opts.trigger === 'on') {
+    if (opts.on || opts.off) {
+      if (opts.on) {
         callControllerWith('enableAccessPoint', opts);
       } else {
         callControllerWith('disableAccessPoint', opts);
       }
-    } else {
+    } else if (opts.ssid) {
       callControllerWith('createAccessPoint', opts);
+    } else {
+      callControllerWith('getAccessPointInfo', opts);
     }
   });
 
