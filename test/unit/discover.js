@@ -26,9 +26,8 @@ exports['TesselSeeker'] = {
 
   initialization: function(test) {
     test.expect(2);
-
-    test.equal(this.lanScan, undefined);
-    test.equal(this.usbScan, undefined);
+    test.equal(this.lanScan, null);
+    test.equal(this.usbScan, null);
     test.done();
   },
 };
@@ -43,6 +42,12 @@ exports['TesselSeeker.prototype.start'] = {
     });
     this.lanStartScan = this.sandbox.stub(lan, 'startScan', function() {
       return new FakeScanner();
+    });
+    this.usbStopScan = this.sandbox.stub(usb, 'stopScan', function() {
+      return null;
+    });
+    this.lanStopScan = this.sandbox.stub(lan, 'stopScan', function() {
+      return null;
     });
     this.seeker = new TesselSeeker();
     // The default amount of time to scan for connections
@@ -120,6 +125,12 @@ exports['TesselSeeker.prototype.stop'] = {
     this.lanStartScan = this.sandbox.stub(lan, 'startScan', function() {
       return new FakeScanner();
     });
+    this.usbStopScan = this.sandbox.stub(usb, 'stopScan', function() {
+      return null;
+    });
+    this.lanStopScan = this.sandbox.stub(lan, 'stopScan', function() {
+      return null;
+    });
     this.seeker = new TesselSeeker();
 
     done();
@@ -137,59 +148,64 @@ exports['TesselSeeker.prototype.stop'] = {
   },
 
   stopAfterStart: function(test) {
-    test.expect(1);
-
-    this.seeker.start();
-    this.seeker.stop();
-
-    // Both active scanners called stop
-    test.equal(this.stop.callCount, 2);
-
-    test.done();
-  },
-
-  stopDuplicateCall: function(test) {
     test.expect(2);
 
     this.seeker.start();
     this.seeker.stop();
 
     // Both active scanners called stop
-    test.equal(this.stop.callCount, 2);
+    test.equal(this.usbStopScan.callCount, 1);
+    test.equal(this.lanStopScan.callCount, 1);
+
+    test.done();
+  },
+
+  stopDuplicateCall: function(test) {
+    test.expect(4);
+
+    this.seeker.start();
+    this.seeker.stop();
+
+    // Call count remains 1 each
+    test.equal(this.usbStopScan.callCount, 1);
+    test.equal(this.lanStopScan.callCount, 1);
 
     // Duplicate call
     this.seeker.stop();
 
-    // Call count remains 2
-    test.equal(this.stop.callCount, 2);
+    // Call count remains at one
+    test.equal(this.usbStopScan.callCount, 1);
+    test.equal(this.lanStopScan.callCount, 1);
 
     test.done();
   },
 
   stopOnlyUsb: function(test) {
-    test.expect(1);
+    test.expect(2);
 
     this.seeker.start();
 
-    this.seeker.lanScan = undefined;
+    this.seeker.lanScan = null;
 
     this.seeker.stop();
 
-    test.equal(this.stop.callCount, 1);
+    test.equal(this.usbStopScan.callCount, 1);
+    test.equal(this.lanStopScan.callCount, 0);
 
     test.done();
   },
 
   stopOnlyLan: function(test) {
-    test.expect(1);
+    test.expect(2);
 
     this.seeker.start();
 
-    this.seeker.usbScan = undefined;
+    this.seeker.usbScan = null;
 
     this.seeker.stop();
 
-    test.equal(this.stop.callCount, 1);
+    test.equal(this.usbStopScan.callCount, 0);
+    test.equal(this.lanStopScan.callCount, 1);
 
     test.done();
   }
@@ -211,6 +227,12 @@ exports['TesselSeeker Scan Time'] = {
     });
     this.lanStartScan = this.sandbox.stub(lan, 'startScan', function() {
       return new FakeScanner();
+    });
+    this.usbStopScan = this.sandbox.stub(usb, 'stopScan', function() {
+      return null;
+    });
+    this.lanStopScan = this.sandbox.stub(lan, 'stopScan', function() {
+      return null;
     });
     this.seeker = new TesselSeeker();
     // The default amount of time to scan for connections
