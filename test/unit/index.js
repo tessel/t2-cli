@@ -52,7 +52,7 @@ exports['CLI.list'] = {
         usb: true
       })
       .then(() => {
-        test.fail('Should not have returned any Tessels');
+        test.ok(false, 'Should not have returned any Tessels');
         test.done();
       })
       .catch((err) => {
@@ -77,7 +77,7 @@ exports['CLI.list'] = {
         test.done();
       })
       .catch(() => {
-        test.fail('Should not have rejected with one Tessel available');
+        test.ok(false, 'Should not have rejected with one Tessel available');
         test.done();
       });
 
@@ -112,7 +112,7 @@ exports['CLI.list'] = {
         test.done();
       })
       .catch(() => {
-        test.fail('Should not have rejected with one Tessel available');
+        test.ok(false, 'Should not have rejected with one Tessel available');
         test.done();
       });
 

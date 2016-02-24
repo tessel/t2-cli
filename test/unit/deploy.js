@@ -157,10 +157,12 @@ exports['Tessel.prototype.deployScript'] = {
 
     this.tarBundle.restore();
 
-    createTemporaryDeployCode().then(function() {
-      deploy.tarBundle({
+    createTemporaryDeployCode().then(() => {
+      var tb = deploy.tarBundle({
         target: deployFolder
-      }).then((bundle) => {
+      });
+
+      tb.then(bundle => {
         /*
           $ t2 run app.js
           INFO Looking for your Tessel...
@@ -170,23 +172,29 @@ exports['Tessel.prototype.deployScript'] = {
           INFO Running app.js...
           testing deploy
           INFO Stopping script...
-      */
+        */
         test.equal(bundle.length, 2048);
-        deleteTemporaryDeployCode().then(function() {
-          test.done();
-        });
+
+        test.done();
+      })
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
       });
     });
   },
 
   runScript: function(test) {
-    test.expect(11);
+    test.expect(10);
     this.exec = sandbox.spy(this.tessel.connection, 'exec');
     deployTestCode(this.tessel, test, {
       push: false,
       single: false
-    }, (err) => {
-      test.ifError(err);
+    }, (error) => {
+      if (error) {
+        test.ok(false, `deployTestCode failed: ${error.toString()}`);
+        test.done();
+      }
       test.equal(this.stopRunningScript.callCount, 1);
       test.equal(this.deleteFolder.callCount, 1);
       test.equal(this.createFolder.callCount, 1);
@@ -203,12 +211,15 @@ exports['Tessel.prototype.deployScript'] = {
   },
 
   runScriptSingle: function(test) {
-    test.expect(10);
+    test.expect(9);
     deployTestCode(this.tessel, test, {
       push: false,
       single: true
-    }, (err) => {
-      test.ifError(err);
+    }, (error) => {
+      if (error) {
+        test.ok(false, `deployTestCode failed: ${error.toString()}`);
+        test.done();
+      }
       test.equal(this.stopRunningScript.callCount, 1);
       test.equal(this.deleteFolder.callCount, 0);
       test.equal(this.createFolder.callCount, 1);
@@ -223,12 +234,15 @@ exports['Tessel.prototype.deployScript'] = {
   },
 
   pushScript: function(test) {
-    test.expect(13);
+    test.expect(12);
     deployTestCode(this.tessel, test, {
       push: true,
       single: false
-    }, (err) => {
-      test.ifError(err);
+    }, (error) => {
+      if (error) {
+        test.ok(false, `deployTestCode failed: ${error.toString()}`);
+        test.done();
+      }
 
       var expectedPath = path.normalize('test/unit/tmp/app.js');
 
@@ -251,12 +265,15 @@ exports['Tessel.prototype.deployScript'] = {
   },
 
   pushScriptSingle: function(test) {
-    test.expect(10);
+    test.expect(9);
     deployTestCode(this.tessel, test, {
       push: true,
       single: true
-    }, (err) => {
-      test.ifError(err);
+    }, (error) => {
+      if (error) {
+        test.ok(false, `deployTestCode failed: ${error.toString()}`);
+        test.done();
+      }
       test.equal(this.stopRunningScript.callCount, 1);
       test.equal(this.deleteFolder.callCount, 0);
       test.equal(this.createFolder.callCount, 1);
@@ -283,7 +300,9 @@ exports['Tessel.prototype.deployScript'] = {
       test.done();
     });
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, cb) => cb(null, this.tessel._rps));
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      return callback(null, this.tessel._rps);
+    });
 
     deploy.writeToFile(this.tessel, 'index.js');
   },
@@ -301,7 +320,9 @@ exports['Tessel.prototype.deployScript'] = {
       test.done();
     });
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, cb) => cb(null, this.tessel._rps));
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      return callback(null, this.tessel._rps);
+    });
 
     deploy.writeToFile(this.tessel, 'index.js');
   },
@@ -420,7 +441,7 @@ exports['deploy.compress'] = {
 
     var optionsSeen = this.aparse.lastCall.args[1];
 
-    ourExplicitSettingsKeys.forEach(function(key) {
+    ourExplicitSettingsKeys.forEach(key => {
       test.equal(optionsSeen[key], ourExplicitSettings[key]);
     });
 
@@ -450,7 +471,7 @@ exports['deploy.compress'] = {
 
     var optionsSeen = this.uparse.lastCall.args[1];
 
-    ourExplicitSettingsKeys.forEach(function(key) {
+    ourExplicitSettingsKeys.forEach(key => {
       test.equal(optionsSeen[key], ourExplicitSettings[key]);
     });
 
@@ -489,7 +510,7 @@ exports['deploy.compress'] = {
 
     var optionsSeen = this.Compressor.lastCall.args[0];
 
-    ourExplicitSettingsKeys.forEach(function(key) {
+    ourExplicitSettingsKeys.forEach(key => {
       test.equal(optionsSeen[key], ourExplicitSettings[key]);
     });
 
@@ -526,7 +547,7 @@ exports['deploy.compress'] = {
       deploy.compress('return;');
       test.equal(this.aparse.lastCall.args[1].allowReturnOutsideFunction, true);
     } catch (e) {
-      test.fail();
+      test.ok(false, e.message);
     }
 
     test.done();
@@ -640,7 +661,7 @@ exports['deploy.tarBundle'] = {
     deploy.tarBundle({
       target: path.normalize(target),
       full: true,
-    }).then((bundle) => {
+    }).then(bundle => {
 
       // One call for .tesselinclude
       // One call for the single rule found within
@@ -665,9 +686,10 @@ exports['deploy.tarBundle'] = {
       // End
 
       // Extract and inspect the bundle...
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         test.deepEqual(entries, [
@@ -709,7 +731,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       // These things happen in the --slim path
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 2);
@@ -740,9 +762,10 @@ exports['deploy.tarBundle'] = {
       test.equal(minified.indexOf('!!mock-foo!!') === -1, true);
 
       // Extract and inspect the bundle...
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         test.deepEqual(entries, [
@@ -769,7 +792,8 @@ exports['deploy.tarBundle'] = {
     }).then(bundle => {
       extract(bundle, (error, entries) => {
         if (error) {
-          test.fail(error);
+          test.ok(false, error.toString());
+          test.done();
         }
         test.deepEqual(entries, [
           'arrow.js',
@@ -779,7 +803,7 @@ exports['deploy.tarBundle'] = {
         test.done();
       });
     }).catch(() => {
-      test.fail();
+      test.ok(false, 'Compression should not produce errors');
       test.done();
     });
   },
@@ -802,7 +826,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 1);
       test.equal(this.mkdirSync.callCount, 1);
@@ -812,9 +836,10 @@ exports['deploy.tarBundle'] = {
       test.equal(minified, 'var e=require("tessel");e.led[2].on(),setInterval(function(){e.led[2].toggle(),e.led[3].toggle()},100);');
 
       // Extract and inspect the bundle...
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         test.deepEqual(entries, ['index.js', 'package.json']);
@@ -835,14 +860,15 @@ exports['deploy.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       single: true,
       slim: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 1);
 
       test.equal(bundle.length, 2048);
       extract(bundle, (error, entries) => {
         if (error) {
-          test.fail(error);
+          test.ok(false, error.toString());
+          test.done();
         }
 
         test.deepEqual(entries, ['index.js']);
@@ -864,14 +890,15 @@ exports['deploy.tarBundle'] = {
       single: true,
       slim: true,
 
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(this.project.callCount, 1);
       test.equal(this.compress.callCount, 1);
       test.equal(bundle.length, 2560);
 
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         test.deepEqual(entries, ['nested/another.js']);
@@ -892,14 +919,15 @@ exports['deploy.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       single: true,
       full: true,
-    }).then((bundle) => {
+    }).then(bundle => {
 
       test.equal(this.addIgnoreRules.callCount, 3);
       test.equal(bundle.length, 2048);
 
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
         test.deepEqual(entries, ['index.js']);
         test.done();
@@ -919,11 +947,12 @@ exports['deploy.tarBundle'] = {
       resolvedEntryPoint: path.join('nested', entryPoint),
       single: true,
       full: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(bundle.length, 2560);
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
         test.deepEqual(entries, ['nested/another.js']);
         test.done();
@@ -962,7 +991,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(this.globSync.callCount, 11);
 
       /*
@@ -993,9 +1022,10 @@ exports['deploy.tarBundle'] = {
       test.equal(this.remove.callCount, 1);
 
       // Extract and inspect the bundle...
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         // Since the .tesselignore rules are ALL negated by .tesselinclude rules,
@@ -1043,7 +1073,7 @@ exports['deploy.tarBundle'] = {
     deploy.tarBundle({
       target: path.normalize(target),
       full: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(this.globSync.callCount, 11);
 
       // addIgnoreRules might be called many times, but we only
@@ -1072,9 +1102,10 @@ exports['deploy.tarBundle'] = {
       // End
 
       // Extract and inspect the bundle...
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         // The .tesselignore rules are ALL overridden by .tesselinclude rules
@@ -1120,7 +1151,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(this.globSync.callCount, 8);
 
       /*
@@ -1149,9 +1180,10 @@ exports['deploy.tarBundle'] = {
       test.equal(this.remove.callCount, 1);
 
       // Extract and inspect the bundle...
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         // There are no .tesselignore rules, all .tesselinclude rules are
@@ -1205,7 +1237,7 @@ exports['deploy.tarBundle'] = {
     deploy.tarBundle({
       target: path.normalize(target),
       full: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(this.globSync.callCount, 8);
 
       // addIgnoreRules might be called many times, but we only
@@ -1240,9 +1272,10 @@ exports['deploy.tarBundle'] = {
       // End
 
       // Extract and inspect the bundle...
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         // There are no .tesselignore rules, all .tesselinclude rules are
@@ -1291,7 +1324,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(this.globSync.callCount, 9);
 
       /*
@@ -1324,9 +1357,10 @@ exports['deploy.tarBundle'] = {
       test.equal(this.remove.callCount, 1);
 
       // Extract and inspect the bundle...
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         // There are no .tesselignore rules, but the .tesselinclude rules
@@ -1374,7 +1408,7 @@ exports['deploy.tarBundle'] = {
     deploy.tarBundle({
       target: path.normalize(target),
       full: true,
-    }).then((bundle) => {
+    }).then(bundle => {
       test.equal(this.globSync.callCount, 9);
 
       // addIgnoreRules might be called many times, but we only
@@ -1414,9 +1448,10 @@ exports['deploy.tarBundle'] = {
       // End
 
       // Extract and inspect the bundle...
-      extract(bundle, (err, entries) => {
-        if (err) {
-          test.fail(err);
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
         }
 
         // There are no .tesselignore rules, all .tesselinclude rules are
@@ -1516,7 +1551,7 @@ exports['Tessel.prototype.restartScript'] = {
     };
 
     this.tessel.restartScript(opts)
-      .catch((error) => {
+      .catch(error => {
         test.equal(error, '"index.js" not found on undefined');
         test.done();
       });
@@ -1552,16 +1587,16 @@ exports['deploy.findProject'] = {
 
     process.env[key] = fake;
 
-    this.lstatSync = sandbox.stub(fs, 'lstatSync', function(file) {
+    this.lstatSync = sandbox.stub(fs, 'lstatSync', (file) => {
       return {
-        isDirectory: function() {
+        isDirectory: () => {
           // naive for testing.
           return file.slice(-1) === '/';
         }
       };
     });
 
-    this.realpathSync = sandbox.stub(fs, 'realpathSync', function(arg) {
+    this.realpathSync = sandbox.stub(fs, 'realpathSync', (arg) => {
       process.env[key] = real;
 
       // Ensure that "~" was transformed
@@ -1580,7 +1615,7 @@ exports['deploy.findProject'] = {
 
     deploy.findProject({
       entryPoint: target
-    }).then(function(project) {
+    }).then(project => {
       test.deepEqual(project, {
         pushdir: fixtures.project,
         program: path.join(fixtures.project, 'index.js'),
@@ -1596,7 +1631,7 @@ exports['deploy.findProject'] = {
 
     deploy.findProject({
       entryPoint: target
-    }).then(function(project) {
+    }).then(project => {
       test.deepEqual(project, {
         pushdir: fixtures.project,
         program: path.join(fixtures.project, 'index.js'),
@@ -1612,7 +1647,7 @@ exports['deploy.findProject'] = {
 
     deploy.findProject({
       entryPoint: target
-    }).then(function(project) {
+    }).then(project => {
       test.deepEqual(project, {
         pushdir: fixtures.explicit,
         program: path.join(fixtures.explicit, 'app.js'),
@@ -1629,11 +1664,11 @@ exports['deploy.findProject'] = {
 
     deploy.findProject({
       entryPoint: target
-    }).then(function() {
+    }).then(() => {
       test.ok(false, 'findProject should not find a valid project here');
       test.done();
-    }).catch(function(error) {
-      test.ok(error.indexOf('ENOENT') !== -1);
+    }).catch(error => {
+      test.ok(error.includes('ENOENT'));
       test.done();
     });
   },
@@ -1644,7 +1679,7 @@ exports['deploy.findProject'] = {
 
     deploy.findProject({
       entryPoint: target
-    }).then(function(project) {
+    }).then(project => {
       test.deepEqual(project, {
         pushdir: fixtures.project,
         program: path.join(fixtures.project, 'test/index.js'),
@@ -1666,7 +1701,7 @@ exports['deploy.findProject'] = {
       slim: true,
     };
 
-    deploy.findProject(opts).then(function(project) {
+    deploy.findProject(opts).then(project => {
       // Without the `single` flag, this would've continued upward
       // until it found a directory with a package.json.
       test.ok(project.pushdir, fs.realpathSync(path.dirname(pushdir)));
@@ -1806,7 +1841,10 @@ exports['deploy.resolveBinaryModules'] = {
       test.equal(this.exists.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/debug-1.1.1-Debug')), true);
 
       test.done();
-    }).catch((error) => test.fail(error));
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
   },
 
   findsModulesMissingBinaryNodeFiles: function(test) {
@@ -1835,7 +1873,10 @@ exports['deploy.resolveBinaryModules'] = {
       test.equal(this.readGypFileSync.callCount, 1);
 
       test.done();
-    }).catch((error) => test.fail(error));
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
   },
 
   spawnPythonScript: function(test) {
@@ -1881,7 +1922,10 @@ exports['deploy.resolveBinaryModules'] = {
       test.equal(python.includes('missing'), true);
 
       test.done();
-    }).catch((error) => test.fail(error));
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
   },
 
   failsWithMessage: function(test) {
@@ -1907,7 +1951,10 @@ exports['deploy.resolveBinaryModules'] = {
     }).then(binaryModulesUsed => {
       test.equal(binaryModulesUsed.get('missing').resolved, false);
       test.done();
-    }).catch((error) => test.fail(error));
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
   },
 
   existsInLocalCache: function(test) {
@@ -1921,7 +1968,10 @@ exports['deploy.resolveBinaryModules'] = {
       test.equal(this.globFiles.callCount, 1);
       test.equal(this.exists.callCount, 1);
       test.done();
-    }).catch((error) => test.fail(error));
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
   },
 
   existsInLocalCacheNodeGypLinkedBinPath: function(test) {
@@ -1948,7 +1998,10 @@ exports['deploy.resolveBinaryModules'] = {
 
       // console.log(this.exists);
       test.done();
-    }).catch((error) => test.fail(error));
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
   },
 
   resolveFromRealDirFixtures: function(test) {
@@ -1986,7 +2039,10 @@ exports['deploy.resolveBinaryModules'] = {
 
       // console.log(this.exists);
       test.done();
-    }).catch((error) => test.fail(error));
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
   },
 
   requestsRemote: function(test) {
@@ -2024,7 +2080,10 @@ exports['deploy.resolveBinaryModules'] = {
       test.equal(this.Extract.callCount, 1);
 
       test.done();
-    }).catch((error) => test.fail(error));
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
   },
 };
 
@@ -2200,11 +2259,11 @@ exports['deploy.injectBinaryModules'] = {
 
         test.done();
       }).catch(error => {
-        test.fail(error);
+        test.ok(false, error.toString());
         test.done();
       });
     }).catch(error => {
-      test.fail(error);
+      test.ok(false, error.toString());
       test.done();
     });
   },
@@ -2252,7 +2311,7 @@ exports['deploy.injectBinaryModules'] = {
         test.done();
       });
     }).catch(error => {
-      test.fail(error);
+      test.ok(false, error.toString());
       test.done();
     });
   }
@@ -2327,17 +2386,17 @@ function extract(bundle, callback) {
   var parser = tar.Parse();
   var entries = [];
 
-  parser.on('entry', function(entry) {
+  parser.on('entry', (entry) => {
     if (entry.type === 'File') {
       entries.push(entry.path);
     }
   });
 
-  parser.on('end', function() {
+  parser.on('end', () => {
     callback(null, entries);
   });
 
-  parser.on('error', function(error) {
+  parser.on('error', (error) => {
     callback(error, null);
   });
 

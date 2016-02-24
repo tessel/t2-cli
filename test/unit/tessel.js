@@ -162,7 +162,8 @@ exports['Tessel (get)'] = {
         test.done();
       })
       .catch(function() {
-        test.fail();
+        test.ok(false, 'Tessel.get failed');
+        test.done();
       });
 
     var a = new Tessel({
@@ -201,7 +202,8 @@ exports['Tessel (get)'] = {
         test.done();
       })
       .catch(function() {
-        test.fail();
+        test.ok(false, 'Tessel.get failed');
+        test.done();
       });
 
     var usb = new Tessel({
@@ -237,7 +239,8 @@ exports['Tessel (get)'] = {
         test.done();
       })
       .catch(function() {
-        test.fail();
+        test.ok(false, 'Tessel.get failed');
+        test.done();
       });
 
     var usb = new Tessel({
@@ -278,7 +281,8 @@ exports['Tessel (get)'] = {
         test.done();
       })
       .catch(function() {
-        test.fail();
+        test.ok(false, 'Tessel.get failed');
+        test.done();
       });
 
     var usb = new Tessel({
@@ -358,7 +362,8 @@ exports['Tessel (get)'] = {
         test.done();
       })
       .catch(function() {
-        test.fail();
+        test.ok(false, 'Tessel.get failed');
+        test.done();
       });
 
     var a = new Tessel({
@@ -400,7 +405,8 @@ exports['Tessel (get)'] = {
         test.done();
       })
       .catch(function() {
-        test.fail();
+        test.ok(false, 'Tessel.get failed');
+        test.done();
       });
 
     var a = new Tessel({
@@ -444,7 +450,8 @@ exports['Tessel (get)'] = {
         test.done();
       })
       .catch(function() {
-        test.fail();
+        test.ok(false, 'Tessel.get failed');
+        test.done();
       });
 
     var usb = new Tessel({
@@ -487,7 +494,8 @@ exports['Tessel (get)'] = {
         test.done();
       })
       .catch(function() {
-        test.fail();
+        test.ok(false, 'Tessel.get failed');
+        test.done();
       });
 
     var lan = new Tessel({

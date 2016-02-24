@@ -90,8 +90,9 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
         test.done();
       })
-      .catch((error) => {
-        test.fail(error);
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
       });
   },
 
@@ -123,8 +124,9 @@ exports['Tessel.prototype.createAccessPoint'] = {
         test.ok(this.setAccessPointSecurity.lastCall.calledWith('none'));
         test.done();
       })
-      .catch((error) => {
-        test.fail(error);
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
       });
   },
 
@@ -157,8 +159,9 @@ exports['Tessel.prototype.createAccessPoint'] = {
         test.ok(this.setAccessPointSecurity.lastCall.calledWith(creds.security));
         test.done();
       })
-      .catch((error) => {
-        test.fail(error);
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
       });
   },
 
@@ -191,8 +194,9 @@ exports['Tessel.prototype.createAccessPoint'] = {
         test.ok(this.setAccessPointSecurity.lastCall.calledWith('psk2'));
         test.done();
       })
-      .catch((error) => {
-        test.fail(error);
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
       });
   }
 };
@@ -237,8 +241,9 @@ exports['Tessel.prototype.enableAccessPoint'] = {
         test.equal(this.reconnectDhcp.callCount, 1);
         test.done();
       })
-      .catch(function(error) {
-        test.fail(error);
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
       });
   }
 };
@@ -283,8 +288,9 @@ exports['Tessel.prototype.disableAccessPoint'] = {
         test.equal(this.reconnectDhcp.callCount, 1);
         test.done();
       })
-      .catch((error) => {
-        test.fail(error);
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
       });
   }
 };
