@@ -197,15 +197,13 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', 'signal');
-          setImmediate(() => this.tessel._rps.emit('close'));
+          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
         });
       } else {
         setImmediate(() => {
           // Remove any listeners on stdout so we don't break anything when we write to it
           this.tessel._rps.stdout.removeAllListeners();
-
-          // Continue
           this.tessel._rps.emit('close');
         });
       }
@@ -241,15 +239,13 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', 'signal');
-          setImmediate(() => this.tessel._rps.emit('close'));
+          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
         });
       } else {
         setImmediate(() => {
           // Remove any listeners on stdout so we don't break anything when we write to it
           this.tessel._rps.stdout.removeAllListeners();
-
-          // Continue
           this.tessel._rps.emit('close');
         });
       }
@@ -288,15 +284,13 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', 'signal');
-          setImmediate(() => this.tessel._rps.emit('close'));
+          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
         });
       } else {
         setImmediate(() => {
           // Remove any listeners on stdout so we don't break anything when we write to it
           this.tessel._rps.stdout.removeAllListeners();
-
-          // Continue
           this.tessel._rps.emit('close');
         });
       }
@@ -327,24 +321,20 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
       ssid: 'tank',
       password: 'not_gonna_work'
     };
-    var errMessage = 'Unable to connect to the network.';
-    // Set the timeout to be small so we don't wait forever for the test to complete
-    Tessel.__wifiConnectionTimeout = 10;
     // Test is expecting several closes...;
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === 'ubus call iwinfo info {"device":"wlan0"}') {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', errMessage);
-          setImmediate(() => this.tessel._rps.emit('close'));
+          // Is missing the "signal" status key
+          this.tessel._rps.stderr.emit('data', new Buffer('Unable to connect to the network.'));
+          this.tessel._rps.emit('close');
         });
       } else {
         setImmediate(() => {
           // Remove any listeners on stderr so we don't break anything when we write to it
           this.tessel._rps.stdout.removeAllListeners();
-
-          // Continue
           this.tessel._rps.emit('close');
         });
       }
@@ -355,7 +345,8 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(false, 'Test should have rejected with an error.');
         test.done();
       })
-      .catch(() => {
+      .catch((error) => {
+        console.log(error);
         test.equal(this.setNetworkSSID.callCount, 1);
         test.equal(this.setNetworkPassword.callCount, 1);
         test.equal(this.setNetworkEncryption.callCount, 1);
@@ -369,24 +360,30 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
       });
   },
 
-  connectionTimeout: function(test) {
+  connectionUnverifiable: function(test) {
     test.expect(10);
     var creds = {
       ssid: 'tank',
       password: 'not_gonna_work'
     };
-
-    // Make it timeout super fast so this test doesn't take forever
-    Tessel.__wifiConnectionTimeout = 10;
-
     // Test is expecting several closes...;
     this.tessel._rps.on('control', (command) => {
-      if (command.toString() !== 'ubus call iwinfo info {"device":"wlan0"}') {
+      if (command.toString() === 'ubus call iwinfo info {"device":"wlan0"}') {
+        // console.log(this.tessel._rps);
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          // Is missing the "signal" status key
+          this.tessel._rps.stdout.emit('data', new Buffer('{"frequency": 2422,"txpower": 20}'));
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.stderr.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      } else {
         setImmediate(() => {
           // Remove any listeners on stderr so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
           this.tessel._rps.stderr.removeAllListeners();
-
-          // Continue
           this.tessel._rps.emit('close');
         });
       }
@@ -398,7 +395,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.done();
       })
       .catch((error) => {
-        test.ok(error.toLowerCase().indexOf('timed out') !== -1);
+        test.equal(error.includes('Unable to verify connection'), true);
         test.equal(this.setNetworkSSID.callCount, 1);
         test.equal(this.setNetworkPassword.callCount, 1);
         test.equal(this.setNetworkEncryption.callCount, 1);
@@ -426,17 +423,15 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
           // First write some random data
-          this.tessel._rps.stdout.emit('data', 'do not have success yet');
+          this.tessel._rps.stdout.emit('data', new Buffer('do not have success yet'));
           // then write the keyword we're looking for for success
-          this.tessel._rps.stdout.emit('data', 'signal');
-          setImmediate(() => this.tessel._rps.emit('close'));
+          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
         });
       } else {
         setImmediate(() => {
           // Remove any listeners on stderr so we don't break anything when we write to it
           this.tessel._rps.stdout.removeAllListeners();
-
-          // Continue
           this.tessel._rps.emit('close');
         });
       }
@@ -492,15 +487,13 @@ module.exports['Tessel.setWifiState'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', 'signal');
-          setImmediate(() => this.tessel._rps.emit('close'));
+          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
         });
       } else {
         setImmediate(() => {
           // Remove any listeners on stdout so we don't break anything when we write to it
           this.tessel._rps.stdout.removeAllListeners();
-
-          // Continue
           this.tessel._rps.emit('close');
         });
       }
@@ -513,7 +506,7 @@ module.exports['Tessel.setWifiState'] = {
         test.deepEqual(this.turnOnWifi.lastCall.returnValue, ['uci', 'set', 'wireless.@wifi-iface[0].disabled=0']);
         test.equal(this.commitWirelessCredentials.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
-        test.equal(this.logsInfo.calledTwice, true);
+        test.equal(this.logsInfo.calledOnce, true);
         test.equal(this.logsInfo.lastCall.args[1].indexOf('Enabled.') !== -1, true);
         test.ok(this.getWifiInfo.callCount, 1);
         test.done();
@@ -533,15 +526,13 @@ module.exports['Tessel.setWifiState'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', 'signal');
-          setImmediate(() => this.tessel._rps.emit('close'));
+          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
         });
       } else {
         setImmediate(() => {
           // Remove any listeners on stdout so we don't break anything when we write to it
           this.tessel._rps.stdout.removeAllListeners();
-
-          // Continue
           this.tessel._rps.emit('close');
         });
       }
@@ -556,7 +547,7 @@ module.exports['Tessel.setWifiState'] = {
         test.equal(this.reconnectWifi.callCount, 1);
         test.equal(this.logsInfo.calledOnce, true);
         test.equal(this.logsInfo.lastCall.args[1].indexOf('Disabled.') !== -1, true);
-        test.ok(this.getWifiInfo.callCount, 1);
+        test.equal(this.getWifiInfo.callCount, 0);
         test.done();
       })
       .catch(error => {
