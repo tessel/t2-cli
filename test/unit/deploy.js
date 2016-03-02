@@ -163,24 +163,24 @@ exports['Tessel.prototype.deployScript'] = {
       });
 
       tb.then(bundle => {
-        /*
-          $ t2 run app.js
-          INFO Looking for your Tessel...
-          INFO Connected to arnold over LAN
-          INFO Writing app.js to RAM on arnold (2.048 kB)...
-          INFO Deployed.
-          INFO Running app.js...
-          testing deploy
-          INFO Stopping script...
-        */
-        test.equal(bundle.length, 2048);
+          /*
+            $ t2 run app.js
+            INFO Looking for your Tessel...
+            INFO Connected to arnold over LAN
+            INFO Writing app.js to RAM on arnold (2.048 kB)...
+            INFO Deployed.
+            INFO Running app.js...
+            testing deploy
+            INFO Stopping script...
+          */
+          test.equal(bundle.length, 2048);
 
-        test.done();
-      })
-      .catch(error => {
-        test.ok(false, error.toString());
-        test.done();
-      });
+          test.done();
+        })
+        .catch(error => {
+          test.ok(false, error.toString());
+          test.done();
+        });
     });
   },
 
