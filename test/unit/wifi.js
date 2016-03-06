@@ -345,8 +345,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.ok(false, 'Test should have rejected with an error.');
         test.done();
       })
-      .catch((error) => {
-        console.log(error);
+      .catch(() => {
         test.equal(this.setNetworkSSID.callCount, 1);
         test.equal(this.setNetworkPassword.callCount, 1);
         test.equal(this.setNetworkEncryption.callCount, 1);
@@ -555,5 +554,105 @@ module.exports['Tessel.setWifiState'] = {
         test.done();
       });
   }
+
+};
+
+module.exports['Tessel.getWifiInfo'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.tessel = TesselSimulator();
+    this.simpleExec = this.sandbox.spy(this.tessel, 'simpleExec');
+    this.turnOnWifi = this.sandbox.spy(commands, 'turnOnWifi');
+    this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
+    this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
+    this.getWifiInfo = this.sandbox.spy(commands, 'getWifiInfo');
+
+    done();
+  },
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  getWifiInfoStandard: function(test) {
+    test.expect(3);
+    var ssid = 'testSSID';
+    var ip = '192.168.0.1';
+
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === commands.getWifiInfo().join(' ')) {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', new Buffer(JSON.stringify({
+            ssid: ssid
+          })));
+          this.tessel._rps.emit('close');
+        });
+      } else if (command.toString() === commands.getIPAddress().join(' ')) {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', new Buffer(ip));
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.getWifiInfo()
+      .then((info) => {
+        test.equal(info.ssid, ssid);
+        test.equal(info.ips[0], ip);
+        test.ok(this.getWifiInfo.callCount, 1);
+        test.done();
+      })
+      .catch((error) => {
+        test.ifError(error, 'fetching wifi info with should normally resolve.');
+        test.done();
+      });
+  },
+
+  getWifiInfoDisabled: function(test) {
+    test.expect(2);
+
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === commands.getWifiInfo().join(' ')) {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stderr.emit('data', new Buffer('Command: Not found.'));
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.getWifiInfo()
+      .then(() => {
+        test.ok(false, 'fetching wifi info with disabled interface should reject.');
+        test.done();
+      })
+      .catch(error => {
+        test.ok(!error.toString().includes('Not Found'));
+        test.ok(this.getWifiInfo.callCount, 1);
+        test.done();
+      });
+  },
 
 };
