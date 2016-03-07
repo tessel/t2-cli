@@ -107,6 +107,15 @@ makeCommand('restart')
   })
   .help('Restart a previously deployed script in RAM or Flash memory (does not rebundle)');
 
+parser.command('usb-exec')
+  .callback(function(opts) {
+    opts.usb = true;
+    opts.lan = false;
+    callControllerWith('usbExec', opts);
+  })
+  .help('Execute a single shell command over USB');
+
+
 makeCommand('run')
   .callback(function(opts) {
     opts.lanPrefer = true;
