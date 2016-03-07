@@ -552,6 +552,30 @@ exports['deploy.compress'] = {
 
     test.done();
   },
+
+  avoidCompleteFailure: function(test) {
+    test.expect(2);
+
+    this.uparse.restore();
+    this.uparse = sandbox.stub(uglify, 'parse', () => {
+      return {
+        figure_out_scope: () => {
+          throw new TypeError();
+        }
+      };
+    });
+    var result = '';
+    try {
+      result = deploy.compress('return;');
+      test.equal(this.aparse.lastCall.args[1].allowReturnOutsideFunction, true);
+    } catch (e) {
+      test.ok(false, e.message);
+    }
+
+    test.equal(result, 'return;');
+
+    test.done();
+  },
 };
 
 exports['deploy.tarBundle'] = {
