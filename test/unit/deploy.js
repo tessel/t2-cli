@@ -517,6 +517,46 @@ exports['deploy.compress'] = {
     test.done();
   },
 
+  theirCompressorOptions: function(test) {
+    test.expect(18);
+
+    var theirExplicitSettings = {
+      // ------
+      booleans: false,
+      cascade: false,
+      conditionals: false,
+      comparisons: false,
+      evaluate: false,
+      hoist_funs: false,
+      hoist_vars: false,
+      if_return: false,
+      join_vars: false,
+      loops: false,
+      properties: false,
+      screw_ie8: false,
+      sequences: false,
+      unsafe: false,
+      // ------
+      keep_fargs: true,
+      keep_fnames: true,
+      warnings: true,
+      drop_console: true,
+    };
+
+    var theirExplicitSettingsKeys = Object.keys(theirExplicitSettings);
+
+    deploy.compress('var a = 1;', {
+      compress: theirExplicitSettings
+    });
+
+    var optionsSeen = this.Compressor.lastCall.args[0];
+
+    theirExplicitSettingsKeys.forEach(key => {
+      test.equal(optionsSeen[key], theirExplicitSettings[key]);
+    });
+
+    test.done();
+  },
   minifyFromBuffer: function(test) {
     test.expect(1);
     test.equal(deploy.compress(new Buffer(codeContents)), codeContents);
