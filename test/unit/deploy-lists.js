@@ -20,5 +20,31 @@ exports['deploy-lists'] = {
 
     test.deepEqual(deployLists.includes, includes);
     test.done();
+  },
+
+  checkCompression: function(test) {
+    test.expect(1);
+
+    /*
+      This test just ensures that no one accidentally
+      messes up the contents of the deploy-lists file,
+      specifically for the compression options field
+
+     */
+    var compressionOptions = {
+      extend: {
+        special: {
+          rescope_after_mangle: true
+        },
+        compress: {
+          keep_fnames: true
+        },
+        mangle: {}
+      },
+    };
+
+    test.deepEqual(deployLists.compressionOptions, compressionOptions);
+    test.done();
   }
+
 };
