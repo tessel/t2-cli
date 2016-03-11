@@ -2351,6 +2351,41 @@ exports['deploy.injectBinaryModules'] = {
     });
   },
 
+  rewriteBinaryBuildPlatformPaths: function(test) {
+    test.expect(2);
+
+    this.forEach = sandbox.stub(Map.prototype, 'forEach', (handler) => {
+      handler({
+        binName: 'serialport.node',
+        buildPath: path.normalize('/build/Release/node-v46-FAKE_PLATFORM-FAKE_ARCH/'),
+        buildType: 'Release',
+        globPath: path.normalize('node_modules/serialport/build/Release/node-v46-FAKE_PLATFORM-FAKE_ARCH/serialport.node'),
+        ignored: false,
+        name: 'serialport',
+        modulePath: path.normalize('node_modules/serialport'),
+        resolved: true,
+        version: '2.0.6',
+        extractPath: path.normalize('~/.tessel/binaries/serialport-2.0.6-Release')
+      });
+    });
+
+    var find = deploy.deployLists.binaryPathTranslations['*'][0].find;
+
+    deploy.deployLists.binaryPathTranslations['*'][0].find = 'FAKE_PLATFORM-FAKE_ARCH';
+
+    deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync()).then(() => {
+      // If the replacement operation did not work, these would still be
+      // "FAKE_PLATFORM-FAKE_ARCH"
+      test.equal(this.copySync.firstCall.args[0].endsWith('linux-mipsel/serialport.node'), true);
+      test.equal(this.copySync.firstCall.args[1].endsWith('linux-mipsel/serialport.node'), true);
+      // Restore the path translation...
+      deploy.deployLists.binaryPathTranslations['*'][0].find = find;
+
+      test.done();
+    });
+  },
+
+
   throwError: function(test) {
     test.expect(1);
 
