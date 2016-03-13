@@ -1535,6 +1535,61 @@ exports['deploy.tarBundle'] = {
       });
     });
   },
+
+  slimSingleInclude: function(test) {
+    test.expect(2);
+
+    var entryPoint = 'index.js';
+    var target = 'test/unit/fixtures/project-include-without-ignore';
+
+    /*
+      project-include-without-ignore
+      ├── .tesselinclude
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselinclude
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
+
+      3 directories, 9 files
+    */
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slim: true,
+      single: true,
+    }).then(bundle => {
+      test.equal(this.globSync.callCount, 8);
+
+      /*
+        There are .tesselinclude rules, but the single flag is present
+        so they don't matter. The only file sent must be the file specified.
+      */
+
+      // Extract and inspect the bundle...
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
+        }
+
+        // Only the explicitly specified `index.js` will
+        // be included in the deployed code.
+        test.deepEqual(entries, [
+          'index.js',
+        ]);
+
+        test.done();
+      });
+    });
+  },
 };
 
 exports['Tessel.prototype.restartScript'] = {
@@ -2202,7 +2257,7 @@ exports['deploy.injectBinaryModules'] = {
     deploy.resolveBinaryModules({
       target: this.target
     }).then(() => {
-      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync()).then(() => {
+      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
         test.equal(this.copySync.callCount, 8);
 
         var args = this.copySync.args;
@@ -2343,7 +2398,36 @@ exports['deploy.injectBinaryModules'] = {
     deploy.resolveBinaryModules({
       target: this.target
     }).then(() => {
-      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync()).then(() => {
+      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
+        // Nothing gets copied!
+        test.equal(this.copySync.callCount, 0);
+        test.done();
+      });
+    });
+  },
+
+  doesNotCopyWhenOptionsSingleTrue: function(test) {
+    test.expect(1);
+    // This would normally result in 8 calls to this.copySync
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+      return [
+        path.normalize('node_modules/debug/build/Debug/debug.node'),
+        path.normalize('node_modules/debug/binding.gyp'),
+        path.normalize('node_modules/linked/build/bindings/linked.node'),
+        path.normalize('node_modules/linked/binding.gyp'),
+        path.normalize('node_modules/missing/build/Release/missing.node'),
+        path.normalize('node_modules/missing/binding.gyp'),
+        path.normalize('node_modules/release/build/Release/release.node'),
+        path.normalize('node_modules/release/binding.gyp'),
+      ];
+    });
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {
+        single: true
+      }).then(() => {
         // Nothing gets copied!
         test.equal(this.copySync.callCount, 0);
         test.done();
@@ -2373,11 +2457,11 @@ exports['deploy.injectBinaryModules'] = {
 
     deploy.deployLists.binaryPathTranslations['*'][0].find = 'FAKE_PLATFORM-FAKE_ARCH';
 
-    deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync()).then(() => {
+    deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
       // If the replacement operation did not work, these would still be
       // "FAKE_PLATFORM-FAKE_ARCH"
-      test.equal(this.copySync.firstCall.args[0].endsWith('linux-mipsel/serialport.node'), true);
-      test.equal(this.copySync.firstCall.args[1].endsWith('linux-mipsel/serialport.node'), true);
+      test.equal(this.copySync.firstCall.args[0].endsWith(path.normalize('linux-mipsel/serialport.node')), true);
+      test.equal(this.copySync.firstCall.args[1].endsWith(path.normalize('linux-mipsel/serialport.node')), true);
       // Restore the path translation...
       deploy.deployLists.binaryPathTranslations['*'][0].find = find;
 
@@ -2402,7 +2486,7 @@ exports['deploy.injectBinaryModules'] = {
     deploy.resolveBinaryModules({
       target: this.target
     }).then(() => {
-      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync()).then(() => {
+      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
         test.fail('Should not pass');
         test.done();
       }).catch(error => {
