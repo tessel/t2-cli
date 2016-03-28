@@ -5,6 +5,9 @@
 // expected default command options are protected from regressions.
 // This should be used as a guide for reviewing new tessel-centric
 // additions to the cli command set.
+
+/*global CrashReporter */
+
 var defaults = {
   timeout: {
     abbr: 't',
@@ -678,4 +681,135 @@ exports['--output true/false'] = {
       test.done();
     });
   },
+};
+
+
+exports['Tessel (cli: crash-reporter)'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.warn = this.sandbox.stub(logs, 'warn');
+    this.info = this.sandbox.stub(logs, 'info');
+
+    this.closeSuccessful = this.sandbox.stub(cli, 'closeSuccessfulCommand');
+    this.closeFailed = this.sandbox.stub(cli, 'closeFailedCommand');
+
+    this.crOn = this.sandbox.stub(CrashReporter, 'on').returns(Promise.resolve());
+    this.crOff = this.sandbox.stub(CrashReporter, 'off').returns(Promise.resolve());
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+    this.crSubmit = this.sandbox.stub(CrashReporter, 'submit').returns(Promise.resolve());
+    this.crTest = this.sandbox.stub(CrashReporter, 'test').returns(Promise.resolve());
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  callThroughNoOptions: function(test) {
+    test.expect(3);
+
+    cli(['crash-reporter']);
+
+    test.equal(this.crOn.callCount, 0);
+    test.equal(this.crOff.callCount, 0);
+    test.equal(this.crTest.callCount, 0);
+
+
+    test.done();
+  },
+
+  on: function(test) {
+    test.expect(3);
+
+    cli(['crash-reporter', '--on=true']);
+
+    test.equal(this.crOn.callCount, 1);
+    test.equal(this.crOff.callCount, 0);
+    test.equal(this.crTest.callCount, 0);
+
+
+    test.done();
+  },
+
+  off: function(test) {
+    test.expect(3);
+
+    cli(['crash-reporter', '--off=true']);
+
+    test.equal(this.crOn.callCount, 0);
+    test.equal(this.crOff.callCount, 1);
+    test.equal(this.crTest.callCount, 0);
+
+
+    test.done();
+  },
+
+  test: function(test) {
+    test.expect(3);
+
+    cli(['crash-reporter', '--test=true']);
+
+    test.equal(this.crOn.callCount, 0);
+    test.equal(this.crOff.callCount, 0);
+    test.equal(this.crTest.callCount, 1);
+
+
+    test.done();
+  },
+
+  onAndTest: function(test) {
+    test.expect(3);
+
+    var resolve = Promise.resolve();
+    this.crOn.restore();
+    this.crOn = this.sandbox.stub(CrashReporter, 'on').returns(resolve);
+
+    cli(['crash-reporter', ' ', '--on', ' ', '--test', ' ']);
+
+    resolve.then(() => {
+      test.equal(this.crOn.callCount, 1);
+      test.equal(this.crOff.callCount, 0);
+      test.equal(this.crTest.callCount, 1);
+
+      test.done();
+    });
+  },
+
+  onNoTestThrough: function(test) {
+    test.expect(3);
+
+    var resolve = Promise.resolve();
+    this.crOn.restore();
+    this.crOn = this.sandbox.stub(CrashReporter, 'on').returns(resolve);
+
+    cli(['crash-reporter', ' ', '--on', ' ']);
+
+    resolve.then(() => {
+      test.equal(this.crOn.callCount, 1);
+      test.equal(this.crOff.callCount, 0);
+      test.equal(this.crTest.callCount, 0);
+
+      test.done();
+    });
+  },
+
+  unsuccessful: function(test) {
+    test.expect(3);
+
+    var resolve = Promise.resolve();
+    this.crOn.restore();
+    this.crOn = this.sandbox.stub(CrashReporter, 'on').returns(resolve);
+
+    cli(['crash-reporter', ' ', '--on', ' ']);
+
+    resolve.then(() => {
+      test.equal(this.crOn.callCount, 1);
+      test.equal(this.crOff.callCount, 0);
+      test.equal(this.crTest.callCount, 0);
+      test.done();
+    });
+  },
+
 };

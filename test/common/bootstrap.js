@@ -43,6 +43,8 @@ global.provision = require('../../lib/tessel/provision');
 global.deployLists = require('../../lib/tessel/deploy-lists');
 
 // ./lib/*
+global.CrashReporter = require('../../lib/crash_reporter');
+global.Preferences = require('../../lib/preferences');
 global.controller = require('../../lib/controller');
 global.discover = require('../../lib/discover');
 global.logs = require('../../lib/logs');

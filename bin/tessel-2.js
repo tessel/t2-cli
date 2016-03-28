@@ -15,6 +15,7 @@ updateNotifier({
 
 // Internal
 var controller = require('../lib/controller');
+var CrashReporter = require('../lib/crash_reporter');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
 var drivers = require('./tessel-install-drivers');
@@ -76,6 +77,42 @@ parser.command('install-drivers')
       .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
   })
   .help('Install drivers');
+
+parser.command('crash-reporter')
+  .callback(opts => {
+    // t2 crash-reporter --on
+    if (opts.on) {
+      return CrashReporter.on().then(() => {
+        // t2 crash-reporter --on --test
+        if (opts.test) {
+          CrashReporter.test().then(module.exports.closeSuccessfulCommand);
+        }
+      }).then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
+    } else if (opts.off) {
+      // t2 crash-reporter --on
+      return CrashReporter.off()
+        .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
+    }
+
+    // t2 crash-reporter --test
+    if (opts.test) {
+      // not handling failures, as we want to trigger a crash
+      CrashReporter.test()
+        .then(module.exports.closeSuccessfulCommand);
+    }
+  })
+  .option('off', {
+    flag: true,
+    help: 'Disable the Crash Reporter.'
+  })
+  .option('on', {
+    flag: true,
+    help: 'Enable the Crash Reporter.'
+  })
+  .option('test', {
+    flag: true,
+    help: 'Test the Crash Reporter.'
+  });
 
 parser.command('provision')
   .callback(callControllerCallback('provisionTessel'))
