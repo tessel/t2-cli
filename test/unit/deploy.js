@@ -2059,8 +2059,8 @@ exports['deploy.resolveBinaryModules'] = {
     this.readGypFileSync.restore();
     this.readGypFileSync = sandbox.stub(deploy.resolveBinaryModules, 'readGypFileSync', () => {
       return '{"targets": [{"target_name": "missing",}]}';
-      //                                               ^
-      //                                       That's intentional.
+      //                                            ^
+      //                                     That's intentional.
     });
 
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
