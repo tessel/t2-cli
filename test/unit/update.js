@@ -781,8 +781,37 @@ exports['Tessel.update'] = {
     this.sandbox.restore();
     done();
   },
+
+  updatePathMustNotByPathNormalized: function(test) {
+    test.expect(4);
+
+    var updatePath = `/tmp/${updates.OPENWRT_BINARY_FILE}`;
+
+    this.exec = this.sandbox.stub(this.tessel.connection, 'exec', (command, handler) => {
+      handler(null, this.tessel._rps);
+      setImmediate(() => {
+        this.tessel._rps.stdout.emit('data', new Buffer('Upgrade completed'));
+        this.tessel._rps.emit('close');
+      });
+    });
+
+    this.openStdinToFile = this.sandbox.stub(commands, 'openStdinToFile');
+    this.sysupgrade = this.sandbox.stub(commands, 'sysupgrade');
+
+    this.tessel.updateOpenWRT(this.newImage.openwrt).then(() => {
+      test.equal(this.openStdinToFile.callCount, 1);
+      test.equal(this.sysupgrade.callCount, 1);
+      test.equal(this.openStdinToFile.lastCall.args[0], updatePath);
+      test.equal(this.sysupgrade.lastCall.args[0], updatePath);
+      test.done();
+    }).catch((error) => {
+      test.ok(false, error);
+      test.done();
+    });
+  },
+
   standardUpdate: function(test) {
-    var updatePath = path.join('/tmp/', updates.OPENWRT_BINARY_FILE);
+    var updatePath = `/tmp/${updates.OPENWRT_BINARY_FILE}`;
     // The exec commands that should be run to update OpenWRT
     var expectedCommands = [commands.openStdinToFile(updatePath), commands.sysupgrade(updatePath)];
     // Which command is being written
