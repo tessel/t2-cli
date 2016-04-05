@@ -59,4 +59,50 @@ Just run `t2 update` to make sure you are running the most recent build of OpenW
 ## Development Milestones
 Help us build Tessel 2's CLI! The [issues section](https://github.com/tessel/t2-cli/issues) of this repo is full of small, fully outlined projects to add functionality.
 
-The table [here](https://github.com/tessel/project/issues/106) outlines the major milestones for the CLI prior to general release. **Feel free to contribute towards milestones that that aren't the highest priority or bugs not on that list! All contributions are welcome.**                                                                                                                                        |
+The table [here](https://github.com/tessel/project/issues/106) outlines the major milestones for the CLI prior to general release. **Feel free to contribute towards milestones that that aren't the highest priority or bugs not on that list! All contributions are welcome.**                                                                                                            
+
+## Releasing
+
+For all releases, a maintainer will complete the following steps: 
+
+1. Update the version, commit it, and tag it (all of these things happen with the following command):
+
+  ```
+  npm version [<newversion> | major | minor | patch]
+  ```
+
+  Where `<newversion>` is either "major", "minor" or "patch" (currently, we are in pre-1.0 "patch" releases). More than likely, you will type `npm version patch`.
+
+2. `git push --tags`  (or `git push remote-name --tags`, where `remote-name` is the name of your remote that points to `git@github.com:tessel/t2-cli.git`)
+
+3. `grunt changelog` will produce a pre-formatted changelog that looks something like this: 
+
+  ```
+  | Commit | Message/Description |
+  | ------ | ------------------- |
+  | sha    | we fixed stuff      |
+  ```
+
+  Copy the table to clipboard
+
+4. Open https://github.com/tessel/t2-cli/releases and click `Edit` on the right hand side of the "Latest Release": 
+  
+  ![](https://i.gyazo.com/4099829ecb663257c643e28ce1ef51ec.png)
+
+  Type the tag name into the "Release title" field: 
+
+  ![](https://i.gyazo.com/d88e251a0c77296b2be6d33224eaa2ca.png)
+
+  Paste the changelog into the "Describe this release" field: 
+
+  ![](https://i.gyazo.com/646654508baf21b685499c830f1baa2c.png)
+
+  When complete it will look something like this: 
+
+  ![](https://i.gyazo.com/f86ea740e358a46949394d5a7a3906e1.png)
+
+
+
+
+
+
