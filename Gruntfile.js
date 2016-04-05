@@ -1,6 +1,11 @@
+// System Objects
+var cp = require('child_process');
+
+// Third Party Dependencies
+var tags = require('common-tags');
+
 module.exports = function(grunt) {
 
-  // Project configuration.
   grunt.initConfig({
     nodeunit: {
       tests: [
@@ -103,4 +108,43 @@ module.exports = function(grunt) {
 
     grunt.task.run('nodeunit');
   });
+
+
+  grunt.registerTask('changelog', '`changelog:0.0.0--0.0.2` or `changelog`', function(range) {
+    var done = this.async();
+
+    if (!range) {
+      // grunt changelog
+      range = cp.execSync('git tag --sort version:refname').toString().split('\n');
+    } else {
+      // grunt changelog:previous--present
+      range = range.split('--');
+    }
+
+    range = range.filter(Boolean).reverse();
+
+    cp.exec(`git log --format='|%h|%s|' ${range[1]}..${range[0]}`, (error, result) => {
+      if (error) {
+        console.log(error.message);
+        return;
+      }
+
+      var rows = result.split('\n').filter(commit => {
+        return !commit.includes('|Merge ') && !commit.includes(range[0]);
+      }).join('\n');
+
+      // Extra whitespace above and below makes it easier to quickly copy/paste from terminal
+      grunt.log.writeln(`\n\n${changelog(rows)}\n\n`);
+
+      done();
+    });
+  });
 };
+
+function changelog(rows) {
+  return tags.stripIndent`
+| Commit | Message/Description |
+| ------ | ------------------- |
+${rows}
+`;
+}
