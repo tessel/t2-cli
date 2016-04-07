@@ -142,7 +142,7 @@ module.exports = function(grunt) {
 };
 
 function changelog(rows) {
-  return tags.stripIndent`
+  return tags.stripIndent `
 | Commit | Message/Description |
 | ------ | ------------------- |
 ${rows}
