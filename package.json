@@ -74,7 +74,7 @@
     "tar-stream": "^1.3.0",
     "uglify-js": "^2.5.0",
     "url-join": "0.0.1",
-    "usb": "1.1.1",
+    "usb": "1.1.2",
     "usb-daemon-parser": "0.0.2"
   },
   "preferGlobal": true,
