@@ -228,6 +228,7 @@ makeCommand('wifi')
   .option('password', {
     abbr: 'p',
     metavar: 'PASSWORD',
+    type: 'string',
     help: 'Set the password of the network to connect to'
   })
   .option('security', {
