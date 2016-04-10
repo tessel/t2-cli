@@ -140,7 +140,16 @@ makeCommand('run')
     default: false,
     help: 'Deploy all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from specified "entryPoint" file.'
   })
-  .help('Deploy a script to Tessel and run it with Node');
+  .help(`
+    Deploy a script to Tessel and run it with Node.
+
+    Assets that are not directly deployed as a dependency via require analysis,
+    for example images or html files of an application (and their directories),
+    must be listed in a .tesselinclude in the root of your project.
+    This can be created manually or by typing 't2 init'.
+
+    For more information, visit: https://tessel.io/docs/cli#starting-projects
+  `);
 
 makeCommand('push')
   .callback(function(opts) {
@@ -175,7 +184,17 @@ makeCommand('push')
     default: false,
     help: 'Push all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from specified "entryPoint" file.'
   })
-  .help('Pushes the file/dir to Flash memory to be run anytime the Tessel is powered, runs the file immediately once the file is copied over');
+  .help(`
+    Pushes the file/dir to Flash memory to be run anytime the Tessel is powered,
+    runs the file immediately once the file is copied over.
+
+    Assets that are not directly deployed as a dependency via require analysis,
+    for example images or html files of an application (and their directories),
+    must be listed in a .tesselinclude in the root of your project.
+    This can be created manually or by typing 't2 init'.
+
+    For more information, visit: https://tessel.io/docs/cli#starting-projects
+  `);
 
 makeCommand('erase')
   .callback(callControllerCallback('eraseScript'))

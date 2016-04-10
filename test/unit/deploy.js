@@ -1592,8 +1592,8 @@ exports['deploy.tarBundle'] = {
     });
   },
 
-  bothDetectAssetsWithoutInclude: function(test) {
-    test.expect(10);
+  detectAssetsWithoutInclude: function(test) {
+    test.expect(4);
 
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/project-assets-without-include';
@@ -1615,41 +1615,54 @@ exports['deploy.tarBundle'] = {
     */
 
 
-    Promise.all([
-      deploy.tarBundle({
-        target: path.normalize(target),
-        resolvedEntryPoint: entryPoint,
-        slim: true,
-      }),
-      deploy.tarBundle({
-        target: path.normalize(target),
-        resolvedEntryPoint: entryPoint,
-      }),
-    ]).then(() => {
+    deploy.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slim: true,
+    }).then(() => {
 
-      test.equal(this.readdirSync.callCount, 2);
-      test.equal(this.readdirSync.firstCall.args[0], target);
+      test.equal(this.readdirSync.callCount, 1);
       test.equal(this.readdirSync.lastCall.args[0], target);
 
-      // In both cases, logs.warn should've been called with the
-      // warning message and a list of the present, but unnaccounted for
-      // asset files and directories.
+      test.equal(this.logsWarn.callCount, 1);
+      test.equal(this.logsWarn.firstCall.args[0], 'Some assets in this project were not deployed (see: t2 run --help)');
 
-      test.equal(this.logsWarn.callCount, 2);
+      test.done();
+    });
+  },
 
-      [
-        'mock-foo.js',
-        'nested',
-        'other.js',
-      ].forEach(asset => {
-        test.equal(this.logsWarn.firstCall.args[0].includes(asset), true);
-        test.equal(this.logsWarn.lastCall.args[0].includes(asset), true);
-      });
+  detectAssetsWithoutIncludeEliminatedByDepGraph: function(test) {
+    test.expect(3);
 
-      this.logsWarn.firstCall.args[0].includes('The following items were found in your project directory, but not deployed.');
-      this.logsWarn.firstCall.args[0].includes('If you need to deploy them to your Tessel 2, you must have a .tesselinclude\n file that lists the file and directory assets for your application. This can be\n created manually or by typing \'t2 init\'.');
-      this.logsWarn.firstCall.args[0].includes('For more information, visit: https://tessel.io/docs/cli#starting-projects');
+    var entryPoint = 'index.js';
+    var target = 'test/unit/fixtures/project-assets-without-include-eliminated-by-dep-graph';
 
+    /*
+      project-assets-without-include
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── index.js
+      │       └── package.json
+      └── package.json
+
+      3 directories, 6 files
+    */
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slim: true,
+    }).then(() => {
+      test.equal(this.readdirSync.callCount, 1);
+      test.equal(this.readdirSync.lastCall.args[0], target);
+      test.equal(this.logsWarn.callCount, 0);
+
+      // Ultimately, all assets were accounted for, even though
+      // no tesselinclude existed.
       test.done();
     });
   },
