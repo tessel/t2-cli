@@ -1,6 +1,6 @@
 {
-  "name": "project-include-without-ignore",
+  "name": "project-assets-without-include",
   "version": "0.0.1",
-  "description": "project-include-without-ignore",
+  "description": "project-assets-without-include",
   "main": "index.js"
 }
