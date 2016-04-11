@@ -1666,6 +1666,25 @@ exports['deploy.tarBundle'] = {
       test.done();
     });
   },
+
+  alwaysExplicitlyProvideProjectDirname: function(test) {
+    test.expect(1);
+
+    var entryPoint = 'index.js';
+    var target = 'test/unit/fixtures/project';
+
+    deploy.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slim: true,
+    }).then(() => {
+      test.deepEqual(this.project.lastCall.args[0], {
+        entry: path.join(target, entryPoint),
+        dirname: path.normalize(target),
+      });
+      test.done();
+    });
+  },
 };
 
 exports['Tessel.prototype.restartScript'] = {
