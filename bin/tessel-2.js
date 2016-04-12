@@ -5,6 +5,13 @@ var path = require('path');
 
 // Third Party Dependencies
 var parser = require('nomnom').script('t2');
+const updateNotifier = require('update-notifier');
+
+// Check for updates
+const pkg = require('../package.json');
+updateNotifier({
+  pkg
+}).notify();
 
 // Internal
 var controller = require('../lib/controller');
