@@ -21,9 +21,9 @@ exports['API Surface'] = {
 exports['CLI.list'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
     this.closeConnections = this.sandbox.stub(controller, 'closeTesselConnections').returns(Promise.resolve());
     var test = this;
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {

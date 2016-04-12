@@ -4,8 +4,8 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.findAvailableNetworks = this.sandbox.spy(Tessel.prototype, 'findAvailableNetworks');
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
 
     this.tessel = TesselSimulator();
 
@@ -167,8 +167,8 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.connectToNetwork = this.sandbox.spy(Tessel.prototype, 'connectToNetwork');
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.setNetworkSSID = this.sandbox.spy(commands, 'setNetworkSSID');
     this.setNetworkPassword = this.sandbox.spy(commands, 'setNetworkPassword');
     this.setNetworkEncryption = this.sandbox.spy(commands, 'setNetworkEncryption');
@@ -459,8 +459,8 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
 module.exports['Tessel.setWifiState'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.tessel = TesselSimulator();
     this.simpleExec = this.sandbox.spy(this.tessel, 'simpleExec');
     this.turnOnWifi = this.sandbox.spy(commands, 'turnOnWifi');
@@ -505,8 +505,8 @@ module.exports['Tessel.setWifiState'] = {
         test.deepEqual(this.turnOnWifi.lastCall.returnValue, ['uci', 'set', 'wireless.@wifi-iface[0].disabled=0']);
         test.equal(this.commitWirelessCredentials.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
-        test.equal(this.logsInfo.calledOnce, true);
-        test.equal(this.logsInfo.lastCall.args[1].indexOf('Enabled.') !== -1, true);
+        test.equal(this.logInfo.calledOnce, true);
+        test.equal(this.logInfo.lastCall.args[1].indexOf('Enabled.') !== -1, true);
         test.ok(this.getWifiInfo.callCount, 1);
         test.done();
       })
@@ -544,8 +544,8 @@ module.exports['Tessel.setWifiState'] = {
         test.deepEqual(this.turnOnWifi.lastCall.returnValue, ['uci', 'set', 'wireless.@wifi-iface[0].disabled=1']);
         test.equal(this.commitWirelessCredentials.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
-        test.equal(this.logsInfo.calledOnce, true);
-        test.equal(this.logsInfo.lastCall.args[1].indexOf('Disabled.') !== -1, true);
+        test.equal(this.logInfo.calledOnce, true);
+        test.equal(this.logInfo.lastCall.args[1].indexOf('Disabled.') !== -1, true);
         test.equal(this.getWifiInfo.callCount, 0);
         test.done();
       })
@@ -560,8 +560,8 @@ module.exports['Tessel.setWifiState'] = {
 module.exports['Tessel.getWifiInfo'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.tessel = TesselSimulator();
     this.simpleExec = this.sandbox.spy(this.tessel, 'simpleExec');
     this.turnOnWifi = this.sandbox.spy(commands, 'turnOnWifi');

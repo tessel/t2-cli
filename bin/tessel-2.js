@@ -12,7 +12,7 @@ const isRoot = require('is-root');
 var controller = require('../lib/controller');
 var CrashReporter = require('../lib/crash-reporter');
 var init = require('../lib/init');
-var logs = require('../lib/logs');
+var log = require('../lib/log');
 var drivers = require('./tessel-install-drivers');
 var Preferences = require('../lib/preferences');
 
@@ -339,7 +339,7 @@ parser.command('key')
   .callback(function(opts) {
     controller.setupLocal(opts)
       .then(function() {
-        logs.info('Key successfully generated.');
+        log.info('Key successfully generated.');
       })
       .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
   })
@@ -483,12 +483,12 @@ module.exports.closeFailedCommand = function(status, options) {
   options = options || {};
 
   if (status instanceof Error) {
-    logs.err(status.toString());
+    log.error(status.toString());
   } else {
     if (status !== undefined) {
       // Print a stern warning by default
       options.type = options.type || 'warn';
-      logs[options.type](status);
+      log[options.type](status);
     }
   }
 

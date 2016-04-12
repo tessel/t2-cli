@@ -21,8 +21,8 @@ exports['Tessel.prototype.rename'] = {
     this.openStdinToFile = this.sandbox.spy(commands, 'openStdinToFile');
     this.setHostname = this.sandbox.spy(commands, 'setHostname');
     this.getHostname = this.sandbox.spy(commands, 'getHostname');
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.tessel = TesselSimulator();
     this.exec = this.sandbox.spy(this.tessel.connection, 'exec');
     this.closeTesselConnections = this.sandbox.stub(controller, 'closeTesselConnections');
@@ -137,7 +137,7 @@ exports['Tessel.prototype.rename'] = {
       .then(() => {
         // When renamed with same current name:
         // - warning is logged
-        test.equal(this.logsWarn.callCount, 1);
+        test.equal(this.logWarn.callCount, 1);
         test.done();
       });
   },

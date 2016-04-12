@@ -96,7 +96,7 @@ exports['USB.Connection.prototype.open'] = {
   setUp: function(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
-    this.err = this.sandbox.stub(logs, 'err');
+    this.err = this.sandbox.stub(log, 'error');
     this.processExit = this.sandbox.stub(process, 'exit');
     this.usbConnection = new USB.Connection({});
     this.usbConnection.epOut = new Emitter();
@@ -214,7 +214,7 @@ exports['USB.Connection.prototype.end'] = {
   setUp: function(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
-    this.err = this.sandbox.stub(logs, 'err');
+    this.err = this.sandbox.stub(log, 'error');
     this.processExit = this.sandbox.stub(process, 'exit');
     this.usbConnection = new USB.Connection({});
     this.usbConnection.epOut = new Emitter();
@@ -316,7 +316,7 @@ exports['USB.Connection.prototype.end'] = {
 exports['USB.Connection.prototype._receiveMessages'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.err = this.sandbox.stub(logs, 'err');
+    this.err = this.sandbox.stub(log, 'error');
     this.processExit = this.sandbox.stub(process, 'exit');
     this.usbConnection = new USB.Connection({});
     this.usbConnection.epIn = new Emitter();

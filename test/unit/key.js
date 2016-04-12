@@ -14,9 +14,9 @@ function createKeyTestFolder(callback) {
 exports['provision.setDefaultKey'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
     this.setDefaultKeySpy = this.sandbox.spy(provision, 'setDefaultKey');
     this.fsSpyStatSync = this.sandbox.spy(fs, 'statSync');
 

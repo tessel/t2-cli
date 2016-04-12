@@ -3,9 +3,9 @@
 exports['Tessel.prototype.fetchCurrentNodeVersion'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.basic = this.sandbox.stub(log, 'basic', function() {});
     this.tessel = TesselSimulator();
 
     this.simpleExec = this.sandbox.stub(Tessel.prototype, 'simpleExec', () => {

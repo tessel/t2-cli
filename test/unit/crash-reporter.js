@@ -41,7 +41,7 @@ exports['CrashReporter'] = {
 exports['CrashReporter.on'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsErr = this.sandbox.stub(logs, 'err');
+    this.error = this.sandbox.stub(log, 'error');
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     done();
   },
@@ -68,7 +68,7 @@ exports['CrashReporter.on'] = {
     // Despite the write failure, we don't _want_ to crash the crash reporter
     CrashReporter.on().then(() => {
       test.equal(this.pWrite.callCount, 1);
-      test.equal(this.logsErr.callCount, 1);
+      test.equal(this.error.callCount, 1);
       test.done();
     });
   },
@@ -78,7 +78,7 @@ exports['CrashReporter.on'] = {
 exports['CrashReporter.off'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsErr = this.sandbox.stub(logs, 'err');
+    this.error = this.sandbox.stub(log, 'error');
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     done();
   },
@@ -105,7 +105,7 @@ exports['CrashReporter.off'] = {
     // Despite the write failure, we don't _want_ to crash the crash reporter
     CrashReporter.off().then(() => {
       test.equal(this.pWrite.callCount, 1);
-      test.equal(this.logsErr.callCount, 1);
+      test.equal(this.error.callCount, 1);
       test.done();
     });
   },
@@ -115,8 +115,8 @@ exports['CrashReporter.off'] = {
 exports['CrashReporter.submit'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsErr = this.sandbox.stub(logs, 'err');
-    this.logsInfo = this.sandbox.stub(logs, 'info');
+    this.error = this.sandbox.stub(log, 'error');
+    this.logInfo = this.sandbox.stub(log, 'info');
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     this.crPrompt = this.sandbox.stub(CrashReporter, 'prompt').returns(Promise.resolve(true));
@@ -179,7 +179,7 @@ exports['CrashReporter.submit'] = {
     this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
 
     CrashReporter.submit(new Error('This happened')).then(() => {
-      test.equal(this.logsInfo.callCount, 1);
+      test.equal(this.logInfo.callCount, 1);
       test.done();
     }).catch(error => {
       test.ok(false, error.message);
@@ -196,7 +196,7 @@ exports['CrashReporter.submit'] = {
     CrashReporter.submit(new Error('This happened'), {
       silent: true
     }).then(() => {
-      test.equal(this.logsInfo.callCount, 0);
+      test.equal(this.logInfo.callCount, 0);
       test.done();
     }).catch(error => {
       test.ok(false, error.message);
@@ -209,8 +209,8 @@ exports['CrashReporter.submit'] = {
 exports['CrashReporter.sanitize'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsErr = this.sandbox.stub(logs, 'err');
-    this.logsInfo = this.sandbox.stub(logs, 'info');
+    this.error = this.sandbox.stub(log, 'error');
+    this.logInfo = this.sandbox.stub(log, 'info');
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     this.crPrompt = this.sandbox.stub(CrashReporter, 'prompt').returns(Promise.resolve(true));
@@ -284,8 +284,8 @@ exports['CrashReporter.sanitize'] = {
 exports['CrashReporter.post'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsErr = this.sandbox.stub(logs, 'err');
-    this.logsInfo = this.sandbox.stub(logs, 'info');
+    this.error = this.sandbox.stub(log, 'error');
+    this.logInfo = this.sandbox.stub(log, 'info');
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     this.crPost = this.sandbox.spy(CrashReporter, 'post');
@@ -346,7 +346,7 @@ exports['CrashReporter.post'] = {
 exports['CrashReporter.status'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsInfo = this.sandbox.stub(logs, 'info');
+    this.logInfo = this.sandbox.stub(log, 'info');
     this.prefLoad = this.sandbox.stub(Preferences, 'load', () => {
       return Promise.resolve({
         'crash.reporter.preference': 'on'
@@ -364,7 +364,7 @@ exports['CrashReporter.status'] = {
     test.expect(1);
 
     CrashReporter.status().then(() => {
-      test.equal(this.logsInfo.callCount, 1);
+      test.equal(this.logInfo.callCount, 1);
       test.done();
     });
   },

@@ -53,7 +53,7 @@
     "IS_TEST_ENV": true,
     "lan": true,
     "LAN": true,
-    "logs": true,
+    "log": true,
     "mdns": true,
     "mkdirp": true,
     "NodeRSA": true,

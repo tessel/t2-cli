@@ -21,8 +21,8 @@ exports['Tessel (get)'] = {
       };
     });
     util.inherits(this.seeker, Emitter);
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
 
     this.menu = this.sandbox.stub(Menu, 'prompt', function() {
       return Promise.resolve();
@@ -44,7 +44,7 @@ exports['Tessel (get)'] = {
     test.expect(1);
     Tessel.get(this.standardOpts)
       .catch(() => {
-        test.equal(this.logsInfo.firstCall.args[0], 'Looking for your Tessel...');
+        test.equal(this.logInfo.firstCall.args[0], 'Looking for your Tessel...');
         test.done();
       });
   },
@@ -537,8 +537,8 @@ exports['Tessel (get); filter: unauthorized'] = {
     });
 
     util.inherits(this.seeker, Emitter);
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
 
     this.menu = this.sandbox.stub(Menu, 'prompt', function() {
       return Promise.resolve();

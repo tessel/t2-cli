@@ -10,8 +10,8 @@ exports['Tessel.prototype.memoryInfo'] = {
   setUp: function(done) {
     this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.resolve(meminfo));
 
-    this.logsWarn = sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = sandbox.stub(logs, 'info', function() {});
+    this.warn = sandbox.stub(log, 'warn', function() {});
+    this.info = sandbox.stub(log, 'info', function() {});
 
     this.tessel = TesselSimulator();
 
@@ -125,8 +125,8 @@ exports['Tessel.prototype.deploy'] = {
       });
     });
 
-    this.logsWarn = sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = sandbox.stub(logs, 'info', function() {});
+    this.warn = sandbox.stub(log, 'warn', function() {});
+    this.info = sandbox.stub(log, 'info', function() {});
 
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
@@ -387,8 +387,8 @@ exports['Tessel.prototype.restart'] = {
     this.resolveLanguage = sandbox.spy(deployment, 'resolveLanguage');
     this.run = sandbox.stub(deploy, 'run', () => Promise.resolve());
     this.start = sandbox.stub(deploy, 'start', () => Promise.resolve());
-    this.logsWarn = sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = sandbox.stub(logs, 'info', function() {});
+    this.warn = sandbox.stub(log, 'warn', function() {});
+    this.info = sandbox.stub(log, 'info', function() {});
 
     this.tessel = TesselSimulator();
 
@@ -474,7 +474,7 @@ exports['Tessel.prototype.restart'] = {
 
 exports['deploy.run'] = {
   setUp: function(done) {
-    this.logsInfo = sandbox.stub(logs, 'info');
+    this.info = sandbox.stub(log, 'info');
     this.tessel = TesselSimulator();
     done();
   },
@@ -549,7 +549,7 @@ exports['deploy.run'] = {
 
 exports['deploy.createShellScript'] = {
   setUp: function(done) {
-    this.logsInfo = sandbox.stub(logs, 'info');
+    this.info = sandbox.stub(log, 'info');
     this.tessel = TesselSimulator();
     done();
   },

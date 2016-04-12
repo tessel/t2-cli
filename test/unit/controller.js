@@ -22,9 +22,9 @@ exports['controller.closeTesselConnections'] = {
 
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.basic = this.sandbox.stub(log, 'basic', function() {});
 
     done();
   },
@@ -353,9 +353,9 @@ exports['controller.runHeuristics'] = {
 exports['controller.tesselEnvVersions'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.basic = this.sandbox.stub(log, 'basic', function() {});
 
     this.tessel = TesselSimulator({
       name: 'TestTessel'
@@ -415,14 +415,14 @@ exports['controller.tesselEnvVersions'] = {
         // Execute `node --version` command on tessel
         test.equal(this.fetchCurrentNodeVersion.callCount, 1);
         // Make sure we have some output
-        test.equal(this.logsInfo.callCount, 3);
+        test.equal(this.info.callCount, 3);
 
         // Output of CLI version to console
-        test.equal(this.logsInfo.firstCall.args[0], `Tessel [TestTessel] CLI version: ${this.packageJsonVersion}`);
+        test.equal(this.info.firstCall.args[0], `Tessel [TestTessel] CLI version: ${this.packageJsonVersion}`);
         // Output of firmware version to console
-        test.equal(this.logsInfo.secondCall.args[0], 'Tessel [TestTessel] Firmware version: 0.0.1');
+        test.equal(this.info.secondCall.args[0], 'Tessel [TestTessel] Firmware version: 0.0.1');
         // Output of Node version to console
-        test.equal(this.logsInfo.thirdCall.args[0], 'Tessel [TestTessel] Node version: 4.2.1');
+        test.equal(this.info.thirdCall.args[0], 'Tessel [TestTessel] Node version: 4.2.1');
         test.done();
       });
   },
@@ -430,8 +430,8 @@ exports['controller.tesselEnvVersions'] = {
   nodeVersionFailed: function(test) {
     test.expect(7);
 
-    this.logsInfo.restore();
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.info.restore();
+    this.info = this.sandbox.stub(log, 'info', function() {});
 
     this.standardTesselCommand.restore();
     this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
@@ -459,14 +459,14 @@ exports['controller.tesselEnvVersions'] = {
         // Execute `node --version` command on tessel
         test.equal(this.fetchCurrentNodeVersion.callCount, 1);
         // Make sure we have some output
-        test.equal(this.logsInfo.callCount, 3);
+        test.equal(this.info.callCount, 3);
 
         // Output of CLI version to console
-        test.equal(this.logsInfo.firstCall.args[0], `Tessel [TestTessel] CLI version: ${this.packageJsonVersion}`);
+        test.equal(this.info.firstCall.args[0], `Tessel [TestTessel] CLI version: ${this.packageJsonVersion}`);
         // Output of firmware version to console
-        test.equal(this.logsInfo.secondCall.args[0], 'Tessel [TestTessel] Firmware version: 0.0.1');
+        test.equal(this.info.secondCall.args[0], 'Tessel [TestTessel] Firmware version: 0.0.1');
         // Output of Node version to console
-        test.equal(this.logsInfo.thirdCall.args[0], 'Tessel [TestTessel] Node version: unknown');
+        test.equal(this.info.thirdCall.args[0], 'Tessel [TestTessel] Node version: unknown');
         test.done();
       });
   },
@@ -474,8 +474,8 @@ exports['controller.tesselEnvVersions'] = {
   firmwareVersionFailed: function(test) {
     test.expect(7);
 
-    this.logsInfo.restore();
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.info.restore();
+    this.info = this.sandbox.stub(log, 'info', function() {});
 
     this.standardTesselCommand.restore();
     this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
@@ -503,14 +503,14 @@ exports['controller.tesselEnvVersions'] = {
         // Execute `node --version` command on tessel
         test.equal(this.fetchCurrentNodeVersion.callCount, 0);
         // Make sure we have some output
-        test.equal(this.logsInfo.callCount, 3);
+        test.equal(this.info.callCount, 3);
 
         // Output of CLI version to console
-        test.equal(this.logsInfo.firstCall.args[0], `Tessel [TestTessel] CLI version: ${this.packageJsonVersion}`);
+        test.equal(this.info.firstCall.args[0], `Tessel [TestTessel] CLI version: ${this.packageJsonVersion}`);
         // Output of firmware version to console
-        test.equal(this.logsInfo.secondCall.args[0], 'Tessel [TestTessel] Firmware version: unknown');
+        test.equal(this.info.secondCall.args[0], 'Tessel [TestTessel] Firmware version: unknown');
         // Output of Node version to console
-        test.equal(this.logsInfo.thirdCall.args[0], 'Tessel [TestTessel] Node version: unknown');
+        test.equal(this.info.thirdCall.args[0], 'Tessel [TestTessel] Node version: unknown');
         test.done();
       });
   }
@@ -538,9 +538,9 @@ exports['Tessel.list'] = {
     });
     util.inherits(this.seeker, Emitter);
 
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.basic = this.sandbox.stub(log, 'basic', function() {});
 
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
     this.runHeuristics = this.sandbox.spy(controller, 'runHeuristics');
@@ -701,9 +701,9 @@ exports['Tessel.get'] = {
       };
     });
     util.inherits(this.seeker, Emitter);
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.basic = this.sandbox.stub(log, 'basic', function() {});
     this.closeTesselConnections = this.sandbox.stub(controller, 'closeTesselConnections');
     this.reconcileTessels = this.sandbox.spy(controller, 'reconcileTessels');
     this.runHeuristics = this.sandbox.spy(controller, 'runHeuristics');
@@ -744,8 +744,8 @@ exports['Tessel.get'] = {
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-        test.equal(this.logsInfo.callCount, 2);
-        test.equal(this.logsInfo.lastCall.args[0].includes('the_name'), true);
+        test.equal(this.info.callCount, 2);
+        test.equal(this.info.lastCall.args[0].includes('the_name'), true);
         test.done();
       });
 
@@ -774,8 +774,8 @@ exports['Tessel.get'] = {
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-        test.equal(this.logsInfo.callCount, 2);
-        test.equal(this.logsInfo.lastCall.args[0].includes('the_name'), true);
+        test.equal(this.info.callCount, 2);
+        test.equal(this.info.lastCall.args[0].includes('the_name'), true);
         test.done();
       });
 
@@ -813,8 +813,8 @@ exports['Tessel.get'] = {
         test.equal(this.runHeuristics.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
         test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
-        test.equal(this.logsInfo.callCount, 2);
-        test.equal(this.logsInfo.lastCall.args[0].includes('samesies'), true);
+        test.equal(this.info.callCount, 2);
+        test.equal(this.info.lastCall.args[0].includes('samesies'), true);
         test.done();
       });
 
@@ -962,9 +962,9 @@ exports['Tessel.get'] = {
 exports['controller.closeTesselConnections'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.basic = this.sandbox.stub(log, 'basic', function() {});
 
     done();
   },
@@ -1058,9 +1058,9 @@ exports['controller.closeTesselConnections'] = {
 exports['controller.root'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.basic = this.sandbox.stub(log, 'basic', function() {});
 
     this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').returns(Promise.resolve());
 
@@ -1103,8 +1103,8 @@ exports['controller.root'] = {
       usb: true
     };
 
-    this.logsWarn.restore();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.warn.restore();
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
 
     controller.root(opts)
       .then(() => {
@@ -1113,7 +1113,7 @@ exports['controller.root'] = {
         test.equal(this.standardTesselCommand.callCount, 1);
         test.equal(options, opts);
         test.equal(options.usb, false);
-        test.equal(this.logsWarn.callCount, 2);
+        test.equal(this.warn.callCount, 2);
         test.done();
       });
   },

@@ -4,8 +4,8 @@ exports['Tessel.prototype.erase'] = {
   setUp: function(done) {
 
     this.erase = sinon.spy(Tessel.prototype, 'eraseScript');
-    this.logsWarn = sinon.stub(logs, 'warn', function() {});
-    this.logsInfo = sinon.stub(logs, 'info', function() {});
+    this.logWarn = sinon.stub(log, 'warn', function() {});
+    this.logInfo = sinon.stub(log, 'info', function() {});
 
     this.tessel = TesselSimulator();
 
@@ -15,8 +15,8 @@ exports['Tessel.prototype.erase'] = {
   tearDown: function(done) {
     this.tessel.mockClose();
     this.erase.restore();
-    this.logsWarn.restore();
-    this.logsInfo.restore();
+    this.logWarn.restore();
+    this.logInfo.restore();
     done();
   },
 

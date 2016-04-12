@@ -5,7 +5,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.createAccessPoint = this.sandbox.spy(Tessel.prototype, 'createAccessPoint');
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.setLanNetwork = this.sandbox.spy(commands, 'setLanNetwork');
     this.setLanNetworkIfname = this.sandbox.spy(commands, 'setLanNetworkIfname');
     this.setLanNetworkProto = this.sandbox.spy(commands, 'setLanNetworkProto');
@@ -205,7 +205,7 @@ exports['Tessel.prototype.enableAccessPoint'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.enableAccessPoint = this.sandbox.spy(Tessel.prototype, 'enableAccessPoint');
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.turnAccessPointOn = this.sandbox.spy(commands, 'turnAccessPointOn');
     this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
     this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
@@ -332,7 +332,7 @@ exports['Tessel.prototype.disableAccessPoint'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.disableAccessPoint = this.sandbox.spy(Tessel.prototype, 'disableAccessPoint');
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.turnAccessPointOff = this.sandbox.spy(commands, 'turnAccessPointOff');
     this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
     this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');

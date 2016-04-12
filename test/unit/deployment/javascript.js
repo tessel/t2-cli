@@ -30,8 +30,8 @@ exports['Deployment: JavaScript'] = {
     this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.resolve());
     this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', () => Promise.resolve(reference));
 
-    this.logsWarn = sandbox.stub(logs, 'warn', () => {});
-    this.logsInfo = sandbox.stub(logs, 'info', () => {});
+    this.logWarn = sandbox.stub(log, 'warn', () => {});
+    this.info = sandbox.stub(log, 'info', () => {});
 
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
@@ -442,8 +442,8 @@ exports['deployment.js.tarBundle'] = {
     this.project = sandbox.spy(deployment.js, 'project');
     this.compress = sandbox.spy(deployment.js, 'compress');
 
-    this.logsWarn = sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = sandbox.stub(logs, 'info', function() {});
+    this.logWarn = sandbox.stub(log, 'warn', function() {});
+    this.info = sandbox.stub(log, 'info', function() {});
 
     done();
   },
@@ -1432,8 +1432,8 @@ exports['deployment.js.tarBundle'] = {
       test.equal(this.readdirSync.callCount, 1);
       test.equal(this.readdirSync.lastCall.args[0], path.normalize(target));
 
-      test.equal(this.logsWarn.callCount, 1);
-      test.equal(this.logsWarn.firstCall.args[0], 'Some assets in this project were not deployed (see: t2 run --help)');
+      test.equal(this.logWarn.callCount, 1);
+      test.equal(this.logWarn.firstCall.args[0], 'Some assets in this project were not deployed (see: t2 run --help)');
 
       test.done();
     });
@@ -1467,7 +1467,7 @@ exports['deployment.js.tarBundle'] = {
     }).then(() => {
       test.equal(this.readdirSync.callCount, 1);
       test.equal(this.readdirSync.lastCall.args[0], path.normalize(target));
-      test.equal(this.logsWarn.callCount, 0);
+      test.equal(this.logWarn.callCount, 0);
 
       // Ultimately, all assets were accounted for, even though
       // no tesselinclude existed.
@@ -2466,7 +2466,7 @@ exports['deployment.js.injectBinaryModules'] = {
 
 exports['deploy.createShellScript'] = {
   setUp: function(done) {
-    this.logsInfo = sandbox.stub(logs, 'info');
+    this.info = sandbox.stub(log, 'info');
     this.tessel = TesselSimulator();
     done();
   },

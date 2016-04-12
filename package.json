@@ -61,6 +61,7 @@
     "node-rsa": "^0.2.26",
     "nomnom": "^1.8.1",
     "npm": "^2.7.1",
+    "npmlog": "github:rwaldron/npmlog#31",
     "osenv": "^0.1.0",
     "progress": "^1.1.8",
     "promzard": "^0.3.0",
