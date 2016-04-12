@@ -375,6 +375,15 @@ makeCommand('root')
   })
   .help('Gain SSH root access to one of your authorized tessels');
 
+makeCommand('upload-firmware')
+  .option('firmware-path', {
+    position: 1,
+    required: true,
+    help: 'Update with the firmware image at the indicated local path.'
+  })
+  .callback((opts) => callControllerWith('uploadFirmware', opts))
+  .help('Fix an issue where Windows Drivers were not properly installed with the firmware');
+
 
 module.exports = function(args) {
   parser.parse(args);
