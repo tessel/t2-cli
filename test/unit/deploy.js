@@ -1795,7 +1795,7 @@ exports['deploy.findProject'] = {
   home: function(test) {
     test.expect(1);
 
-    var key = process.platform === 'win32' ? 'USERPROFILE' : 'HOME';
+    var key = /^win/.test(process.platform) ? 'USERPROFILE' : 'HOME';
     var real = process.env[key];
     var fake = path.normalize('/fake/test/home/dir');
 
@@ -1816,6 +1816,7 @@ exports['deploy.findProject'] = {
       // Ensure that "~" was transformed
       test.equal(arg, path.normalize('/fake/test/home/dir/foo'));
       test.done();
+      return '';
     });
 
     deploy.findProject({
