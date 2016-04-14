@@ -1622,7 +1622,7 @@ exports['deploy.tarBundle'] = {
     }).then(() => {
 
       test.equal(this.readdirSync.callCount, 1);
-      test.equal(this.readdirSync.lastCall.args[0], target);
+      test.equal(this.readdirSync.lastCall.args[0], path.normalize(target));
 
       test.equal(this.logsWarn.callCount, 1);
       test.equal(this.logsWarn.firstCall.args[0], 'Some assets in this project were not deployed (see: t2 run --help)');
@@ -1658,7 +1658,7 @@ exports['deploy.tarBundle'] = {
       slim: true,
     }).then(() => {
       test.equal(this.readdirSync.callCount, 1);
-      test.equal(this.readdirSync.lastCall.args[0], target);
+      test.equal(this.readdirSync.lastCall.args[0], path.normalize(target));
       test.equal(this.logsWarn.callCount, 0);
 
       // Ultimately, all assets were accounted for, even though
@@ -2007,9 +2007,25 @@ exports['deploy.resolveBinaryModules'] = {
     });
 
     this.getRoot = sandbox.stub(bindings, 'getRoot', (file) => {
-      var pattern = /(?:node_modules)\/(\w.+)\/(?:build|binding\.)/;
-      var results = pattern.exec(file);
-      return path.normalize('node_modules/' + results[1] + '/');
+      var pathPart = '';
+
+      if (file.includes('debug')) {
+        pathPart = 'debug';
+      }
+
+      if (file.includes('linked')) {
+        pathPart = 'linked';
+      }
+
+      if (file.includes('missing')) {
+        pathPart = 'missing';
+      }
+
+      if (file.includes('release')) {
+        pathPart = 'release';
+      }
+
+      return path.normalize(`node_modules/${pathPart}/`);
     });
 
     done();
@@ -2093,6 +2109,38 @@ exports['deploy.resolveBinaryModules'] = {
     });
   },
 
+  spawnPythonScriptReturnsNull: function(test) {
+    test.expect(1);
+
+    this.readGypFileSync.restore();
+    this.readGypFileSync = sandbox.spy(deploy.resolveBinaryModules, 'readGypFileSync');
+
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+      return [
+        path.normalize('node_modules/release/build/Release/release.node'),
+        path.normalize('node_modules/release/binding.gyp'),
+        path.normalize('node_modules/missing/binding.gyp'),
+      ];
+    });
+
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.spawnSync = sandbox.stub(cp, 'spawnSync', () => {
+      return {
+        output: null
+      };
+    });
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+      test.equal(this.readGypFileSync.lastCall.returnValue, '');
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
+  },
   spawnPythonScript: function(test) {
     test.expect(7);
 
@@ -2315,9 +2363,25 @@ exports['deploy.injectBinaryModules'] = {
     });
 
     this.getRoot = sandbox.stub(bindings, 'getRoot', (file) => {
-      var pattern = /(?:node_modules)\/(\w.+)\/(?:build|binding\.)/;
-      var results = pattern.exec(file);
-      return path.normalize('node_modules/' + results[1] + '/');
+      var pathPart = '';
+
+      if (file.includes('debug')) {
+        pathPart = 'debug';
+      }
+
+      if (file.includes('linked')) {
+        pathPart = 'linked';
+      }
+
+      if (file.includes('missing')) {
+        pathPart = 'missing';
+      }
+
+      if (file.includes('release')) {
+        pathPart = 'release';
+      }
+
+      return path.normalize(`node_modules/${pathPart}/`);
     });
 
     this.globRoot = path.join(__dirname, '/../../test/unit/fixtures/project-binary-modules/');
