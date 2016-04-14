@@ -114,10 +114,10 @@ exports['CrashReporter.submit'] = {
       var args = this.crPost.lastCall.args;
       test.equal(this.crPost.callCount, 1);
       test.equal(typeof args[0], 'string');
-      test.ok(args[0].indexOf('CLI version') > 0, 'Label CLI version should be present');
-      test.ok(args[0].indexOf('Node version') > 0, 'Label Node version should be present');
-      test.ok(args[0].indexOf('OS platform') > 0, 'Label OS platform should be present');
-      test.ok(args[0].indexOf('OS release') > 0, 'Label OS release should be present');
+      test.ok(args[0].includes('CLI version'), 'Label CLI version should be present');
+      test.ok(args[0].includes('Node version'), 'Label Node version should be present');
+      test.ok(args[0].includes('OS platform'), 'Label OS platform should be present');
+      test.ok(args[0].includes('OS release'), 'Label OS release should be present');
       test.equal(args[1], report);
       test.done();
     });
