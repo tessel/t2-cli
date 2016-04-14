@@ -10,7 +10,7 @@ module.exports = function(grunt) {
     nodeunit: {
       tests: [
         'test/common/bootstrap.js',
-        'test/unit/deploy.js'
+        'test/unit/*.js'
       ]
     },
     jshint: {
