@@ -2093,6 +2093,38 @@ exports['deploy.resolveBinaryModules'] = {
     });
   },
 
+  spawnPythonScriptReturnsNull: function(test) {
+    test.expect(1);
+
+    this.readGypFileSync.restore();
+    this.readGypFileSync = sandbox.spy(deploy.resolveBinaryModules, 'readGypFileSync');
+
+    this.globSync.restore();
+    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+      return [
+        path.normalize('node_modules/release/build/Release/release.node'),
+        path.normalize('node_modules/release/binding.gyp'),
+        path.normalize('node_modules/missing/binding.gyp'),
+      ];
+    });
+
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.spawnSync = sandbox.stub(cp, 'spawnSync', () => {
+      return {
+        output: null
+      };
+    });
+
+    deploy.resolveBinaryModules({
+      target: this.target
+    }).then(() => {
+      test.equal(this.readGypFileSync.lastCall.returnValue, '');
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
+  },
   spawnPythonScript: function(test) {
     test.expect(7);
 
