@@ -1622,7 +1622,7 @@ exports['deploy.tarBundle'] = {
     }).then(() => {
 
       test.equal(this.readdirSync.callCount, 1);
-      test.equal(this.readdirSync.lastCall.args[0], target);
+      test.equal(this.readdirSync.lastCall.args[0], path.normalize(target));
 
       test.equal(this.logsWarn.callCount, 1);
       test.equal(this.logsWarn.firstCall.args[0], 'Some assets in this project were not deployed (see: t2 run --help)');
@@ -1658,7 +1658,7 @@ exports['deploy.tarBundle'] = {
       slim: true,
     }).then(() => {
       test.equal(this.readdirSync.callCount, 1);
-      test.equal(this.readdirSync.lastCall.args[0], target);
+      test.equal(this.readdirSync.lastCall.args[0], path.normalize(target));
       test.equal(this.logsWarn.callCount, 0);
 
       // Ultimately, all assets were accounted for, even though
