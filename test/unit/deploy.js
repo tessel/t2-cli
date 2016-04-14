@@ -2315,9 +2315,25 @@ exports['deploy.injectBinaryModules'] = {
     });
 
     this.getRoot = sandbox.stub(bindings, 'getRoot', (file) => {
-      var pattern = /(?:node_modules)\/(\w.+)\/(?:build|binding\.)/;
-      var results = pattern.exec(file);
-      return path.normalize('node_modules/' + results[1] + '/');
+      var pathPart = '';
+
+      if (file.includes('debug')) {
+        pathPart = 'debug';
+      }
+
+      if (file.includes('linked')) {
+        pathPart = 'linked';
+      }
+
+      if (file.includes('missing')) {
+        pathPart = 'missing';
+      }
+
+      if (file.includes('release')) {
+        pathPart = 'release';
+      }
+
+      return path.normalize(`node_modules/${pathPart}/`);
     });
 
     this.globRoot = path.join(__dirname, '/../../test/unit/fixtures/project-binary-modules/');
