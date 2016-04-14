@@ -65,7 +65,6 @@
     "request": "^2.60.0",
     "semver": "^5.1.0",
     "shell-escape": "^0.2.0",
-    "sprintf-js": "^1.0.2",
     "ssh2": "^0.4.2",
     "sshpk": "^1.6.0",
     "stream-to-buffer": "^0.1.0",
