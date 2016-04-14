@@ -122,6 +122,19 @@ exports['CrashReporter.submit'] = {
       test.done();
     });
   },
+
+  removesIrrelevantPathData: function(test) {
+    test.expect(1);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    CrashReporter.submit(new Error('This happened')).then(() => {
+      // the actual dirname should not appear in the posted report contents
+      test.equal(this.crPost.lastCall.args[0].includes(__dirname), false);
+      test.done();
+    }).catch(error => console.log(error));
+  },
 };
 
 exports['CrashReporter.post'] = {
