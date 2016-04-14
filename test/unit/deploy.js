@@ -2296,7 +2296,6 @@ exports['deploy.resolveBinaryModules'] = {
       ];
 
       cachedBinaryPaths.forEach((cbp, callIndex) => {
-        console.log(this.exists.getCall(callIndex).args[0]);
         test.equal(this.exists.getCall(callIndex).args[0].endsWith(path.normalize(cbp)), true);
       });
 
