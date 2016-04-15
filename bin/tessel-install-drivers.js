@@ -34,7 +34,7 @@ module.exports.install = function() {
       var udevadm = child_process.spawn('udevadm', ['control', '--reload-rules']);
       udevadm.on('close', function(code) {
         if (code !== 0) {
-          logs.error('Error reloading udev');
+          logs.err('Error reloading udev');
           return reject(code);
         } else {
           logs.info('Done. Unplug and re-plug Tessel to update permissions.');
