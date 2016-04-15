@@ -353,6 +353,12 @@ makeCommand('update')
     flag: true,
     help: 'Update to the latest version regardless of current version.'
   })
+  .option('delete', {
+    abbr: 'd',
+    required: false,
+    flag: true,
+    help: 'Delete configuration files during update.'
+  })
   .option('openwrt-path', {
     abbr: 'op',
     required: false,
