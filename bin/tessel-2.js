@@ -1,17 +1,11 @@
 #!/usr/bin/env node
 
 // System Objects
-var path = require('path');
+//...
 
 // Third Party Dependencies
 var parser = require('nomnom').script('t2');
 const updateNotifier = require('update-notifier');
-
-// Check for updates
-const pkg = require('../package.json');
-updateNotifier({
-  pkg
-}).notify();
 
 // Internal
 var controller = require('../lib/controller');
@@ -19,6 +13,15 @@ var CrashReporter = require('../lib/crash_reporter');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
 var drivers = require('./tessel-install-drivers');
+var Preferences = require('../lib/preferences');
+
+const CLI_ENTRYPOINT = 'cli.entrypoint';
+
+// Check for updates
+const pkg = require('../package.json');
+updateNotifier({
+  pkg
+}).notify();
 
 function makeCommand(commandName) {
   return parser.command(commandName)
@@ -125,21 +128,27 @@ parser.command('provision')
 
 makeCommand('restart')
   .callback(function(opts) {
-    var packageJson;
-
+    // 1. Check that the type is a valid type
     if (opts.type !== 'ram' && opts.type !== 'flash') {
       return module.exports.closeFailedCommand('--type Invalid ');
     }
 
+    // 2. If an entry point file wasn't specified, get the last
+    //    known entry point file name and use that.
     if (opts.entryPoint === undefined) {
-      packageJson = require(path.resolve(process.cwd(), 'package.json'));
-
-      if (packageJson && packageJson.main) {
-        opts.entryPoint = packageJson.main;
-      }
+      Preferences.read(CLI_ENTRYPOINT, undefined).then(entryPoint => {
+        if (entryPoint) {
+          opts.entryPoint = entryPoint;
+        } else {
+          // 3. However, if that doesn't exist either,
+          //    there is nothing further to do.
+          return module.exports.closeFailedCommand('Cannot determine entry point file name');
+        }
+        callControllerWith('restartScript', opts);
+      });
+    } else {
+      callControllerWith('restartScript', opts);
     }
-
-    callControllerWith('restartScript', opts);
   })
   .option('entryPoint', {
     position: 1,
@@ -421,6 +430,9 @@ makeCommand('root')
 
 
 module.exports = function(args) {
+  // Clear the spec from one call to the next. This is
+  // only necessary for testing the CLI (each call must be "fresh")
+  parser.specs = {};
   parser.parse(args);
 };
 

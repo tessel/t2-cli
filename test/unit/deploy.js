@@ -136,6 +136,8 @@ exports['Tessel.prototype.deployScript'] = {
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
 
+    this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
+
     deleteTemporaryDeployCode()
       .then(done);
   },
@@ -150,6 +152,25 @@ exports['Tessel.prototype.deployScript'] = {
       .catch(function(err) {
         throw err;
       });
+  },
+
+  recordEntryPoint: function(test) {
+    test.expect(1);
+
+    this.exec = sandbox.spy(this.tessel.connection, 'exec');
+    deployTestCode(this.tessel, test, {
+      push: false,
+      single: false
+    }, (error) => {
+      if (error) {
+        test.ok(false, `deployTestCode failed: ${error.toString()}`);
+        test.done();
+      }
+
+      test.equal(this.pWrite.callCount, 1);
+
+      test.done();
+    });
   },
 
   bundling: function(test) {
@@ -2657,6 +2678,36 @@ exports['deploy.injectBinaryModules'] = {
       test.ok(false, error.toString());
       test.done();
     });
+  }
+};
+
+
+exports['deploy.runScript'] = {
+  setUp: function(done) {
+    this.logsInfo = sandbox.stub(logs, 'info');
+    this.tessel = TesselSimulator();
+    done();
+  },
+  tearDown: function(done) {
+    sandbox.restore();
+    done();
+  },
+
+  runScriptResolveEntryPoint: function(test) {
+    test.expect(1);
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, opts, callback) => {
+      return callback(null, this.tessel._rps);
+    });
+
+    deploy.runScript(this.tessel, '', {
+      entryPoint: 'foo'
+    }).then(() => {
+      test.deepEqual(this.exec.lastCall.args[0], ['node', '/tmp/remote-script/foo']);
+      test.done();
+    });
+
+    this.tessel._rps.emit('close');
   }
 };
 
