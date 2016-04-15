@@ -350,6 +350,145 @@ exports['controller.runHeuristics'] = {
   }
 };
 
+exports['controller.tesselFirmwareVerion'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+      return callback(this.tessel);
+    });
+
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', () => {
+      return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
+    });
+
+    this.fetchCurrentNodeVersion = this.sandbox.stub(Tessel.prototype, 'fetchCurrentNodeVersion', () => {
+      return Promise.resolve('4.2.1');
+    });
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  properVersionsReturned: function(test) {
+    test.expect(6);
+
+    var opts = {};
+
+    controller.tesselFirmwareVerion(opts)
+      .then(() => {
+        // Version command was sent
+        test.equal(this.standardTesselCommand.callCount, 1);
+        // Get the firmware version
+        test.equal(this.fetchCurrentBuildInfo.callCount, 1);
+        // Execute `node --version` command on tessel
+        test.equal(this.fetchCurrentNodeVersion.callCount, 1);
+        // Make sure we have some output
+        test.equal(this.logsInfo.callCount, 2);
+
+        // Output of firmware version to console
+        test.equal(this.logsInfo.firstCall.args[0], 'Tessel [TestTessel] Firmware version: 0.0.1');
+        // Output of Node version to console
+        test.equal(this.logsInfo.secondCall.args[0], 'Tessel [TestTessel] Node version: 4.2.1');
+        test.done();
+      });
+  },
+
+  nodeVersionFailed: function(test) {
+    test.expect(6);
+
+    this.logsInfo.restore();
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+
+    this.standardTesselCommand.restore();
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+      return callback(this.tessel);
+    });
+
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', () => {
+      return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
+    });
+
+    this.fetchCurrentNodeVersion.restore();
+    this.fetchCurrentNodeVersion = this.sandbox.stub(Tessel.prototype, 'fetchCurrentNodeVersion', () => {
+      return Promise.reject();
+    });
+
+    var opts = {};
+
+    controller.tesselFirmwareVerion(opts)
+      .then(() => {
+        // Version command was sent
+        test.equal(this.standardTesselCommand.callCount, 1);
+        // Get the firmware version
+        test.equal(this.fetchCurrentBuildInfo.callCount, 1);
+        // Execute `node --version` command on tessel
+        test.equal(this.fetchCurrentNodeVersion.callCount, 1);
+        // Make sure we have some output
+        test.equal(this.logsInfo.callCount, 2);
+
+        // Output of firmware version to console
+        test.equal(this.logsInfo.firstCall.args[0], 'Tessel [TestTessel] Firmware version: 0.0.1');
+        // Output of Node version to console
+        test.equal(this.logsInfo.secondCall.args[0], 'Tessel [TestTessel] Node version: unknown');
+        test.done();
+      });
+  },
+
+  firmwareVersionFailed: function(test) {
+    test.expect(6);
+
+    this.logsInfo.restore();
+    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+
+    this.standardTesselCommand.restore();
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+      return callback(this.tessel);
+    });
+
+    this.fetchCurrentBuildInfo.restore();
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', () => {
+      return Promise.reject();
+    });
+
+    this.fetchCurrentNodeVersion.restore();
+    this.fetchCurrentNodeVersion = this.sandbox.stub(Tessel.prototype, 'fetchCurrentNodeVersion', () => {
+      return Promise.resolve('4.2.1');
+    });
+
+    var opts = {};
+
+    controller.tesselFirmwareVerion(opts)
+      .then(() => {
+        // Version command was sent
+        test.equal(this.standardTesselCommand.callCount, 1);
+        // Get the firmware version
+        test.equal(this.fetchCurrentBuildInfo.callCount, 1);
+        // Execute `node --version` command on tessel
+        test.equal(this.fetchCurrentNodeVersion.callCount, 0);
+        // Make sure we have some output
+        test.equal(this.logsInfo.callCount, 2);
+
+        // Output of firmware version to console
+        test.equal(this.logsInfo.firstCall.args[0], 'Tessel [TestTessel] Firmware version: unknown');
+        // Output of Node version to console
+        test.equal(this.logsInfo.secondCall.args[0], 'Tessel [TestTessel] Node version: unknown');
+        test.done();
+      });
+  }
+};
 
 exports['Tessel.list'] = {
 
