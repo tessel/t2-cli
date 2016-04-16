@@ -366,7 +366,7 @@ exports['controller.update'] = {
   },
 
   buildLatestNoConfigSave: function(test) {
-    test.expect(7);
+    test.expect(8);
 
     // Create a Tessel sim
     this.tessel = TesselSimulator({
@@ -399,6 +399,8 @@ exports['controller.update'] = {
         test.equal(this.update.callCount, 1);
         // It was provided the binaries and options
         test.equal(this.update.calledWith(opts, binaries), true);
+        // Provided Options match first parameter
+        test.deepEqual(this.update.lastCall.args[0], opts);
         // Then Tessel was closed
         test.equal(this.tessel.closed, true);
         // We closed all open Tessel connections
