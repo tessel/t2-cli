@@ -362,6 +362,12 @@ makeCommand('update')
     flag: true,
     help: 'Update to the latest version regardless of current version.'
   })
+  .option('n', {
+    abbr: 'n',
+    required: false,
+    flag: true,
+    help: 'Do not save configuration during update.'
+  })
   .option('openwrt-path', {
     abbr: 'op',
     required: false,
