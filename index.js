@@ -12,7 +12,7 @@ module.exports.Tessel = require('./lib/tessel/tessel');
 module.exports.discovery = require('./lib/discover').TesselSeeker;
 // The USBConnection libray lets consumers turn arbitrary USB devices
 // into USBConnection objects to be used in Tessel creation.
-module.exports.USBConnection = require('./lib/usb_connection').USBConnection;
+module.exports.USBConnection = require('./lib/usb-connection').USBConnection;
 // The LANConnection libray lets consumers turn arbitrary LAN devices
 // into LANConnection objects to be used in Tessel creation.
-module.exports.LANConnection = require('./lib/lan_connection').LANConnection;
+module.exports.LANConnection = require('./lib/lan-connection').LANConnection;

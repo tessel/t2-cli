@@ -9,7 +9,7 @@ const updateNotifier = require('update-notifier');
 
 // Internal
 var controller = require('../lib/controller');
-var CrashReporter = require('../lib/crash_reporter');
+var CrashReporter = require('../lib/crash-reporter');
 var init = require('../lib/init');
 var logs = require('../lib/logs');
 var drivers = require('./tessel-install-drivers');

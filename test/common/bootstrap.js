@@ -43,18 +43,18 @@ global.provision = require('../../lib/tessel/provision');
 global.deployLists = require('../../lib/tessel/deploy-lists');
 
 // ./lib/*
-global.CrashReporter = require('../../lib/crash_reporter');
+global.CrashReporter = require('../../lib/crash-reporter');
 global.Preferences = require('../../lib/preferences');
 global.controller = require('../../lib/controller');
 global.discover = require('../../lib/discover');
 global.logs = require('../../lib/logs');
 global.updates = require('../../lib/update-fetch');
-global.lan = require('../../lib/lan_connection');
-global.usb = require('../../lib/usb_connection');
+global.lan = require('../../lib/lan-connection');
+global.usb = require('../../lib/usb-connection');
 
 // ./lib/usb/*
-global.Daemon = require('../../lib/usb/usb_daemon');
-global.USBProcess = require('../../lib/usb/usb_process');
+global.Daemon = require('../../lib/usb/usb-daemon');
+global.USBProcess = require('../../lib/usb/usb-process');
 
 // ./test/common/*
 global.TesselSimulator = require('../common/tessel-simulator');
