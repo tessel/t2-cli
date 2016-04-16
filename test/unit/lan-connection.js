@@ -98,7 +98,7 @@ exports['LAN.Scanner.prototype.start'] = {
     this.setImmediate = this.sandbox.stub(global, 'setImmediate', (cb) => cb());
     this.createBrowser = this.sandbox.stub(mdns, 'createBrowser', () => {
       var emitter = new Emitter();
-      emitter.discover = this.sandbox.spy();
+      emitter.start = this.sandbox.spy();
       return emitter;
     });
 
@@ -127,29 +127,9 @@ exports['LAN.Scanner.prototype.start'] = {
     test.expect(1);
 
     this.scanner.start();
-    this.scanner.browser.emit('ready');
 
-    test.equal(this.scanner.browser.discover.callCount, 1);
+    test.equal(this.scanner.browser.start.callCount, 1);
     test.done();
-  },
-
-  readyDiscoverThrows: function(test) {
-    test.expect(1);
-
-    this.scanner.start();
-
-    this.scanner.browser.discover = function() {
-      throw new Error('get outta here!');
-    };
-
-    // Order of calls is intentional!!
-    // 1
-    this.scanner.on('error', function(error) {
-      test.equal(error.message, 'get outta here!');
-      test.done();
-    });
-    // 2
-    this.scanner.browser.emit('ready');
   },
 
   updateDiscovered: function(test) {
@@ -160,7 +140,7 @@ exports['LAN.Scanner.prototype.start'] = {
 
     this.scanner.start();
     this.scanner.on('connection', connectionHandler);
-    this.scanner.browser.emit('update', data);
+    this.scanner.browser.emit('serviceUp', data);
 
     test.equal(connectionHandler.callCount, 1);
     test.done();
@@ -174,7 +154,7 @@ exports['LAN.Scanner.prototype.start'] = {
     this.scanner.start();
     this.scanner.on('connection', connectionHandler);
     this.scanner.discovered.push(1);
-    this.scanner.browser.emit('update', 1);
+    this.scanner.browser.emit('serviceUp', 1);
 
     test.equal(connectionHandler.callCount, 0);
     test.done();
@@ -197,7 +177,7 @@ exports['LAN.Scanner.prototype.start'] = {
     });
 
     // 2
-    this.scanner.browser.emit('update', {
+    this.scanner.browser.emit('serviceUp', {
       fullname: 'Test Unit'
     });
   },
