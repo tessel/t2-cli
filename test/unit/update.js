@@ -364,7 +364,7 @@ exports['controller.update'] = {
         test.done();
       });
   },
-  
+
   buildLatestNoConfigSave: function(test) {
     test.expect(7);
 
@@ -726,9 +726,9 @@ exports['Tessel.update'] = {
       test.done();
     });
   },
-  
+
   configurationShouldNotBeSaved: function(test) {
-     var updatePath = `/tmp/${updates.OPENWRT_BINARY_FILE}`;
+    var updatePath = `/tmp/${updates.OPENWRT_BINARY_FILE}`;
 
     this.exec = this.sandbox.stub(this.tessel.connection, 'exec', (command, handler) => {
       handler(null, this.tessel._rps);
@@ -741,7 +741,9 @@ exports['Tessel.update'] = {
     this.openStdinToFile = this.sandbox.stub(commands, 'openStdinToFile');
     this.sysupgradeNoSaveConfig = this.sandbox.stub(commands, 'sysupgradeNoSaveConfig');
 
-    this.tessel.updateOpenWRT({"n": true}, this.newImage.openwrt).then(() => {
+    this.tessel.updateOpenWRT({
+      n: true
+    }, this.newImage.openwrt).then(() => {
       test.equal(this.openStdinToFile.callCount, 1);
       test.equal(this.sysupgradeNoSaveConfig.callCount, 1);
       test.equal(this.openStdinToFile.lastCall.args[0], updatePath);
@@ -750,7 +752,7 @@ exports['Tessel.update'] = {
     }).catch((error) => {
       test.ok(false, error);
       test.done();
-    });   
+    });
   },
 
   standardUpdate: function(test) {
