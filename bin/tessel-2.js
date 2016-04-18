@@ -389,7 +389,7 @@ makeCommand('update')
   .help('Update the Tessel firmware and openWRT image');
 
 makeCommand('version')
-  .callback(callControllerCallback('tesselFirmwareVerion'))
+  .callback(callControllerCallback('tesselEnvVersions'))
   .help('Display Tessel\'s current firmware version');
 
 makeCommand('ap')

@@ -350,7 +350,7 @@ exports['controller.runHeuristics'] = {
   }
 };
 
-exports['controller.tesselFirmwareVerion'] = {
+exports['controller.tesselEnvVersions'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
@@ -386,7 +386,7 @@ exports['controller.tesselFirmwareVerion'] = {
 
     var opts = {};
 
-    controller.tesselFirmwareVerion(opts)
+    controller.tesselEnvVersions(opts)
       .then(() => {
         // Version command was sent
         test.equal(this.standardTesselCommand.callCount, 1);
@@ -428,7 +428,7 @@ exports['controller.tesselFirmwareVerion'] = {
 
     var opts = {};
 
-    controller.tesselFirmwareVerion(opts)
+    controller.tesselEnvVersions(opts)
       .then(() => {
         // Version command was sent
         test.equal(this.standardTesselCommand.callCount, 1);
@@ -470,7 +470,7 @@ exports['controller.tesselFirmwareVerion'] = {
 
     var opts = {};
 
-    controller.tesselFirmwareVerion(opts)
+    controller.tesselEnvVersions(opts)
       .then(() => {
         // Version command was sent
         test.equal(this.standardTesselCommand.callCount, 1);
