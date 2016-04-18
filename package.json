@@ -81,5 +81,34 @@
   "preferGlobal": true,
   "engines": {
     "node": ">=4.2.0"
-  }
+  },
+  "contributors": [
+    "Jon McKay <johnnyman727@gmail.com>",
+    "Kelsey Breseman <ifoundthemeaningoflife@gmail.com>",
+    "Tim Cameron Ryan <id@timryan.org>",
+    "HarleyKwyn <kwyn.meagher@gmail.com>",
+    "Kenneth Nierenhausen <kennethnierenhausen@gmail.com>",
+    "Rick Waldron <waldron.rick@gmail.com>",
+    "Jia Huang <jialiya.huang0@gmail.com>",
+    "Kevin Mehall <km@kevinmehall.net>",
+    "Linus Unnebäck <linus@folkdatorn.se>",
+    "Dale Stone <dale@stonenet.co.uk>",
+    "Chris Boette <chris@impossibleventures.com>",
+    "Daniel Bunzendahl <db@bunzendahl.com>",
+    "Will Prater <will@superformula.com>",
+    "Nicholas van de Walle <nicholas@niceguys.co>",
+    "dtex <donovan@donovan.bz>",
+    "HipsterBrown <headhipster@hipsterbrown.com>",
+    "Nick Hehr <headhipster@hipsterbrown.com>",
+    "Jonathan Altman <jonathan.a@gmail.com>",
+    "Francis Gulotta <wizard@roborooter.com>",
+    "Flaki <git@flaki.hu>",
+    "Josh Dudley <jdudley@abrasive-tech.com>",
+    "Student007 <db@bunzendahl.com>",
+    "Thorsten Hoeger <thorsten.hoeger@hoegernet.com>",
+    "Rahul Ravikumar <rahul@rahulrav.com>",
+    "Neil Kistner <neil.kistner@gmail.com>",
+    "Thomas Jansen <thojansen@gmail.com>",
+    "Scott González <scott.gonzalez@gmail.com>"
+  ]
 }
