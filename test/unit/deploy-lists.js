@@ -13,9 +13,10 @@ exports['deploy-lists'] = {
     test.expect(1);
 
     var includes = [
+      'aws-sdk/apis/*.json',
+      'mime/types/*.types',
       'negotiator/**/*.js',
       'socket.io-client/socket.io.js',
-      'mime/types/*.types'
     ];
 
     test.deepEqual(deployLists.includes, includes);
