@@ -8,6 +8,7 @@ var deployFolder = path.join(__dirname, 'tmp');
 var deployFile = path.join(deployFolder, 'app.js');
 var codeContents = 'console.log("testing deploy");';
 var reference = new Buffer(codeContents);
+var builtInRulesCount = deployLists.includes.length;
 var sandbox = sinon.sandbox.create();
 
 exports['Tessel.prototype.memoryInfo'] = {
@@ -753,7 +754,7 @@ exports['deploy.tarBundle'] = {
       // One call for the single rule found within
       // Three calls for the deploy lists
       // * 2 (We need all ignore rules ahead of time for ignoring binaries)
-      test.equal(this.globSync.callCount, 8);
+      test.equal(this.globSync.callCount, 5 + builtInRulesCount);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1078,7 +1079,7 @@ exports['deploy.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       slim: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 11);
+      test.equal(this.globSync.callCount, 8 + builtInRulesCount);
 
       /*
         All .tesselignore rules are negated by all .tesselinclude rules:
@@ -1160,7 +1161,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 11);
+      test.equal(this.globSync.callCount, 8 + builtInRulesCount);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1238,7 +1239,7 @@ exports['deploy.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       slim: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 8);
+      test.equal(this.globSync.callCount, 5 + builtInRulesCount);
 
       /*
         There are NO .tesselignore rules, but there are .tesselinclude rules:
@@ -1324,7 +1325,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 8);
+      test.equal(this.globSync.callCount, 5 + builtInRulesCount);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1411,7 +1412,7 @@ exports['deploy.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       slim: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 9);
+      test.equal(this.globSync.callCount, 6 + builtInRulesCount);
 
       /*
         There are NO .tesselignore rules, but there are .tesselinclude rules:
@@ -1495,7 +1496,7 @@ exports['deploy.tarBundle'] = {
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 9);
+      test.equal(this.globSync.callCount, 6 + builtInRulesCount);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1588,7 +1589,7 @@ exports['deploy.tarBundle'] = {
       slim: true,
       single: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 8);
+      test.equal(this.globSync.callCount, 5 + builtInRulesCount);
 
       /*
         There are .tesselinclude rules, but the single flag is present
