@@ -2711,6 +2711,33 @@ exports['deploy.runScript'] = {
   }
 };
 
+exports['deploy.writeToFile'] = {
+  setUp: function(done) {
+    this.logsInfo = sandbox.stub(logs, 'info');
+    this.tessel = TesselSimulator();
+    done();
+  },
+  tearDown: function(done) {
+    sandbox.restore();
+    done();
+  },
+
+  remoteShellScriptPathIsNotPathNormalized: function(test) {
+    test.expect(2);
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      callback(null, this.tessel._rps);
+      this.tessel._rps.emit('close');
+    });
+
+    deploy.writeToFile(this.tessel, 'foo').then(() => {
+      test.deepEqual(this.exec.firstCall.args[0], ['dd', 'of=/app/start']);
+      test.deepEqual(this.exec.lastCall.args[0], ['chmod', '+x', '/app/start']);
+      test.done();
+    });
+  }
+};
+
 
 function deployTestCode(tessel, test, opts, callback) {
   // Create the temporary folder with example code
