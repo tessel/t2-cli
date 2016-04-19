@@ -1070,6 +1070,28 @@ exports['controller.root'] = {
       });
   },
 
+  setsOptsUsbFalseAndWarns: function(test) {
+    test.expect(4);
+
+    var opts = {
+      usb: true
+    };
+
+    this.logsWarn.restore();
+    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
+
+    controller.root(opts)
+      .then(() => {
+        var options = this.standardTesselCommand.lastCall.args[0];
+
+        test.equal(this.standardTesselCommand.callCount, 1);
+        test.equal(options, opts);
+        test.equal(options.usb, false);
+        test.equal(this.logsWarn.callCount, 2);
+        test.done();
+      });
+  },
+
   setsAuthorizedTrue: function(test) {
     test.expect(3);
 

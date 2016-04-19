@@ -432,6 +432,18 @@ makeCommand('root')
   .callback(function(opts) {
     callControllerWith('root', opts);
   })
+  .option('lan', {
+    flag: true,
+    hidden: true
+  })
+  .option('lanPrefer', {
+    flag: true,
+    hidden: true
+  })
+  .option('usb', {
+    flag: true,
+    hidden: true
+  })
   .help('Gain SSH root access to one of your authorized tessels');
 
 
