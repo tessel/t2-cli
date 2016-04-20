@@ -145,8 +145,14 @@ exports['CrashReporter.post'] = {
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     this.crPost = this.sandbox.spy(CrashReporter, 'post');
+    this.crFingerPrint = '0xabcd';
+    var crPostResponse = {
+      crash_report: {
+        fingerprint: this.crFingerPrint
+      }
+    };
     this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
-      return handler(null, {}, '{}');
+      return handler(null, {}, JSON.stringify(crPostResponse));
     });
     done();
   },
@@ -157,17 +163,18 @@ exports['CrashReporter.post'] = {
   },
 
   post: function(test) {
-    test.expect(4);
+    test.expect(5);
 
     var labels = 'foo';
     var report = 'Error: undefined is not a function';
 
-    CrashReporter.post(labels, report).then(() => {
+    CrashReporter.post(labels, report).then(fingerprint => {
       var args = this.request.lastCall.args;
       test.equal(this.request.callCount, 1);
       test.equal(args[0].form.crash, report);
       test.equal(args[0].form.labels, labels);
       test.equal(args[0].form.f, 'json');
+      test.equal(fingerprint, this.crFingerPrint);
       test.done();
     });
   },
