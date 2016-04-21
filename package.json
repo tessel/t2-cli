@@ -5,6 +5,7 @@
   "main": "./index.js",
   "scripts": {
     "test": "grunt test",
+    "preinstall": "node ./bin/preinstall-check.js",
     "postinstall": "t2 install-drivers || true"
   },
   "bin": {
@@ -54,7 +55,6 @@
     "fstream-ignore": "1.0.2",
     "glob": "^5.0.15",
     "inquirer": "^0.8.5",
-    "mdns": "^2.3.1",
     "minimatch": "^3.0.0",
     "node-rsa": "^0.2.26",
     "nomnom": "^1.8.1",
