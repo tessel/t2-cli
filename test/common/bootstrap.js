@@ -19,7 +19,8 @@ global.fs = require('fs-extra');
 global.fsTemp = require('fs-temp');
 global.Ignore = require('fstream-ignore');
 global.inquirer = require('inquirer');
-global.mdns = require('mdns');
+// using 'mdns-js' for unit testing purposes
+global.mdns = require('mdns-js');
 global.mkdirp = require('mkdirp');
 global.NodeRSA = require('node-rsa');
 global.osenv = require('osenv');
