@@ -619,6 +619,134 @@ exports['controller.update'] = {
         test.ok(false, 'Update should not reject with valid options and builds.');
         test.done();
       });
+  },
+  updateWithLocalBuilds: function(test) {
+    test.expect(3);
+
+    // Create a Tessel sim
+    this.tessel = TesselSimulator({
+      type: 'USB',
+      end: () => Promise.resolve()
+    });
+
+    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.resolve(new Buffer(0)));
+
+    var opts = {
+      lanPrefer: true,
+      'openwrt-path': 'somepath/foo',
+      'firmware-path': 'somepath/bar',
+    };
+
+    controller.update(opts)
+      .then(() => {
+        // It should attempt to fetch a build
+        test.equal(this.loadLocalBinary.callCount, 2);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.done();
+      })
+      .catch(() => {
+        test.ok(false, 'It should update from local binary paths');
+        test.done();
+      });
+  },
+  failLocalBadPath: function(test) {
+    test.expect(4);
+
+    // Create a Tessel sim
+    this.tessel = TesselSimulator({
+      type: 'USB',
+      end: () => Promise.resolve()
+    });
+
+    var err = new Error('Bad local binary path');
+    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.reject(err));
+
+    var opts = {
+      lanPrefer: true,
+      'openwrt-path': 'somepath/foo',
+      'firmware-path': 'somepath/bar',
+    };
+
+    controller.update(opts)
+      .then(() => {
+        test.ok(false, 'Update should not resolve with invalid binary paths');
+        test.done();
+      })
+      .catch((deliveredErr) => {
+        test.deepEqual(deliveredErr, err);
+        // It should attempt to fetch a build
+        test.equal(this.loadLocalBinary.callCount, 2);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.done();
+      });
+  },
+  onlyFirmwareImageUpdate: function(test) {
+    test.expect(3);
+
+    // Create a Tessel sim
+    this.tessel = TesselSimulator({
+      type: 'USB',
+      end: () => Promise.resolve()
+    });
+
+    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.resolve(new Buffer(0)));
+
+    var opts = {
+      lanPrefer: true,
+      'firmware-path': 'somepath/bar',
+    };
+
+    controller.update(opts)
+      .then(() => {
+        // It should attempt to fetch a build
+        test.equal(this.loadLocalBinary.callCount, 1);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.done();
+      })
+      .catch(() => {
+        test.ok(false, 'It should update from local binary paths');
+        test.done();
+      });
+  },
+  onlyOpenWRTImageUpdate: function(test) {
+    test.expect(3);
+
+    // Create a Tessel sim
+    this.tessel = TesselSimulator({
+      type: 'USB',
+      end: () => Promise.resolve()
+    });
+
+    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.resolve(new Buffer(0)));
+
+    var opts = {
+      lanPrefer: true,
+      'openwrt-path': 'somepath/foo',
+    };
+
+    controller.update(opts)
+      .then(() => {
+        // It should attempt to fetch a build
+        test.equal(this.loadLocalBinary.callCount, 1);
+        // We closed all open Tessel connections
+        test.equal(this.closeTesselConnections.callCount, 1);
+        // We called the close function with an array
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.done();
+      })
+      .catch(() => {
+        test.ok(false, 'It should update from local binary paths');
+        test.done();
+      });
   }
 };
 
