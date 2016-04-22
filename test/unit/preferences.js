@@ -56,6 +56,34 @@ exports['Preferences.read'] = {
     done();
   },
 
+  readEmptyFile: function(test) {
+    test.expect(1);
+
+    var defaultValue = 'value';
+    this.readFile = this.sandbox.stub(fs, 'readFile', (file, handler) => {
+      handler(null, '');
+    });
+
+    Preferences.read('key', defaultValue).then(result => {
+      test.equal(result, defaultValue);
+      test.done();
+    });
+  },
+
+  readError: function(test) {
+    test.expect(1);
+
+    var defaultValue = 'value';
+    this.readFile = this.sandbox.stub(fs, 'readFile', (file, handler) => {
+      handler(new Error('this should not matter'));
+    });
+
+    Preferences.read('key', defaultValue).then(result => {
+      test.equal(result, defaultValue);
+      test.done();
+    });
+  },
+
   readWithDefaults: function(test) {
     test.expect(1);
 
