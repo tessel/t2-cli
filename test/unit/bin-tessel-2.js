@@ -747,6 +747,7 @@ exports['Tessel (cli: crash-reporter)'] = {
     this.crOn = this.sandbox.stub(CrashReporter, 'on').returns(Promise.resolve());
     this.crOff = this.sandbox.stub(CrashReporter, 'off').returns(Promise.resolve());
     this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+    this.crStatus = this.sandbox.stub(CrashReporter, 'status').returns(Promise.resolve());
     this.crSubmit = this.sandbox.stub(CrashReporter, 'submit').returns(Promise.resolve());
     this.crTest = this.sandbox.stub(CrashReporter, 'test').returns(Promise.resolve());
 
@@ -759,7 +760,11 @@ exports['Tessel (cli: crash-reporter)'] = {
   },
 
   callThroughNoOptions: function(test) {
-    test.expect(3);
+    test.expect(4);
+
+    var resolve = Promise.resolve();
+    this.crStatus.restore();
+    this.crStatus = this.sandbox.stub(CrashReporter, 'status').returns(resolve);
 
     cli(['crash-reporter']);
 
@@ -767,51 +772,59 @@ exports['Tessel (cli: crash-reporter)'] = {
     test.equal(this.crOff.callCount, 0);
     test.equal(this.crTest.callCount, 0);
 
-
-    test.done();
+    resolve.then(() => {
+      test.equal(this.crStatus.callCount, 1);
+      test.done();
+    });
   },
 
   on: function(test) {
-    test.expect(3);
+    test.expect(4);
 
     cli(['crash-reporter', '--on=true']);
 
     test.equal(this.crOn.callCount, 1);
     test.equal(this.crOff.callCount, 0);
     test.equal(this.crTest.callCount, 0);
-
+    test.equal(this.crStatus.callCount, 0);
 
     test.done();
   },
 
   off: function(test) {
-    test.expect(3);
+    test.expect(4);
 
     cli(['crash-reporter', '--off=true']);
 
     test.equal(this.crOn.callCount, 0);
     test.equal(this.crOff.callCount, 1);
     test.equal(this.crTest.callCount, 0);
-
+    test.equal(this.crStatus.callCount, 0);
 
     test.done();
   },
 
   test: function(test) {
-    test.expect(3);
+    test.expect(4);
+
+    var resolve = Promise.resolve();
+    this.crTest.restore();
+    this.crTest = this.sandbox.stub(CrashReporter, 'test').returns(resolve);
 
     cli(['crash-reporter', '--test=true']);
 
     test.equal(this.crOn.callCount, 0);
     test.equal(this.crOff.callCount, 0);
-    test.equal(this.crTest.callCount, 1);
+    test.equal(this.crStatus.callCount, 0);
 
-
-    test.done();
+    resolve.then(() => {
+      test.equal(this.crTest.callCount, 1);
+      test.done();
+    });
   },
 
   onAndTest: function(test) {
-    test.expect(3);
+    test.expect(4);
 
     var resolve = Promise.resolve();
     this.crOn.restore();
@@ -823,13 +836,14 @@ exports['Tessel (cli: crash-reporter)'] = {
       test.equal(this.crOn.callCount, 1);
       test.equal(this.crOff.callCount, 0);
       test.equal(this.crTest.callCount, 1);
+      test.equal(this.crStatus.callCount, 0);
 
       test.done();
     });
   },
 
   onNoTestThrough: function(test) {
-    test.expect(3);
+    test.expect(4);
 
     var resolve = Promise.resolve();
     this.crOn.restore();
@@ -841,13 +855,14 @@ exports['Tessel (cli: crash-reporter)'] = {
       test.equal(this.crOn.callCount, 1);
       test.equal(this.crOff.callCount, 0);
       test.equal(this.crTest.callCount, 0);
+      test.equal(this.crStatus.callCount, 1);
 
       test.done();
     });
   },
 
   unsuccessful: function(test) {
-    test.expect(3);
+    test.expect(4);
 
     var resolve = Promise.resolve();
     this.crOn.restore();
@@ -859,6 +874,7 @@ exports['Tessel (cli: crash-reporter)'] = {
       test.equal(this.crOn.callCount, 1);
       test.equal(this.crOff.callCount, 0);
       test.equal(this.crTest.callCount, 0);
+      test.equal(this.crStatus.callCount, 1);
       test.done();
     });
   },
