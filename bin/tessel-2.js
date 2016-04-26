@@ -115,7 +115,8 @@ parser.command('crash-reporter')
   .option('test', {
     flag: true,
     help: 'Test the Crash Reporter.'
-  });
+  })
+  .help('Crash Reporter enable/disable');
 
 parser.command('provision')
   .callback(callControllerCallback('provisionTessel'))
