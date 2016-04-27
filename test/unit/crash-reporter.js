@@ -221,5 +221,27 @@ exports['CrashReporter.post'] = {
       test.done();
     });
   },
+};
 
+exports['CrashReporter.status'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsInfo = this.sandbox.stub(logs, 'info');
+    this.crPost = this.sandbox.spy(CrashReporter, 'status');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  status: function(test) {
+    test.expect(1);
+
+    CrashReporter.status().then(() => {
+      test.equal(this.logsInfo.callCount, 1);
+      test.done();
+    });
+  },
 };

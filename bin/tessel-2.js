@@ -83,25 +83,24 @@ parser.command('install-drivers')
 
 parser.command('crash-reporter')
   .callback(opts => {
+    var cr = Promise.resolve();
+
     // t2 crash-reporter --on
     if (opts.on) {
-      return CrashReporter.on().then(() => {
-        // t2 crash-reporter --on --test
-        if (opts.test) {
-          CrashReporter.test().then(module.exports.closeSuccessfulCommand);
-        }
-      }).then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
+      cr = CrashReporter.on();
     } else if (opts.off) {
-      // t2 crash-reporter --on
-      return CrashReporter.off()
-        .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
+      // t2 crash-reporter --off
+      cr = CrashReporter.off();
     }
 
     // t2 crash-reporter --test
     if (opts.test) {
       // not handling failures, as we want to trigger a crash
-      CrashReporter.test()
+      cr.then(CrashReporter.test)
         .then(module.exports.closeSuccessfulCommand);
+    } else {
+      cr.then(CrashReporter.status)
+        .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
     }
   })
   .option('off', {
@@ -116,7 +115,7 @@ parser.command('crash-reporter')
     flag: true,
     help: 'Test the Crash Reporter.'
   })
-  .help('Crash Reporter enable/disable');
+  .help('Configure the Crash Reporter.');
 
 parser.command('provision')
   .callback(callControllerCallback('provisionTessel'))
