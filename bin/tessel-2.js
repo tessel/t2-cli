@@ -21,9 +21,13 @@ const CLI_ENTRYPOINT = 'cli.entrypoint';
 const pkg = require('../package.json');
 
 try {
-  updateNotifier({ pkg }).notify();
+  updateNotifier({
+    pkg
+  }).notify();
 } catch (err) {
-  CrashReporter.submit(err.stack, { silent: true });
+  CrashReporter.submit(err.stack, {
+    silent: true
+  });
 }
 
 function makeCommand(commandName) {
