@@ -2008,9 +2008,6 @@ exports['deploy.sendBundle, error handling'] = {
   },
 };
 
-function Request() {}
-util.inherits(Request, stream.Stream);
-
 exports['deploy.resolveBinaryModules'] = {
   setUp: function(done) {
 
@@ -2331,19 +2328,39 @@ exports['deploy.resolveBinaryModules'] = {
   },
 
   requestsRemote: function(test) {
-    test.expect(10);
+    test.expect(12);
 
     this.exists = sandbox.stub(fs, 'existsSync', () => false);
-    this.mkdirp = sandbox.spy(fs, 'mkdirp');
-    this.pipe = sandbox.spy(stream.Stream.prototype, 'pipe');
+    this.mkdirp = sandbox.stub(fs, 'mkdirp', (dir, handler) => {
+      handler();
+    });
 
-    this.createGunzip = sandbox.spy(zlib, 'createGunzip');
-    this.Extract = sandbox.spy(tar, 'Extract');
+    this.transform = new Transform();
+    this.transform.stubsUsed = [];
+    this.rstream = null;
+
+    this.pipe = sandbox.stub(stream.Stream.prototype, 'pipe', () => {
+      // After the second transform is piped, emit the end
+      // event on the request stream;
+      if (this.pipe.callCount === 2) {
+        process.nextTick(() => this.rstream.emit('end'));
+      }
+      return this.rstream;
+    });
+
+    this.createGunzip = sandbox.stub(zlib, 'createGunzip', () => {
+      this.transform.stubsUsed.push('createGunzip');
+      return this.transform;
+    });
+
+    this.Extract = sandbox.stub(tar, 'Extract', () => {
+      this.transform.stubsUsed.push('Extract');
+      return this.transform;
+    });
+
     this.request = sandbox.stub(request, 'Request', (opts) => {
-      var stream = new Request(opts);
-
-      process.nextTick(() => stream.emit('end'));
-      return stream;
+      this.rstream = new Request(opts);
+      return this.rstream;
     });
 
     deploy.resolveBinaryModules({
@@ -2363,6 +2380,8 @@ exports['deploy.resolveBinaryModules'] = {
       test.equal(this.pipe.callCount, 2);
       test.equal(this.createGunzip.callCount, 1);
       test.equal(this.Extract.callCount, 1);
+      test.equal(this.transform.stubsUsed.length, 2);
+      test.deepEqual(this.transform.stubsUsed, ['createGunzip', 'Extract']);
 
       test.done();
     }).catch(error => {
