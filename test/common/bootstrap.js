@@ -6,9 +6,12 @@ global.events = require('events');
 global.path = require('path');
 global.stream = require('stream');
 global.util = require('util');
+global.zlib = require('zlib');
 
 global.Emitter = events.EventEmitter;
 global.Duplex = stream.Duplex;
+global.Stream = stream.Stream;
+global.Transform = stream.Transform;
 
 
 // Third Party Dependencies
@@ -31,7 +34,6 @@ global.ssh = require('ssh2');
 global.tags = require('common-tags');
 global.tar = require('tar');
 global.uglify = require('uglify-js');
-global.zlib = require('zlib');
 
 
 // Internal
@@ -68,3 +70,6 @@ global.cli = require('../../bin/tessel-2');
 global.LAN = lan.LAN;
 global.TesselSeeker = discover.TesselSeeker;
 global.USB = usb.USB;
+
+global.Request = function Request() {};
+util.inherits(global.Request, global.Stream);
