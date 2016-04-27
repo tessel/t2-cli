@@ -23,7 +23,6 @@ const pkg = require('../package.json');
 try {
   updateNotifier({ pkg }).notify();
 } catch (err) {
-  logs.warn('Failed to check for newer version of the CLI');
   CrashReporter.submit(err.stack);
 }
 
