@@ -19,9 +19,13 @@ const CLI_ENTRYPOINT = 'cli.entrypoint';
 
 // Check for updates
 const pkg = require('../package.json');
-updateNotifier({
-  pkg
-}).notify();
+
+try {
+  updateNotifier({ pkg }).notify();
+} catch (err) {
+  logs.warn('Failed to check for newer version of the CLI');
+  CrashReporter.submit(err.stack);
+}
 
 function makeCommand(commandName) {
   return parser.command(commandName)
