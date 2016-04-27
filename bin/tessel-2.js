@@ -23,7 +23,7 @@ const pkg = require('../package.json');
 try {
   updateNotifier({ pkg }).notify();
 } catch (err) {
-  CrashReporter.submit(err.stack);
+  CrashReporter.submit(err.stack, { silent: true });
 }
 
 function makeCommand(commandName) {
