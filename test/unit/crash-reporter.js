@@ -157,8 +157,42 @@ exports['CrashReporter.submit'] = {
       // the actual dirname should not appear in the posted report contents
       test.equal(this.crPost.lastCall.args[0].includes(__dirname), false);
       test.done();
-    }).catch(error => console.log(error));
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
   },
+
+  optionsSilentDefaultsFalse: function(test) {
+    test.expect(1);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    CrashReporter.submit(new Error('This happened')).then(() => {
+      test.equal(this.logsInfo.callCount, 1);
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
+  optionsSilent: function(test) {
+    test.expect(1);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    CrashReporter.submit(new Error('This happened'), { silent: true }).then(() => {
+      test.equal(this.logsInfo.callCount, 0);
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
 };
 
 exports['CrashReporter.post'] = {
