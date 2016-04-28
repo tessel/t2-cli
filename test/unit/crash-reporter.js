@@ -184,7 +184,9 @@ exports['CrashReporter.submit'] = {
     this.crPost.restore();
     this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
 
-    CrashReporter.submit(new Error('This happened'), { silent: true }).then(() => {
+    CrashReporter.submit(new Error('This happened'), {
+      silent: true
+    }).then(() => {
       test.equal(this.logsInfo.callCount, 0);
       test.done();
     }).catch(error => {
