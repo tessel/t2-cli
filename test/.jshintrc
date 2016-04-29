@@ -45,6 +45,7 @@
     "mdns": true,
     "mkdirp": true,
     "NodeRSA": true,
+    "RSA": true,
     "osenv": true,
     "path": true,
     "Preferences": true,

@@ -263,7 +263,11 @@ exports['CrashReporter.status'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.logsInfo = this.sandbox.stub(logs, 'info');
-    this.crPost = this.sandbox.spy(CrashReporter, 'status');
+    this.prefLoad = this.sandbox.stub(Preferences, 'load', () => {
+      return Promise.resolve({
+        'crash.reporter.preference': 'on'
+      });
+    });
     done();
   },
 

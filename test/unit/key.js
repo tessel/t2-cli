@@ -19,6 +19,14 @@ exports['provision.setDefaultKey'] = {
     this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
     this.setDefaultKeySpy = this.sandbox.spy(provision, 'setDefaultKey');
     this.fsSpyStatSync = this.sandbox.spy(fs, 'statSync');
+
+    this.parseKey = this.sandbox.stub(sshpk, 'parseKey', _ => _);
+    this.RSA = this.sandbox.stub(global, 'RSA', () => {
+      return {
+        exportKey: _ => _
+      };
+    });
+
     done();
   },
 
@@ -75,16 +83,17 @@ exports['provision.setDefaultKey'] = {
   validAlternateKey: function(test) {
     test.expect(4);
     // Create folders for the folder that we'd like to
-    createKeyTestFolder((err) => {
-      if (err) {
-        console.log('createKeyTestFolder: ' + err);
-        process.exit();
+    createKeyTestFolder((error) => {
+      if (error) {
+        test.ok(false, error.message);
+        test.done();
       }
       // Attempt to set up local keys
       // Generate SSH key
-      var key = new NodeRSA({
+      var key = new RSA({
         b: 2048
       });
+
       var privateKey = key.exportKey('private');
       var publicKey = sshpk.parseKey(key.exportKey('public'), 'pem').toString('ssh') + '\n';
 
@@ -93,22 +102,22 @@ exports['provision.setDefaultKey'] = {
       // owner can read and write
       var fileOpts = {
         encoding: 'utf8',
-        mode: 384,
+        mode: 0o600,
       };
 
       async.parallel([
         (next) => fs.writeFile(testPath + '.pub', publicKey, fileOpts, next), (next) => fs.writeFile(testPath, privateKey, fileOpts, next),
-      ], (err) => {
-        if (err) {
-          console.log('parallel writer: ' + err);
-          process.exit();
+      ], (error) => {
+        if (error) {
+          test.ok(false, error.message);
+          test.done();
         }
         provision.setDefaultKey(testPath)
           .then(() => {
             fs.remove(testDir, (err) => {
               if (err) {
-                console.log('Error removing tmp directory: ' + err);
-                process.exit();
+                test.ok(false, 'Error removing tmp directory: ' + err);
+                test.done();
               }
               test.equal(this.setDefaultKeySpy.callCount, 1);
               test.equal(fs.statSync.callCount, 2);

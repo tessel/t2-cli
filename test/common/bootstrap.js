@@ -24,7 +24,6 @@ global.Ignore = require('fstream-ignore');
 global.inquirer = require('inquirer');
 global.mdns = require('mdns-js');
 global.mkdirp = require('mkdirp');
-global.NodeRSA = require('node-rsa');
 global.osenv = require('osenv');
 global.Project = require('t2-project');
 global.request = require('request');
@@ -42,6 +41,7 @@ global.Tessel = require('../../lib/tessel/tessel');
 global.commands = require('../../lib/tessel/commands');
 global.deploy = require('../../lib/tessel/deploy');
 global.provision = require('../../lib/tessel/provision');
+global.RSA = require('../../lib/tessel/rsa-delegation');
 global.deployLists = require('../../lib/tessel/deploy-lists');
 
 // ./lib/*

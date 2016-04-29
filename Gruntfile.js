@@ -91,11 +91,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-jsbeautifier');
 
 
-  // 'npm test' runs these tasks
-  grunt.registerTask('test', ['jshint', 'jscs', 'jsbeautifier', 'nodeunit']);
+  grunt.registerTask('test', ['jshint', 'jscs', 'nodeunit']);
+  grunt.registerTask('all', ['jsbeautifier', 'jshint', 'jscs', 'nodeunit']);
 
   // Default task.
-  grunt.registerTask('default', ['test']);
+  grunt.registerTask('default', ['all']);
 
 
   // Support running a single test suite

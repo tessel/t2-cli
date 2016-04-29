@@ -85,9 +85,12 @@ exports['tessel.root'] = {
     tessel.name = 'Frank';
     tessel.lanConnection.ip = '1.1.1.1';
 
-    // Emit the Tessel
-    setImmediate(() => {
-      this.activeSeeker.emit('tessel', tessel);
-    });
+    // Interval until an active seeker exists...
+    this.interval = setInterval(() => {
+      if (this.activeSeeker) {
+        clearInterval(this.interval);
+        this.activeSeeker.emit('tessel', tessel);
+      }
+    }, 1);
   },
 };
