@@ -4,7 +4,7 @@ clone_depth: 10
 
 environment:
   matrix:
-    - nodejs_version: 4.0
+    - nodejs_version: 4
 
 install:
   - ps: Install-Product node $env:nodejs_version
