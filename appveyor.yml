@@ -13,7 +13,7 @@ install:
 build: off
 
 test_script:
-  - npm test
+  - grunt test
 
 cache:
   - node_modules
