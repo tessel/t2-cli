@@ -10,12 +10,16 @@ environment:
 platform:
   - x86
   - x64
+
 install:
   - ps: Install-Product node $env:nodejs_version
   - npm install -g npm
   - npm install
 
 build: off
+
+before_test:
+  - npm install -g grunt-cli
 
 test_script:
   - ps: "grunt test # PowerShell"
