@@ -5,15 +5,21 @@ clone_depth: 10
 environment:
   matrix:
     - nodejs_version: 4
+    - nodejs_version: 5
 
+platform:
+  - x86
+  - x64
 install:
   - ps: Install-Product node $env:nodejs_version
+  - npm install -g npm
   - npm install
 
 build: off
 
 test_script:
-  - grunt test
+  - ps: "grunt test # PowerShell"
+  - cmd: grunt test
 
 cache:
   - node_modules
