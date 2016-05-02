@@ -119,7 +119,7 @@ exports['Tessel.prototype.deploy'] = {
     this.chmod = sandbox.spy(commands, 'chmod');
 
     this.push = sandbox.spy(deploy, 'push');
-    this.writeToFile = sandbox.spy(deploy, 'writeToFile');
+    this.createShellScript = sandbox.spy(deploy, 'createShellScript');
 
     this.injectBinaryModules = sandbox.stub(deploy, 'injectBinaryModules', () => Promise.resolve());
     this.resolveBinaryModules = sandbox.stub(deploy, 'resolveBinaryModules', () => Promise.resolve());
@@ -267,7 +267,7 @@ exports['Tessel.prototype.deploy'] = {
       var expectedPath = path.normalize('test/unit/tmp/app.js');
 
       test.equal(this.push.lastCall.args[1].entryPoint, expectedPath);
-      test.equal(this.writeToFile.lastCall.args[1], expectedPath);
+      test.equal(this.createShellScript.lastCall.args[1].resolvedEntryPoint, expectedPath);
 
       test.equal(this.appStop.callCount, 1);
       // Delete and create both the flash and ram folders
@@ -306,13 +306,21 @@ exports['Tessel.prototype.deploy'] = {
     });
   },
 
-  writeToFileDefaultEntryPoint: function(test) {
+  createShellScriptDefaultEntryPoint: function(test) {
     test.expect(1);
 
     var shellScript = tags.stripIndent `
       #!/bin/sh
       exec node /app/remote-script/index.js
     `;
+    var opts = {
+      lang: {
+        name: 'javascript',
+        extname: 'js',
+        binary: 'node',
+      },
+      resolvedEntryPoint: 'index.js',
+    };
     this.end.restore();
     this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
       test.equal(buffer.toString(), shellScript);
@@ -323,16 +331,24 @@ exports['Tessel.prototype.deploy'] = {
       return callback(null, this.tessel._rps);
     });
 
-    deploy.writeToFile(this.tessel, 'index.js');
+    deploy.createShellScript(this.tessel, opts);
   },
 
-  writeToFileSendsCorrectEntryPoint: function(test) {
+  createShellScriptSendsCorrectEntryPoint: function(test) {
     test.expect(1);
 
     var shellScript = tags.stripIndent `
       #!/bin/sh
       exec node /app/remote-script/index.js
     `;
+    var opts = {
+      lang: {
+        name: 'javascript',
+        extname: 'js',
+        binary: 'node',
+      },
+      resolvedEntryPoint: 'index.js',
+    };
     this.end.restore();
     this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
       test.equal(buffer.toString(), shellScript);
@@ -343,7 +359,7 @@ exports['Tessel.prototype.deploy'] = {
       return callback(null, this.tessel._rps);
     });
 
-    deploy.writeToFile(this.tessel, 'index.js');
+    deploy.createShellScript(this.tessel, opts);
   },
 
   processCompletionOrder: function(test) {
@@ -2727,7 +2743,7 @@ exports['deploy.run'] = {
   }
 };
 
-exports['deploy.writeToFile'] = {
+exports['deploy.createShellScript'] = {
   setUp: function(done) {
     this.logsInfo = sandbox.stub(logs, 'info');
     this.tessel = TesselSimulator();
@@ -2746,7 +2762,16 @@ exports['deploy.writeToFile'] = {
       this.tessel._rps.emit('close');
     });
 
-    deploy.writeToFile(this.tessel, 'foo').then(() => {
+    var opts = {
+      lang: {
+        name: 'javascript',
+        extname: 'js',
+        binary: 'node',
+      },
+      resolvedEntryPoint: 'foo'
+    };
+
+    deploy.createShellScript(this.tessel, opts).then(() => {
       test.deepEqual(this.exec.firstCall.args[0], ['dd', 'of=/app/start']);
       test.deepEqual(this.exec.lastCall.args[0], ['chmod', '+x', '/app/start']);
       test.done();
