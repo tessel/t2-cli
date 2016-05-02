@@ -183,7 +183,7 @@ makeCommand('run')
   .option('single', {
     flag: true,
     abbr: 's',
-    help: 'Run only the specified entry point file'
+    help: 'Deploy only the specified entry point file. Previously deployed files are preserved. Program is started from specified file.'
   })
   .option('verbose', {
     flag: true,
@@ -193,12 +193,12 @@ makeCommand('run')
   .option('slim', {
     flag: true,
     default: true,
-    help: 'Deploy a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from "slimPath" file (if not provided, a default name is given).',
+    help: 'Deploy a project containing only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.',
   })
   .option('full', {
     flag: true,
     default: false,
-    help: 'Deploy all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from specified "entryPoint" file.'
+    help: 'Deploy a project containing all files within, including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.'
   })
   .help(`
     Deploy a script to Tessel and run it with Node.
@@ -227,7 +227,7 @@ makeCommand('push')
   .option('single', {
     flag: true,
     abbr: 's',
-    help: 'Push only the specified entry point file'
+    help: 'Deploy only the specified entry point file. Previously deployed files are preserved. Program is started from specified file.'
   })
   .option('verbose', {
     flag: true,
@@ -237,12 +237,12 @@ makeCommand('push')
   .option('slim', {
     flag: true,
     default: true,
-    help: 'Push a single "bundle" file that contains that contains only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from "slimPath" file (if not provided, a default name is given).'
+    help: 'Deploy a project containing only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.',
   })
   .option('full', {
     flag: true,
     default: false,
-    help: 'Push all files in project including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is run from specified "entryPoint" file.'
+    help: 'Deploy a project containing all files within, including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.'
   })
   .help(`
     Pushes the file/dir to Flash memory to be run anytime the Tessel is powered,
