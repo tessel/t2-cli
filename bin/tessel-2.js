@@ -151,10 +151,10 @@ makeCommand('restart')
           //    there is nothing further to do.
           return module.exports.closeFailedCommand('Cannot determine entry point file name');
         }
-        callControllerWith('restartScript', opts);
+        callControllerWith('restart', opts);
       });
     } else {
-      callControllerWith('restartScript', opts);
+      callControllerWith('restart', opts);
     }
   })
   .option('entryPoint', {
@@ -173,7 +173,7 @@ makeCommand('run')
     opts.push = false;
     // Overridden in tarBundle if opts.full is `true`
     opts.slim = true;
-    callControllerWith('deployScript', opts);
+    callControllerWith('deploy', opts);
   })
   .option('entryPoint', {
     position: 1,
@@ -217,7 +217,7 @@ makeCommand('push')
     opts.push = true;
     // Overridden in tarBundle if opts.full is `true`
     opts.slim = true;
-    callControllerWith('deployScript', opts);
+    callControllerWith('deploy', opts);
   })
   .option('entryPoint', {
     position: 1,

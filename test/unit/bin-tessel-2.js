@@ -79,7 +79,7 @@ exports['Tessel (cli: restart)'] = {
     this.err = this.sandbox.stub(logs, 'err');
     this.warn = this.sandbox.stub(logs, 'warn');
     this.info = this.sandbox.stub(logs, 'info');
-    this.restartScript = this.sandbox.stub(controller, 'restartScript').returns(Promise.resolve());
+    this.restart = this.sandbox.stub(controller, 'restart').returns(Promise.resolve());
     this.closeFailedCommand = this.sandbox.spy(cli, 'closeFailedCommand');
     this.closeSuccessfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
     this.processExit = this.sandbox.stub(process, 'exit');
@@ -97,7 +97,7 @@ exports['Tessel (cli: restart)'] = {
 
     cli(['restart', '--entryPoint=index.js', '--type=ram']);
 
-    test.equal(this.restartScript.callCount, 1);
+    test.equal(this.restart.callCount, 1);
     // We must wait for the command to complete
     // or else the sandbox will be cleared too early
     setImmediate(test.done);
@@ -109,12 +109,12 @@ exports['Tessel (cli: restart)'] = {
     var error = new Error('Some error happened.');
     var restartOp = Promise.reject(error);
 
-    this.restartScript.returns(restartOp);
+    this.restart.returns(restartOp);
 
     cli(['restart', '--entryPoint=index.js', '--type=ram']);
 
     restartOp.catch(() => {
-      test.equal(this.restartScript.callCount, 1);
+      test.equal(this.restart.callCount, 1);
       test.equal(this.closeFailedCommand.callCount, 1);
       test.equal(this.closeFailedCommand.lastCall.args[0], error);
       test.equal(this.processExit.lastCall.args[0], 1);
@@ -130,10 +130,10 @@ exports['Tessel (cli: restart)'] = {
 
     cli(['restart']);
 
-    this.restartScript.returns(restartOp);
+    this.restart.returns(restartOp);
 
     restartOp.then(() => {
-      test.equal(this.restartScript.lastCall.args[0].entryPoint, 'previous.js');
+      test.equal(this.restart.lastCall.args[0].entryPoint, 'previous.js');
       test.done();
     });
   },
@@ -428,7 +428,7 @@ exports['Tessel (cli: run)'] = {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(logs, 'warn');
     this.info = this.sandbox.stub(logs, 'info');
-    this.deployScript = this.sandbox.stub(controller, 'deployScript').returns(Promise.resolve());
+    this.deploy = this.sandbox.stub(controller, 'deploy').returns(Promise.resolve());
     this.successfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
     done();
   },
@@ -443,9 +443,9 @@ exports['Tessel (cli: run)'] = {
 
     cli(['run', 'index.js']);
 
-    test.equal(this.deployScript.callCount, 1);
+    test.equal(this.deploy.callCount, 1);
 
-    var args = this.deployScript.lastCall.args[0];
+    var args = this.deploy.lastCall.args[0];
 
     // These represent the minimum required properties
     // and default values for `t2 run index.js`
@@ -463,9 +463,9 @@ exports['Tessel (cli: run)'] = {
 
     cli(['run', 'index.js', '--full=true']);
 
-    test.equal(this.deployScript.callCount, 1);
+    test.equal(this.deploy.callCount, 1);
 
-    var args = this.deployScript.lastCall.args[0];
+    var args = this.deploy.lastCall.args[0];
 
     // opts.full will override opts.slim in `tarBundle`
     // (See test/unit/deploy.js)
@@ -484,7 +484,7 @@ exports['Tessel (cli: push)'] = {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(logs, 'warn');
     this.info = this.sandbox.stub(logs, 'info');
-    this.deployScript = this.sandbox.stub(controller, 'deployScript').returns(Promise.resolve());
+    this.deploy = this.sandbox.stub(controller, 'deploy').returns(Promise.resolve());
     this.successfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
     done();
   },
@@ -499,9 +499,9 @@ exports['Tessel (cli: push)'] = {
 
     cli(['push', 'index.js']);
 
-    test.equal(this.deployScript.callCount, 1);
+    test.equal(this.deploy.callCount, 1);
 
-    var args = this.deployScript.lastCall.args[0];
+    var args = this.deploy.lastCall.args[0];
 
     // These represent the minimum required properties
     // and default values for `t2 push index.js`
@@ -519,9 +519,9 @@ exports['Tessel (cli: push)'] = {
 
     cli(['push', 'index.js', '--full=true']);
 
-    test.equal(this.deployScript.callCount, 1);
+    test.equal(this.deploy.callCount, 1);
 
-    var args = this.deployScript.lastCall.args[0];
+    var args = this.deploy.lastCall.args[0];
 
     // opts.full will override opts.slim in `tarBundle`
     // (See test/unit/deploy.js)

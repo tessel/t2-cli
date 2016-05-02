@@ -106,9 +106,9 @@ exports['Tessel.prototype.memoryInfo'] = {
 
 };
 
-exports['Tessel.prototype.deployScript'] = {
+exports['Tessel.prototype.deploy'] = {
   setUp: function(done) {
-    this.deployScript = sandbox.spy(Tessel.prototype, 'deployScript');
+    this.deploy = sandbox.spy(Tessel.prototype, 'deploy');
     this.appStop = sandbox.spy(commands.app, 'stop');
     this.appStart = sandbox.spy(commands.app, 'start');
     this.deleteFolder = sandbox.spy(commands, 'deleteFolder');
@@ -116,13 +116,12 @@ exports['Tessel.prototype.deployScript'] = {
     this.untarStdin = sandbox.spy(commands, 'untarStdin');
     this.execute = sandbox.spy(commands.js, 'execute');
     this.openStdinToFile = sandbox.spy(commands, 'openStdinToFile');
-    this.setExecutablePermissions = sandbox.spy(commands, 'setExecutablePermissions');
+    this.chmod = sandbox.spy(commands, 'chmod');
 
-    this.pushScript = sandbox.spy(deploy, 'pushScript');
+    this.push = sandbox.spy(deploy, 'push');
     this.writeToFile = sandbox.spy(deploy, 'writeToFile');
 
     this.injectBinaryModules = sandbox.stub(deploy, 'injectBinaryModules', () => Promise.resolve());
-
     this.resolveBinaryModules = sandbox.stub(deploy, 'resolveBinaryModules', () => Promise.resolve());
     this.tarBundle = sandbox.stub(deploy, 'tarBundle', function() {
       return new Promise(function(resolve) {
@@ -205,7 +204,7 @@ exports['Tessel.prototype.deployScript'] = {
     });
   },
 
-  runScript: function(test) {
+  run: function(test) {
     test.expect(10);
     this.exec = sandbox.spy(this.tessel.connection, 'exec');
     deployTestCode(this.tessel, {
@@ -222,7 +221,7 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.untarStdin.callCount, 1);
       test.equal(this.execute.callCount, 1);
       test.equal(this.openStdinToFile.callCount, 0);
-      test.equal(this.setExecutablePermissions.callCount, 0);
+      test.equal(this.chmod.callCount, 0);
       test.equal(this.appStart.callCount, 0);
       test.equal(this.end.callCount, 1);
       // Ensure that the last call (to run Node) sets pty to true
@@ -231,7 +230,7 @@ exports['Tessel.prototype.deployScript'] = {
     });
   },
 
-  runScriptSingle: function(test) {
+  runSingle: function(test) {
     test.expect(9);
     deployTestCode(this.tessel, {
       push: false,
@@ -247,15 +246,15 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.untarStdin.callCount, 1);
       test.equal(this.execute.callCount, 1);
       test.equal(this.openStdinToFile.callCount, 0);
-      test.equal(this.setExecutablePermissions.callCount, 0);
+      test.equal(this.chmod.callCount, 0);
       test.equal(this.appStart.callCount, 0);
       test.equal(this.end.callCount, 1);
       test.done();
     });
   },
 
-  pushScript: function(test) {
-    test.expect(12);
+  push: function(test) {
+    test.expect(11);
     deployTestCode(this.tessel, {
       push: true,
       single: false
@@ -267,8 +266,7 @@ exports['Tessel.prototype.deployScript'] = {
 
       var expectedPath = path.normalize('test/unit/tmp/app.js');
 
-      test.equal(this.pushScript.lastCall.args[1], expectedPath);
-      test.equal(this.pushScript.lastCall.args[2].entryPoint, expectedPath);
+      test.equal(this.push.lastCall.args[1].entryPoint, expectedPath);
       test.equal(this.writeToFile.lastCall.args[1], expectedPath);
 
       test.equal(this.appStop.callCount, 1);
@@ -278,14 +276,14 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.untarStdin.callCount, 1);
       test.equal(this.execute.callCount, 0);
       test.equal(this.openStdinToFile.callCount, 1);
-      test.equal(this.setExecutablePermissions.callCount, 1);
+      test.equal(this.chmod.callCount, 1);
       test.equal(this.appStart.callCount, 1);
       test.equal(this.end.callCount, 1);
       test.done();
     });
   },
 
-  pushScriptSingle: function(test) {
+  pushSingle: function(test) {
     test.expect(9);
     deployTestCode(this.tessel, {
       push: true,
@@ -301,7 +299,7 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.untarStdin.callCount, 1);
       test.equal(this.execute.callCount, 0);
       test.equal(this.openStdinToFile.callCount, 1);
-      test.equal(this.setExecutablePermissions.callCount, 1);
+      test.equal(this.chmod.callCount, 1);
       test.equal(this.appStart.callCount, 1);
       test.equal(this.end.callCount, 1);
       test.done();
@@ -379,7 +377,7 @@ exports['Tessel.prototype.deployScript'] = {
         this.tessel._rps.on('newListener', closeAdvance);
 
         // Actually deploy the script
-        this.tessel.deployScript({
+        this.tessel.deploy({
             entryPoint: path.relative(process.cwd(), deployFile),
             push: false,
             single: false
@@ -1708,10 +1706,10 @@ exports['deploy.tarBundle'] = {
   },
 };
 
-exports['Tessel.prototype.restartScript'] = {
+exports['Tessel.prototype.restart'] = {
   setUp: function(done) {
-    this.runScript = sandbox.stub(deploy, 'runScript', () => Promise.resolve());
-    this.startPushedScript = sandbox.stub(deploy, 'startPushedScript', () => Promise.resolve());
+    this.run = sandbox.stub(deploy, 'run', () => Promise.resolve());
+    this.start = sandbox.stub(deploy, 'start', () => Promise.resolve());
     this.findProject = sandbox.stub(deploy, 'findProject', (entryPoint) => Promise.resolve({
       entryPoint
     }));
@@ -1733,17 +1731,16 @@ exports['Tessel.prototype.restartScript'] = {
   },
 
   restartFromRam: function(test) {
-    test.expect(3);
+    test.expect(2);
     var opts = {
       type: 'ram',
       entryPoint: 'index.js',
     };
 
-    this.tessel.restartScript(opts)
+    this.tessel.restart(opts)
       .then(() => {
-        test.equal(this.runScript.callCount, 1);
-        test.equal(this.runScript.lastCall.args[1], '/tmp/remote-script/');
-        test.deepEqual(this.runScript.lastCall.args[2], {
+        test.equal(this.run.callCount, 1);
+        test.deepEqual(this.run.lastCall.args[1], {
           type: 'ram',
           entryPoint: 'index.js'
         });
@@ -1762,11 +1759,11 @@ exports['Tessel.prototype.restartScript'] = {
       entryPoint: 'index.js',
     };
 
-    this.tessel.restartScript(opts)
+    this.tessel.restart(opts)
       .then(() => {
-        test.equal(this.startPushedScript.callCount, 1);
-        test.equal(this.startPushedScript.lastCall.args[1], 'index.js');
-        test.deepEqual(this.startPushedScript.lastCall.args[2], {
+        test.equal(this.start.callCount, 1);
+        test.equal(this.start.lastCall.args[1], 'index.js');
+        test.deepEqual(this.start.lastCall.args[2], {
           type: 'flash',
           entryPoint: 'index.js'
         });
@@ -1785,7 +1782,7 @@ exports['Tessel.prototype.restartScript'] = {
       entryPoint: 'index.js',
     };
 
-    this.tessel.restartScript(opts)
+    this.tessel.restart(opts)
       .catch(error => {
         test.equal(error, '"index.js" not found on undefined');
         test.done();
@@ -2701,7 +2698,7 @@ exports['deploy.injectBinaryModules'] = {
 };
 
 
-exports['deploy.runScript'] = {
+exports['deploy.run'] = {
   setUp: function(done) {
     this.logsInfo = sandbox.stub(logs, 'info');
     this.tessel = TesselSimulator();
@@ -2712,14 +2709,14 @@ exports['deploy.runScript'] = {
     done();
   },
 
-  runScriptResolveEntryPoint: function(test) {
+  runResolveEntryPoint: function(test) {
     test.expect(1);
 
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, opts, callback) => {
       return callback(null, this.tessel._rps);
     });
 
-    deploy.runScript(this.tessel, '', {
+    deploy.run(this.tessel, {
       entryPoint: 'foo'
     }).then(() => {
       test.deepEqual(this.exec.lastCall.args[0], ['node', '/tmp/remote-script/foo']);
@@ -2776,13 +2773,13 @@ function deployTestCode(tessel, opts, callback) {
       tessel._rps.on('newListener', closeAdvance);
 
       // Actually deploy the script
-      tessel.deployScript({
+      tessel.deploy({
           entryPoint: path.relative(process.cwd(), deployFile),
           push: opts.push,
           single: opts.single
         })
         // If it finishes, it was successful
-        .then(function success() {
+        .then(() => {
           tessel._rps.removeListener('newListener', closeAdvance);
           callback();
         })
