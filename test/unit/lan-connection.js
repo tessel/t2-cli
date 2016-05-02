@@ -27,6 +27,7 @@ exports['LAN.Connection'] = {
       addresses: ['fc00::', '172.16.2.5'],
       host: 'home.loc',
     });
+    // The first address was picked
     test.equal(this.lanConnection.ip, 'fc00::');
     test.done();
   },
@@ -37,6 +38,7 @@ exports['LAN.Connection'] = {
       networkInterface: 'en0',
       host: 'home.loc',
     });
+    // THe first address was picked, which was ipv6, and a network interface also provided
     test.equal(this.lanConnection.ip, 'fc00::%en0');
     test.done();
   },
@@ -47,10 +49,12 @@ exports['LAN.Connection'] = {
       networkInterface: 'en0',
       host: 'home.loc',
     });
+    // The first address was picked
     test.equal(this.lanConnection.ip, '172.16.2.5');
     test.done();
   },
 
+  // no ip addresses were found, fallback to the host
   ipWhenNoIps: function(test) {
     this.lanConnection = new LAN.Connection({
       networkInterface: 'en0',
