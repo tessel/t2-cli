@@ -27,6 +27,7 @@
     "cp": true,
     "Daemon": true,
     "deploy": true,
+    "deployment": true,
     "deployLists": true,
     "discover": true,
     "document": true,

@@ -41,6 +41,7 @@ global.uglify = require('uglify-js');
 global.Tessel = require('../../lib/tessel/tessel');
 global.commands = require('../../lib/tessel/commands');
 global.deploy = require('../../lib/tessel/deploy');
+global.deployment = require('../../lib/tessel/deployment/index');
 global.deployLists = require('../../lib/tessel/deploy-lists');
 global.provision = require('../../lib/tessel/provision');
 global.RSA = require('../../lib/tessel/rsa-delegation');
