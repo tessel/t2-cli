@@ -13,7 +13,7 @@ var sandbox = sinon.sandbox.create();
 
 exports['Tessel.prototype.memoryInfo'] = {
   setUp: function(done) {
-    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', () => Promise.resolve(meminfo));
+    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.resolve(meminfo));
 
     this.logsWarn = sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = sandbox.stub(logs, 'info', function() {});
@@ -69,11 +69,10 @@ exports['Tessel.prototype.memoryInfo'] = {
   },
 
   meminfo: function(test) {
-    test.expect(4);
+    test.expect(3);
     this.tessel.memoryInfo().then((memory) => {
-      test.equal(this.execRemoteCommand.callCount, 1);
-      test.equal(this.execRemoteCommand.lastCall.args[0], this.tessel);
-      test.equal(this.execRemoteCommand.lastCall.args[1], 'getMemoryInfo');
+      test.equal(this.simpleExec.callCount, 1);
+      test.deepEqual(this.simpleExec.lastCall.args[0], ['cat', '/proc/meminfo']);
       test.deepEqual(memory, this.expect);
       test.done();
     });
@@ -82,9 +81,9 @@ exports['Tessel.prototype.memoryInfo'] = {
   failureNoResponse: function(test) {
     test.expect(1);
 
-    this.execRemoteCommand.restore();
+    this.simpleExec.restore();
 
-    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', () => Promise.resolve());
+    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.resolve());
 
     this.tessel.memoryInfo().catch((error) => {
       test.equal(error, 'Could not read device memory information.');
@@ -95,9 +94,9 @@ exports['Tessel.prototype.memoryInfo'] = {
   failureEmptyResponse: function(test) {
     test.expect(1);
 
-    this.execRemoteCommand.restore();
+    this.simpleExec.restore();
 
-    this.execRemoteCommand = sandbox.stub(deploy, 'execRemoteCommand', () => Promise.resolve(''));
+    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.resolve(''));
 
     this.tessel.memoryInfo().catch((error) => {
       test.equal(error, 'Could not read device memory information.');
