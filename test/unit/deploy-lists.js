@@ -1,6 +1,6 @@
 // Test dependencies are required and exposed in common/bootstrap.js
 
-exports['deploy-lists'] = {
+exports['deployment/lists/javascript'] = {
   setUp: function(done) {
     done();
   },
@@ -19,7 +19,7 @@ exports['deploy-lists'] = {
       'socket.io-client/socket.io.js',
     ];
 
-    test.deepEqual(deployLists.includes, includes);
+    test.deepEqual(deployment.js.lists.includes, includes);
     test.done();
   },
 
@@ -44,7 +44,7 @@ exports['deploy-lists'] = {
       },
     };
 
-    test.deepEqual(deployLists.compressionOptions, compressionOptions);
+    test.deepEqual(deployment.js.lists.compressionOptions, compressionOptions);
     test.done();
   }
 

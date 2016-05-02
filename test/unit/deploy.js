@@ -8,7 +8,7 @@ var deployFolder = path.join(__dirname, 'tmp');
 var deployFile = path.join(deployFolder, 'app.js');
 var codeContents = 'console.log("testing deploy");';
 var reference = new Buffer(codeContents);
-var builtInRulesCount = deployLists.includes.length;
+var builtInRulesCount = deployment.js.lists.includes.length;
 var sandbox = sinon.sandbox.create();
 
 exports['Tessel.prototype.memoryInfo'] = {
@@ -121,9 +121,9 @@ exports['Tessel.prototype.deploy'] = {
     this.push = sandbox.spy(deploy, 'push');
     this.createShellScript = sandbox.spy(deploy, 'createShellScript');
 
-    this.injectBinaryModules = sandbox.stub(deploy, 'injectBinaryModules', () => Promise.resolve());
-    this.resolveBinaryModules = sandbox.stub(deploy, 'resolveBinaryModules', () => Promise.resolve());
-    this.tarBundle = sandbox.stub(deploy, 'tarBundle', function() {
+    this.injectBinaryModules = sandbox.stub(deployment.js, 'injectBinaryModules', () => Promise.resolve());
+    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.resolve());
+    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', function() {
       return new Promise(function(resolve) {
         resolve(reference);
       });
@@ -136,6 +136,7 @@ exports['Tessel.prototype.deploy'] = {
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
 
     this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
+
 
     deleteTemporaryDeployCode()
       .then(done);
@@ -151,6 +152,65 @@ exports['Tessel.prototype.deploy'] = {
       .catch(function(err) {
         throw err;
       });
+  },
+
+  resolveLanguageOrRuntime: function(test) {
+    test.expect(10);
+
+    // This is used _solely_ to bailout of deployment early.
+    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.reject('Bailout'));
+    this.resolveLanguage = sandbox.spy(deployment, 'resolveLanguage');
+
+    Promise.all([
+      this.tessel.deploy({
+        entryPoint: 'index.js'
+      }),
+      this.tessel.deploy({
+        entryPoint: 'index.js',
+        lang: 'js'
+      }),
+      this.tessel.deploy({
+        entryPoint: 'index.js',
+        lang: 'JavaScript'
+      }),
+      this.tessel.deploy({
+        entryPoint: 'src/main.rs'
+      }),
+      this.tessel.deploy({
+        entryPoint: 'src/main.rs',
+        lang: 'rs'
+      }),
+      this.tessel.deploy({
+        entryPoint: 'src/main.rs',
+        lang: 'RUST'
+      }),
+      this.tessel.deploy({
+        entryPoint: 'main.py'
+      }),
+      this.tessel.deploy({
+        entryPoint: 'main.py',
+        lang: 'py'
+      }),
+      this.tessel.deploy({
+        entryPoint: 'main.py',
+        lang: 'Python'
+      }),
+    ]).catch(() => {
+
+      test.equal(this.resolveLanguage.callCount, 9);
+
+      test.deepEqual(this.resolveLanguage.getCall(0).returnValue, deployment.js);
+      test.deepEqual(this.resolveLanguage.getCall(1).returnValue, deployment.js);
+      test.deepEqual(this.resolveLanguage.getCall(2).returnValue, deployment.js);
+      test.deepEqual(this.resolveLanguage.getCall(3).returnValue, deployment.rs);
+      test.deepEqual(this.resolveLanguage.getCall(4).returnValue, deployment.rs);
+      test.deepEqual(this.resolveLanguage.getCall(5).returnValue, deployment.rs);
+      test.deepEqual(this.resolveLanguage.getCall(6).returnValue, deployment.py);
+      test.deepEqual(this.resolveLanguage.getCall(7).returnValue, deployment.py);
+      test.deepEqual(this.resolveLanguage.getCall(8).returnValue, deployment.py);
+
+      test.done();
+    });
   },
 
   recordEntryPoint: function(test) {
@@ -178,7 +238,7 @@ exports['Tessel.prototype.deploy'] = {
     this.tarBundle.restore();
 
     createTemporaryDeployCode().then(() => {
-      var tb = deploy.tarBundle({
+      var tb = deployment.js.tarBundle({
         target: deployFolder
       });
 
@@ -411,7 +471,7 @@ exports['Tessel.prototype.deploy'] = {
   }
 };
 
-exports['deploy.compress'] = {
+exports['deployment.js.compress'] = {
   setUp: function(done) {
     this.aparse = sandbox.spy(acorn, 'parse');
     this.uparse = sandbox.spy(uglify, 'parse');
@@ -428,7 +488,7 @@ exports['deploy.compress'] = {
   acornParse: function(test) {
     test.expect(2);
 
-    deploy.compress('let f = 1');
+    deployment.js.compress('let f = 1');
 
     test.equal(this.aparse.callCount, 1);
     test.equal(this.uparse.callCount, 0);
@@ -439,7 +499,7 @@ exports['deploy.compress'] = {
   uglifyParseFallback: function(test) {
     test.expect(3);
 
-    var result = deploy.compress('#$%^');
+    var result = deployment.js.compress('#$%^');
 
     // Assert that we tried both parsers
     test.equal(this.aparse.callCount, 1);
@@ -469,7 +529,7 @@ exports['deploy.compress'] = {
       // compress operation to fail. This
       // will ensure that that the uglify
       // attempt is made.
-      deploy.compress('#$%^');
+      deployment.js.compress('#$%^');
     } catch (error) {
       // there is nothing we can about this.
     }
@@ -499,7 +559,7 @@ exports['deploy.compress'] = {
       // compress operation to fail. This
       // will ensure that that the uglify
       // attempt is made.
-      deploy.compress('#$%^');
+      deployment.js.compress('#$%^');
     } catch (error) {
       // there is nothing we can about this.
     }
@@ -541,7 +601,7 @@ exports['deploy.compress'] = {
 
     var ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
 
-    deploy.compress('var a = 1;');
+    deployment.js.compress('var a = 1;');
 
     var optionsSeen = this.Compressor.lastCall.args[0];
 
@@ -580,7 +640,7 @@ exports['deploy.compress'] = {
 
     var theirExplicitSettingsKeys = Object.keys(theirExplicitSettings);
 
-    deploy.compress('var a = 1;', {
+    deployment.js.compress('var a = 1;', {
       compress: theirExplicitSettings
     });
 
@@ -594,20 +654,20 @@ exports['deploy.compress'] = {
   },
   minifyFromBuffer: function(test) {
     test.expect(1);
-    test.equal(deploy.compress(new Buffer(codeContents)), codeContents);
+    test.equal(deployment.js.compress(new Buffer(codeContents)), codeContents);
     test.done();
   },
 
   minifyFromString: function(test) {
     test.expect(1);
-    test.equal(deploy.compress(codeContents), codeContents);
+    test.equal(deployment.js.compress(codeContents), codeContents);
     test.done();
   },
 
   minifyInternalOperations: function(test) {
     test.expect(3);
 
-    deploy.compress(new Buffer(codeContents));
+    deployment.js.compress(new Buffer(codeContents));
 
     test.equal(this.aparse.callCount, 1);
     test.equal(this.Compressor.callCount, 1);
@@ -619,7 +679,7 @@ exports['deploy.compress'] = {
     test.expect(1);
 
     try {
-      deploy.compress('return;');
+      deployment.js.compress('return;');
       test.equal(this.aparse.lastCall.args[1].allowReturnOutsideFunction, true);
     } catch (e) {
       test.ok(false, e.message);
@@ -641,7 +701,7 @@ exports['deploy.compress'] = {
     });
     var result = '';
     try {
-      result = deploy.compress('return;');
+      result = deployment.js.compress('return;');
       test.equal(this.aparse.lastCall.args[1].allowReturnOutsideFunction, true);
     } catch (e) {
       test.ok(false, e.message);
@@ -653,7 +713,7 @@ exports['deploy.compress'] = {
   },
 };
 
-exports['deploy.tarBundle'] = {
+exports['deployment.js.tarBundle'] = {
   setUp: function(done) {
     this.copySync = sandbox.spy(fs, 'copySync');
     this.outputFileSync = sandbox.spy(fs, 'outputFileSync');
@@ -661,13 +721,13 @@ exports['deploy.tarBundle'] = {
     this.remove = sandbox.spy(fs, 'remove');
     this.readdirSync = sandbox.spy(fs, 'readdirSync');
 
-    this.globSync = sandbox.spy(deploy.glob, 'sync');
+    this.globSync = sandbox.spy(deployment.js.glob, 'sync');
     this.exclude = sandbox.spy(Project.prototype, 'exclude');
     this.mkdirSync = sandbox.spy(fsTemp, 'mkdirSync');
     this.addIgnoreRules = sandbox.spy(Ignore.prototype, 'addIgnoreRules');
 
-    this.project = sandbox.spy(deploy, 'project');
-    this.compress = sandbox.spy(deploy, 'compress');
+    this.project = sandbox.spy(deployment.js, 'project');
+    this.compress = sandbox.spy(deployment.js, 'compress');
 
     this.logsWarn = sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = sandbox.stub(logs, 'info', function() {});
@@ -684,7 +744,7 @@ exports['deploy.tarBundle'] = {
     test.expect(1);
 
     var target = 'test/unit/fixtures/ignore';
-    var rules = deploy.glob.rules(target, '.tesselignore');
+    var rules = deployment.js.glob.rules(target, '.tesselignore');
 
     test.deepEqual(
       rules.map(path.normalize), [
@@ -704,8 +764,8 @@ exports['deploy.tarBundle'] = {
     test.expect(1);
 
     var target = 'test/unit/fixtures/ignore';
-    var rules = deploy.glob.rules(target, '.tesselignore');
-    var files = deploy.glob.files(target, rules);
+    var rules = deployment.js.glob.rules(target, '.tesselignore');
+    var files = deployment.js.glob.files(target, rules);
 
     test.deepEqual(files, ['mock-foo.js']);
     test.done();
@@ -715,7 +775,7 @@ exports['deploy.tarBundle'] = {
     test.expect(1);
 
     var target = 'test/unit/fixtures/ignore';
-    var files = deploy.glob.files(target, ['**/.tesselignore']);
+    var files = deployment.js.glob.files(target, ['**/.tesselignore']);
 
     test.deepEqual(files, [
       '.tesselignore',
@@ -729,7 +789,7 @@ exports['deploy.tarBundle'] = {
     test.expect(1);
 
     var target = 'test/unit/fixtures/ignore';
-    var files = deploy.glob.files(target, ['.tesselignore']);
+    var files = deployment.js.glob.files(target, ['.tesselignore']);
 
     test.deepEqual(files, ['.tesselignore']);
     test.done();
@@ -758,7 +818,7 @@ exports['deploy.tarBundle'] = {
       3 directories, 9 files
      */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
@@ -827,7 +887,7 @@ exports['deploy.tarBundle'] = {
       3 directories, 9 files
      */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -885,7 +945,7 @@ exports['deploy.tarBundle'] = {
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/syntax-error';
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -922,7 +982,7 @@ exports['deploy.tarBundle'] = {
       0 directories, 2 files
      */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -954,7 +1014,7 @@ exports['deploy.tarBundle'] = {
     var target = 'test/unit/fixtures/project';
     var entryPoint = 'index.js';
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       entryPoint: entryPoint,
       resolvedEntryPoint: entryPoint,
@@ -983,7 +1043,7 @@ exports['deploy.tarBundle'] = {
     var target = 'test/unit/fixtures/project';
     var entryPoint = 'another.js';
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       entryPoint: entryPoint,
       resolvedEntryPoint: path.join('nested', entryPoint),
@@ -1013,7 +1073,7 @@ exports['deploy.tarBundle'] = {
     var target = 'test/unit/fixtures/project';
     var entryPoint = 'index.js';
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       entryPoint: entryPoint,
       resolvedEntryPoint: entryPoint,
@@ -1041,7 +1101,7 @@ exports['deploy.tarBundle'] = {
     var target = 'test/unit/fixtures/project';
     var entryPoint = 'another.js';
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       entryPoint: entryPoint,
       resolvedEntryPoint: path.join('nested', entryPoint),
@@ -1087,7 +1147,7 @@ exports['deploy.tarBundle'] = {
       3 directories, 11 files
     */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -1170,7 +1230,7 @@ exports['deploy.tarBundle'] = {
       3 directories, 11 files
     */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
@@ -1247,7 +1307,7 @@ exports['deploy.tarBundle'] = {
       3 directories, 9 files
     */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -1334,7 +1394,7 @@ exports['deploy.tarBundle'] = {
       3 directories, 9 files
     */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
@@ -1420,7 +1480,7 @@ exports['deploy.tarBundle'] = {
 
       3 directories, 9 files
     */
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -1505,7 +1565,7 @@ exports['deploy.tarBundle'] = {
       3 directories, 9 files
     */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
@@ -1596,7 +1656,7 @@ exports['deploy.tarBundle'] = {
       3 directories, 9 files
     */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -1650,7 +1710,7 @@ exports['deploy.tarBundle'] = {
     */
 
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -1687,7 +1747,7 @@ exports['deploy.tarBundle'] = {
       3 directories, 6 files
     */
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -1708,7 +1768,7 @@ exports['deploy.tarBundle'] = {
     var entryPoint = 'index.js';
     var target = 'test/unit/fixtures/project';
 
-    deploy.tarBundle({
+    deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
       slim: true,
@@ -1726,7 +1786,7 @@ exports['Tessel.prototype.restart'] = {
   setUp: function(done) {
     this.run = sandbox.stub(deploy, 'run', () => Promise.resolve());
     this.start = sandbox.stub(deploy, 'start', () => Promise.resolve());
-    this.findProject = sandbox.stub(deploy, 'findProject', (entryPoint) => Promise.resolve({
+    this.findProject = sandbox.stub(deployment.js, 'findProject', (entryPoint) => Promise.resolve({
       entryPoint
     }));
 
@@ -1816,7 +1876,7 @@ var fixtures = {
   explicit: path.join(__dirname, 'fixtures/find-project-explicit-main')
 };
 
-exports['deploy.findProject'] = {
+exports['deployment.js.findProject'] = {
   setUp: function(done) {
     done();
   },
@@ -1853,7 +1913,7 @@ exports['deploy.findProject'] = {
       return '';
     });
 
-    deploy.findProject({
+    deployment.js.findProject({
       entryPoint: '~/foo/'
     });
   },
@@ -1862,7 +1922,7 @@ exports['deploy.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/index.js';
 
-    deploy.findProject({
+    deployment.js.findProject({
       entryPoint: target
     }).then(project => {
       test.deepEqual(project, {
@@ -1878,7 +1938,7 @@ exports['deploy.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/';
 
-    deploy.findProject({
+    deployment.js.findProject({
       entryPoint: target
     }).then(project => {
       test.deepEqual(project, {
@@ -1894,7 +1954,7 @@ exports['deploy.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project-explicit-main/';
 
-    deploy.findProject({
+    deployment.js.findProject({
       entryPoint: target
     }).then(project => {
       test.deepEqual(project, {
@@ -1911,7 +1971,7 @@ exports['deploy.findProject'] = {
 
     var target = 'test/unit/fixtures/find-project-no-index/index.js';
 
-    deploy.findProject({
+    deployment.js.findProject({
       entryPoint: target
     }).then(() => {
       test.ok(false, 'findProject should not find a valid project here');
@@ -1926,7 +1986,7 @@ exports['deploy.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/test/index.js';
 
-    deploy.findProject({
+    deployment.js.findProject({
       entryPoint: target
     }).then(project => {
       test.deepEqual(project, {
@@ -1950,7 +2010,7 @@ exports['deploy.findProject'] = {
       slim: true,
     };
 
-    deploy.findProject(opts).then(project => {
+    deployment.js.findProject(opts).then(project => {
       // Without the `single` flag, this would've continued upward
       // until it found a directory with a package.json.
       test.ok(project.pushdir, fs.realpathSync(path.dirname(pushdir)));
@@ -1977,9 +2037,11 @@ exports['deploy.sendBundle, error handling'] = {
   findProject: function(test) {
     test.expect(1);
 
-    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.reject(this.failure));
+    this.findProject = sandbox.stub(deployment.js, 'findProject', () => Promise.reject(this.failure));
 
-    deploy.sendBundle(this.tessel, {}).catch(error => {
+    deploy.sendBundle(this.tessel, {
+      lang: deployment.js
+    }).catch(error => {
       test.equal(error, this.failure);
       test.done();
     });
@@ -1988,14 +2050,16 @@ exports['deploy.sendBundle, error handling'] = {
   resolveBinaryModules: function(test) {
     test.expect(1);
 
-    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
+    this.findProject = sandbox.stub(deployment.js, 'findProject', () => Promise.resolve({
       pushdir: '',
       entryPoint: ''
     }));
 
-    this.resolveBinaryModules = sandbox.stub(deploy, 'resolveBinaryModules', () => Promise.reject(this.failure));
+    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.reject(this.failure));
 
-    deploy.sendBundle(this.tessel, {}).catch(error => {
+    deploy.sendBundle(this.tessel, {
+      lang: deployment.js
+    }).catch(error => {
       test.equal(error, this.failure);
       test.done();
     });
@@ -2004,37 +2068,39 @@ exports['deploy.sendBundle, error handling'] = {
   tarBundle: function(test) {
     test.expect(1);
 
-    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
+    this.findProject = sandbox.stub(deployment.js, 'findProject', () => Promise.resolve({
       pushdir: '',
       entryPoint: ''
     }));
 
-    this.resolveBinaryModules = sandbox.stub(deploy, 'resolveBinaryModules', () => Promise.resolve());
+    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.resolve());
 
-    this.tarBundle = sandbox.stub(deploy, 'tarBundle', () => Promise.reject(this.failure));
+    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', () => Promise.reject(this.failure));
 
-    deploy.sendBundle(this.tessel, {}).catch(error => {
+    deploy.sendBundle(this.tessel, {
+      lang: deployment.js
+    }).catch(error => {
       test.equal(error, this.failure);
       test.done();
     });
   },
 };
 
-exports['deploy.resolveBinaryModules'] = {
+exports['deployment.js.resolveBinaryModules'] = {
   setUp: function(done) {
 
     this.target = path.normalize('test/unit/fixtures/project-binary-modules');
     this.relative = sandbox.stub(path, 'relative', () => {
       return path.join(__dirname, '/../../test/unit/fixtures/project-binary-modules/');
     });
-    this.globFiles = sandbox.spy(deploy.glob, 'files');
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globFiles = sandbox.spy(deployment.js.glob, 'files');
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
       ];
     });
 
-    this.readGypFileSync = sandbox.stub(deploy.resolveBinaryModules, 'readGypFileSync', () => {
+    this.readGypFileSync = sandbox.stub(deployment.js.resolveBinaryModules, 'readGypFileSync', () => {
       return '{"targets": [{"target_name": "missing"}]}';
     });
 
@@ -2086,7 +2152,7 @@ exports['deploy.resolveBinaryModules'] = {
 
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
 
@@ -2114,7 +2180,7 @@ exports['deploy.resolveBinaryModules'] = {
 
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/release/binding.gyp'),
@@ -2124,7 +2190,7 @@ exports['deploy.resolveBinaryModules'] = {
 
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
 
@@ -2145,10 +2211,10 @@ exports['deploy.resolveBinaryModules'] = {
     test.expect(1);
 
     this.readGypFileSync.restore();
-    this.readGypFileSync = sandbox.spy(deploy.resolveBinaryModules, 'readGypFileSync');
+    this.readGypFileSync = sandbox.spy(deployment.js.resolveBinaryModules, 'readGypFileSync');
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/release/binding.gyp'),
@@ -2163,7 +2229,7 @@ exports['deploy.resolveBinaryModules'] = {
       };
     });
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
       test.equal(this.readGypFileSync.lastCall.returnValue, '');
@@ -2177,10 +2243,10 @@ exports['deploy.resolveBinaryModules'] = {
     test.expect(7);
 
     this.readGypFileSync.restore();
-    this.readGypFileSync = sandbox.spy(deploy.resolveBinaryModules, 'readGypFileSync');
+    this.readGypFileSync = sandbox.spy(deployment.js.resolveBinaryModules, 'readGypFileSync');
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/release/binding.gyp'),
@@ -2197,7 +2263,7 @@ exports['deploy.resolveBinaryModules'] = {
       };
     });
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
 
@@ -2226,13 +2292,13 @@ exports['deploy.resolveBinaryModules'] = {
     test.expect(1);
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/missing/binding.gyp'),
       ];
     });
     this.readGypFileSync.restore();
-    this.readGypFileSync = sandbox.stub(deploy.resolveBinaryModules, 'readGypFileSync', () => {
+    this.readGypFileSync = sandbox.stub(deployment.js.resolveBinaryModules, 'readGypFileSync', () => {
       return '{"targets": [{"target_name": "missing",}]}';
       //                                            ^
       //                                     That's intentional.
@@ -2240,7 +2306,7 @@ exports['deploy.resolveBinaryModules'] = {
 
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(binaryModulesUsed => {
       test.equal(binaryModulesUsed.get('missing').resolved, false);
@@ -2256,7 +2322,7 @@ exports['deploy.resolveBinaryModules'] = {
 
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
       test.equal(this.globFiles.callCount, 1);
@@ -2274,7 +2340,7 @@ exports['deploy.resolveBinaryModules'] = {
     this.readGypFileSync.restore();
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/linked/build/bindings/linked.node'),
@@ -2283,7 +2349,7 @@ exports['deploy.resolveBinaryModules'] = {
 
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
 
@@ -2312,7 +2378,7 @@ exports['deploy.resolveBinaryModules'] = {
     // with the correct things from the project directory (this.target)
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
 
@@ -2375,7 +2441,7 @@ exports['deploy.resolveBinaryModules'] = {
       return this.rstream;
     });
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
       test.equal(this.globFiles.callCount, 1);
@@ -2403,14 +2469,14 @@ exports['deploy.resolveBinaryModules'] = {
   },
 };
 
-exports['deploy.injectBinaryModules'] = {
+exports['deployment.js.injectBinaryModules'] = {
   setUp: function(done) {
     this.target = path.normalize('test/unit/fixtures/project-binary-modules');
     this.relative = sandbox.stub(path, 'relative', () => {
       return path.join(__dirname, '/../../test/unit/fixtures/project-binary-modules/');
     });
-    this.globFiles = sandbox.spy(deploy.glob, 'files');
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globFiles = sandbox.spy(deployment.js.glob, 'files');
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
       ];
@@ -2454,7 +2520,7 @@ exports['deploy.injectBinaryModules'] = {
 
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/debug/build/Debug/debug.node'),
         path.normalize('node_modules/debug/binding.gyp'),
@@ -2467,10 +2533,10 @@ exports['deploy.injectBinaryModules'] = {
       ];
     });
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
-      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
+      deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
         test.equal(this.copySync.callCount, 8);
 
         var args = this.copySync.args;
@@ -2608,10 +2674,10 @@ exports['deploy.injectBinaryModules'] = {
       return path.join(__dirname, '/../../test/unit/fixtures/project-ignore-binary/');
     });
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
-      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
+      deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
         // Nothing gets copied!
         test.equal(this.copySync.callCount, 0);
         test.done();
@@ -2623,7 +2689,7 @@ exports['deploy.injectBinaryModules'] = {
     test.expect(1);
     // This would normally result in 8 calls to this.copySync
     this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/debug/build/Debug/debug.node'),
         path.normalize('node_modules/debug/binding.gyp'),
@@ -2635,10 +2701,10 @@ exports['deploy.injectBinaryModules'] = {
         path.normalize('node_modules/release/binding.gyp'),
       ];
     });
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
-      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {
+      deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {
         single: true
       }).then(() => {
         // Nothing gets copied!
@@ -2666,17 +2732,18 @@ exports['deploy.injectBinaryModules'] = {
       });
     });
 
-    var find = deploy.deployLists.binaryPathTranslations['*'][0].find;
+    var find = deployment.js.lists.binaryPathTranslations['*'][0].find;
 
-    deploy.deployLists.binaryPathTranslations['*'][0].find = 'FAKE_PLATFORM-FAKE_ARCH';
+    deployment.js.lists.binaryPathTranslations['*'][0].find = 'FAKE_PLATFORM-FAKE_ARCH';
 
-    deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
+    deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
       // If the replacement operation did not work, these would still be
       // "FAKE_PLATFORM-FAKE_ARCH"
+
       test.equal(this.copySync.firstCall.args[0].endsWith(path.normalize('linux-mipsel/serialport.node')), true);
       test.equal(this.copySync.firstCall.args[1].endsWith(path.normalize('linux-mipsel/serialport.node')), true);
       // Restore the path translation...
-      deploy.deployLists.binaryPathTranslations['*'][0].find = find;
+      deployment.js.lists.binaryPathTranslations['*'][0].find = find;
 
       test.done();
     });
@@ -2690,16 +2757,16 @@ exports['deploy.injectBinaryModules'] = {
     this.copySync.onCall(0).throws(errorMessage);
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deploy.glob, 'sync', () => {
+    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
       ];
     });
 
-    deploy.resolveBinaryModules({
+    deployment.js.resolveBinaryModules({
       target: this.target
     }).then(() => {
-      deploy.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
+      deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
         test.fail('Should not pass');
         test.done();
       }).catch(error => {
