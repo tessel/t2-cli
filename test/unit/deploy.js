@@ -158,7 +158,7 @@ exports['Tessel.prototype.deployScript'] = {
     test.expect(1);
 
     this.exec = sandbox.spy(this.tessel.connection, 'exec');
-    deployTestCode(this.tessel, test, {
+    deployTestCode(this.tessel, {
       push: false,
       single: false
     }, (error) => {
@@ -208,7 +208,7 @@ exports['Tessel.prototype.deployScript'] = {
   runScript: function(test) {
     test.expect(10);
     this.exec = sandbox.spy(this.tessel.connection, 'exec');
-    deployTestCode(this.tessel, test, {
+    deployTestCode(this.tessel, {
       push: false,
       single: false
     }, (error) => {
@@ -233,7 +233,7 @@ exports['Tessel.prototype.deployScript'] = {
 
   runScriptSingle: function(test) {
     test.expect(9);
-    deployTestCode(this.tessel, test, {
+    deployTestCode(this.tessel, {
       push: false,
       single: true
     }, (error) => {
@@ -256,7 +256,7 @@ exports['Tessel.prototype.deployScript'] = {
 
   pushScript: function(test) {
     test.expect(12);
-    deployTestCode(this.tessel, test, {
+    deployTestCode(this.tessel, {
       push: true,
       single: false
     }, (error) => {
@@ -287,7 +287,7 @@ exports['Tessel.prototype.deployScript'] = {
 
   pushScriptSingle: function(test) {
     test.expect(9);
-    deployTestCode(this.tessel, test, {
+    deployTestCode(this.tessel, {
       push: true,
       single: true
     }, (error) => {
@@ -2758,14 +2758,14 @@ exports['deploy.writeToFile'] = {
 };
 
 
-function deployTestCode(tessel, test, opts, callback) {
+function deployTestCode(tessel, opts, callback) {
   // Create the temporary folder with example code
   createTemporaryDeployCode()
-    .then(function deploy() {
+    .then(() => {
 
       function closeAdvance(event) {
         if (event === 'close') {
-          setImmediate(function() {
+          setImmediate(() => {
             // Emit the close event to keep it going
             tessel._rps.emit('close');
           });
@@ -2792,12 +2792,12 @@ function deployTestCode(tessel, test, opts, callback) {
 }
 
 function createTemporaryDeployCode() {
-  return new Promise(function(resolve, reject) {
-    mkdirp(deployFolder, function(err) {
+  return new Promise((resolve, reject) => {
+    mkdirp(deployFolder, (err) => {
       if (err) {
         return reject(err);
       } else {
-        fs.writeFile(deployFile, codeContents, function(err) {
+        fs.writeFile(deployFile, codeContents, (err) => {
           if (err) {
             reject(err);
           } else {
@@ -2811,7 +2811,7 @@ function createTemporaryDeployCode() {
 
 function deleteTemporaryDeployCode() {
   return new Promise(function(resolve, reject) {
-    fs.remove(deployFolder, function(err) {
+    fs.remove(deployFolder, (err) => {
       if (err) {
         reject(err);
       } else {
