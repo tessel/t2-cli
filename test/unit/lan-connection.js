@@ -23,7 +23,7 @@ exports['LAN.Connection'] = {
   },
 
   ipWhenIpV6: function(test) {
-    this.expect(1);
+    test.expect(1);
     this.lanConnection = new LAN.Connection({
       addresses: ['fc00::', '172.16.2.5'],
       host: 'home.loc',
@@ -34,7 +34,7 @@ exports['LAN.Connection'] = {
   },
 
   ipWhenIpV6LinkLocal: function(test) {
-    this.expect(1);
+    test.expect(1);
     this.lanConnection = new LAN.Connection({
       addresses: ['fc00::', '172.16.2.5'],
       networkInterface: 'en0',
@@ -46,7 +46,7 @@ exports['LAN.Connection'] = {
   },
 
   ipWhenIpV4: function(test) {
-    this.expect(1);
+    test.expect(1);
     this.lanConnection = new LAN.Connection({
       addresses: ['172.16.2.5', 'fc00::'],
       networkInterface: 'en0',
@@ -59,7 +59,7 @@ exports['LAN.Connection'] = {
 
   // no ip addresses were found, fallback to the host
   ipWhenNoIps: function(test) {
-    this.expect(1);
+    test.expect(1);
     this.lanConnection = new LAN.Connection({
       networkInterface: 'en0',
       host: 'home.loc',
