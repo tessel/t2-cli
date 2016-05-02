@@ -23,7 +23,7 @@ exports['Tessel.prototype.erase'] = {
   eraseAsUsual: function(test) {
     test.expect(10);
 
-    var expected = [commands.stopRunningScript(), commands.disablePushedScript(), commands.deleteFolder(Tessel.REMOTE_PUSH_PATH)];
+    var expected = [commands.app.stop(), commands.app.disable(), commands.deleteFolder(Tessel.REMOTE_PUSH_PATH)];
     var commandNumber = 0;
 
     // Test that we received the proper command

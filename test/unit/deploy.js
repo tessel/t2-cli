@@ -109,14 +109,14 @@ exports['Tessel.prototype.memoryInfo'] = {
 exports['Tessel.prototype.deployScript'] = {
   setUp: function(done) {
     this.deployScript = sandbox.spy(Tessel.prototype, 'deployScript');
-    this.stopRunningScript = sandbox.spy(commands, 'stopRunningScript');
+    this.appStop = sandbox.spy(commands.app, 'stop');
+    this.appStart = sandbox.spy(commands.app, 'start');
     this.deleteFolder = sandbox.spy(commands, 'deleteFolder');
     this.createFolder = sandbox.spy(commands, 'createFolder');
     this.untarStdin = sandbox.spy(commands, 'untarStdin');
-    this.runScript = sandbox.spy(commands, 'runScript');
+    this.execute = sandbox.spy(commands.js, 'execute');
     this.openStdinToFile = sandbox.spy(commands, 'openStdinToFile');
     this.setExecutablePermissions = sandbox.spy(commands, 'setExecutablePermissions');
-    this.startPushedScript = sandbox.spy(commands, 'startPushedScript');
 
     this.pushScript = sandbox.spy(deploy, 'pushScript');
     this.writeToFile = sandbox.spy(deploy, 'writeToFile');
@@ -216,14 +216,14 @@ exports['Tessel.prototype.deployScript'] = {
         test.ok(false, `deployTestCode failed: ${error.toString()}`);
         test.done();
       }
-      test.equal(this.stopRunningScript.callCount, 1);
+      test.equal(this.appStop.callCount, 1);
       test.equal(this.deleteFolder.callCount, 1);
       test.equal(this.createFolder.callCount, 1);
       test.equal(this.untarStdin.callCount, 1);
-      test.equal(this.runScript.callCount, 1);
+      test.equal(this.execute.callCount, 1);
       test.equal(this.openStdinToFile.callCount, 0);
       test.equal(this.setExecutablePermissions.callCount, 0);
-      test.equal(this.startPushedScript.callCount, 0);
+      test.equal(this.appStart.callCount, 0);
       test.equal(this.end.callCount, 1);
       // Ensure that the last call (to run Node) sets pty to true
       test.equal(this.exec.lastCall.args[1].pty, true);
@@ -241,14 +241,14 @@ exports['Tessel.prototype.deployScript'] = {
         test.ok(false, `deployTestCode failed: ${error.toString()}`);
         test.done();
       }
-      test.equal(this.stopRunningScript.callCount, 1);
+      test.equal(this.appStop.callCount, 1);
       test.equal(this.deleteFolder.callCount, 0);
       test.equal(this.createFolder.callCount, 1);
       test.equal(this.untarStdin.callCount, 1);
-      test.equal(this.runScript.callCount, 1);
+      test.equal(this.execute.callCount, 1);
       test.equal(this.openStdinToFile.callCount, 0);
       test.equal(this.setExecutablePermissions.callCount, 0);
-      test.equal(this.startPushedScript.callCount, 0);
+      test.equal(this.appStart.callCount, 0);
       test.equal(this.end.callCount, 1);
       test.done();
     });
@@ -271,15 +271,15 @@ exports['Tessel.prototype.deployScript'] = {
       test.equal(this.pushScript.lastCall.args[2].entryPoint, expectedPath);
       test.equal(this.writeToFile.lastCall.args[1], expectedPath);
 
-      test.equal(this.stopRunningScript.callCount, 1);
+      test.equal(this.appStop.callCount, 1);
       // Delete and create both the flash and ram folders
       test.equal(this.deleteFolder.callCount, 2);
       test.equal(this.createFolder.callCount, 2);
       test.equal(this.untarStdin.callCount, 1);
-      test.equal(this.runScript.callCount, 0);
+      test.equal(this.execute.callCount, 0);
       test.equal(this.openStdinToFile.callCount, 1);
       test.equal(this.setExecutablePermissions.callCount, 1);
-      test.equal(this.startPushedScript.callCount, 1);
+      test.equal(this.appStart.callCount, 1);
       test.equal(this.end.callCount, 1);
       test.done();
     });
@@ -295,14 +295,14 @@ exports['Tessel.prototype.deployScript'] = {
         test.ok(false, `deployTestCode failed: ${error.toString()}`);
         test.done();
       }
-      test.equal(this.stopRunningScript.callCount, 1);
+      test.equal(this.appStop.callCount, 1);
       test.equal(this.deleteFolder.callCount, 0);
       test.equal(this.createFolder.callCount, 1);
       test.equal(this.untarStdin.callCount, 1);
-      test.equal(this.runScript.callCount, 0);
+      test.equal(this.execute.callCount, 0);
       test.equal(this.openStdinToFile.callCount, 1);
       test.equal(this.setExecutablePermissions.callCount, 1);
-      test.equal(this.startPushedScript.callCount, 1);
+      test.equal(this.appStart.callCount, 1);
       test.equal(this.end.callCount, 1);
       test.done();
     });
