@@ -21,6 +21,52 @@ exports['LAN.Connection'] = {
     test.equal(this.lanConnection.connectionType, 'LAN');
     test.done();
   },
+
+  ipWhenIpV6: function(test) {
+    test.expect(1);
+    this.lanConnection = new LAN.Connection({
+      addresses: ['fc00::', '172.16.2.5'],
+      host: 'home.loc',
+    });
+    // The first address was picked
+    test.equal(this.lanConnection.ip, 'fc00::');
+    test.done();
+  },
+
+  ipWhenIpV6LinkLocal: function(test) {
+    test.expect(1);
+    this.lanConnection = new LAN.Connection({
+      addresses: ['fc00::', '172.16.2.5'],
+      networkInterface: 'en0',
+      host: 'home.loc',
+    });
+    // THe first address was picked, which was ipv6, and a network interface also provided
+    test.equal(this.lanConnection.ip, 'fc00::%en0');
+    test.done();
+  },
+
+  ipWhenIpV4: function(test) {
+    test.expect(1);
+    this.lanConnection = new LAN.Connection({
+      addresses: ['172.16.2.5', 'fc00::'],
+      networkInterface: 'en0',
+      host: 'home.loc',
+    });
+    // The first address was picked
+    test.equal(this.lanConnection.ip, '172.16.2.5');
+    test.done();
+  },
+
+  // no ip addresses were found, fallback to the host
+  ipWhenNoIps: function(test) {
+    test.expect(1);
+    this.lanConnection = new LAN.Connection({
+      networkInterface: 'en0',
+      host: 'home.loc',
+    });
+    test.equal(this.lanConnection.ip, 'home.loc');
+    test.done();
+  },
 };
 
 exports['LAN.Scanner'] = {
