@@ -8,7 +8,7 @@ var deployFolder = path.join(__dirname, 'tmp');
 var deployFile = path.join(deployFolder, 'app.js');
 var codeContents = 'console.log("testing deploy");';
 var reference = new Buffer(codeContents);
-var builtInRulesCount = deployLists.includes.length;
+var builtInRulesCount = deployLists.includes.length + deployLists.ignores.length;
 var sandbox = sinon.sandbox.create();
 
 exports['Tessel.prototype.memoryInfo'] = {
