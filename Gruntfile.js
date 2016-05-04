@@ -1,16 +1,19 @@
 // System Objects
 var cp = require('child_process');
+var path = require('path');
 
 // Third Party Dependencies
 var tags = require('common-tags');
+var glob = require('glob');
 
-module.exports = function(grunt) {
+module.exports = (grunt) => {
 
   grunt.initConfig({
     nodeunit: {
       tests: [
         'test/common/bootstrap.js',
-        'test/unit/*.js'
+        'test/unit/*.js',
+        'test/unit/deployment/*.js',
       ]
     },
     jshint: {
@@ -99,7 +102,7 @@ module.exports = function(grunt) {
 
 
   // Support running a single test suite
-  grunt.registerTask('nodeunit:only', 'Run a single test specified by a target; usage: "grunt nodeunit:only:<module-name>[.js]"', function(file) {
+  grunt.registerTask('nodeunit:only', 'Run a single test specified by a target; usage: "grunt nodeunit:only:<module-name>[.js]"', (file) => {
     if (file) {
       grunt.config('nodeunit.tests', [
         'test/common/bootstrap.js',
@@ -110,8 +113,40 @@ module.exports = function(grunt) {
     grunt.task.run('nodeunit');
   });
 
+  // This new runner will eventually supersede "nodeunit:only"
+  grunt.registerTask('nodeunit:file', 'Run a subset of tests by specifying a file name or glob expression. Usage: "grunt nodeunit:file:<file.ext>" or "grunt nodeunit:file:<expr>"', (input) => {
 
-  grunt.registerTask('changelog', '`changelog:0.0.0--0.0.2` or `changelog`', function(range) {
+    var config = [
+      'test/common/bootstrap.js',
+    ];
+
+    if (input) {
+      if (!input.endsWith('.js')) {
+        if (!input.endsWith('*') || !input.endsWith('**/*')) {
+          input = `{${path.normalize(input + '*')},${path.normalize(input + '**/*')}}`;
+        }
+      }
+
+      var expr = 'test/unit/' + input;
+      var inputs = glob.sync(expr).filter((file) => file.endsWith('.js'));
+
+      if (inputs) {
+        inputs.forEach(input => config.push(input));
+        grunt.config('nodeunit.tests', config);
+      }
+    }
+
+    grunt.task.run('nodeunit');
+  });
+
+
+  grunt.registerTask('nodeunit:files', 'Run a subset of tests by specifying a file name, bracket list of file names, or glob expression. Usage: "grunt nodeunit:file:<file.ext>" or "grunt nodeunit:file:<expr>"', (file) => {
+    grunt.task.run('nodeunit:file:' + file);
+  });
+
+
+
+  grunt.registerTask('changelog', '`changelog:0.0.0--0.0.2` or `changelog`', (range) => {
     var done = this.async();
 
     if (!range) {
