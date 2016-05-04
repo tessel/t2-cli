@@ -47,6 +47,7 @@
     "extract": true,
     "fs": true,
     "fsTemp": true,
+    "glob": true,
     "Ignore": true,
     "inquirer": true,
     "IS_TEST_ENV": true,

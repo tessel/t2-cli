@@ -28,14 +28,10 @@ exports['Deployment: JavaScript'] = {
 
     this.injectBinaryModules = sandbox.stub(deployment.js, 'injectBinaryModules', () => Promise.resolve());
     this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.resolve());
-    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', function() {
-      return new Promise(function(resolve) {
-        resolve(reference);
-      });
-    });
+    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', () => Promise.resolve(reference));
 
-    this.logsWarn = sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = sandbox.stub(logs, 'info', function() {});
+    this.logsWarn = sandbox.stub(logs, 'warn', () => {});
+    this.logsInfo = sandbox.stub(logs, 'info', () => {});
 
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
@@ -446,7 +442,7 @@ exports['deployment.js.tarBundle'] = {
     this.remove = sandbox.spy(fs, 'remove');
     this.readdirSync = sandbox.spy(fs, 'readdirSync');
 
-    this.globSync = sandbox.spy(deployment.js.glob, 'sync');
+    this.globSync = sandbox.spy(glob, 'sync');
     this.exclude = sandbox.spy(Project.prototype, 'exclude');
     this.mkdirSync = sandbox.spy(fsTemp, 'mkdirSync');
     this.addIgnoreRules = sandbox.spy(Ignore.prototype, 'addIgnoreRules');
@@ -469,7 +465,7 @@ exports['deployment.js.tarBundle'] = {
     test.expect(1);
 
     var target = 'test/unit/fixtures/ignore';
-    var rules = deployment.js.glob.rules(target, '.tesselignore');
+    var rules = glob.rules(target, '.tesselignore');
 
     test.deepEqual(
       rules.map(path.normalize), [
@@ -489,8 +485,8 @@ exports['deployment.js.tarBundle'] = {
     test.expect(1);
 
     var target = 'test/unit/fixtures/ignore';
-    var rules = deployment.js.glob.rules(target, '.tesselignore');
-    var files = deployment.js.glob.files(target, rules);
+    var rules = glob.rules(target, '.tesselignore');
+    var files = glob.files(target, rules);
 
     test.deepEqual(files, ['mock-foo.js']);
     test.done();
@@ -500,7 +496,7 @@ exports['deployment.js.tarBundle'] = {
     test.expect(1);
 
     var target = 'test/unit/fixtures/ignore';
-    var files = deployment.js.glob.files(target, ['**/.tesselignore']);
+    var files = glob.files(target, ['**/.tesselignore']);
 
     test.deepEqual(files, [
       '.tesselignore',
@@ -514,7 +510,7 @@ exports['deployment.js.tarBundle'] = {
     test.expect(1);
 
     var target = 'test/unit/fixtures/ignore';
-    var files = deployment.js.glob.files(target, ['.tesselignore']);
+    var files = glob.files(target, ['.tesselignore']);
 
     test.deepEqual(files, ['.tesselignore']);
     test.done();
@@ -1552,7 +1548,7 @@ var fixtures = {
   explicit: path.join(FIXTURE_PATH, '/find-project-explicit-main')
 };
 
-exports['deployment.js.findProject'] = {
+exports['deploy.findProject'] = {
   setUp: function(done) {
     done();
   },
@@ -1589,7 +1585,8 @@ exports['deployment.js.findProject'] = {
       return '';
     });
 
-    deployment.js.findProject({
+    deploy.findProject({
+      lang: deployment.js,
       entryPoint: '~/foo/'
     });
   },
@@ -1598,7 +1595,8 @@ exports['deployment.js.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/index.js';
 
-    deployment.js.findProject({
+    deploy.findProject({
+      lang: deployment.js,
       entryPoint: target
     }).then(project => {
       test.deepEqual(project, {
@@ -1614,7 +1612,8 @@ exports['deployment.js.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/';
 
-    deployment.js.findProject({
+    deploy.findProject({
+      lang: deployment.js,
       entryPoint: target
     }).then(project => {
       test.deepEqual(project, {
@@ -1630,7 +1629,8 @@ exports['deployment.js.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project-explicit-main/';
 
-    deployment.js.findProject({
+    deploy.findProject({
+      lang: deployment.js,
       entryPoint: target
     }).then(project => {
       test.deepEqual(project, {
@@ -1647,7 +1647,8 @@ exports['deployment.js.findProject'] = {
 
     var target = 'test/unit/fixtures/find-project-no-index/index.js';
 
-    deployment.js.findProject({
+    deploy.findProject({
+      lang: deployment.js,
       entryPoint: target
     }).then(() => {
       test.ok(false, 'findProject should not find a valid project here');
@@ -1662,7 +1663,8 @@ exports['deployment.js.findProject'] = {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/test/index.js';
 
-    deployment.js.findProject({
+    deploy.findProject({
+      lang: deployment.js,
       entryPoint: target
     }).then(project => {
       test.deepEqual(project, {
@@ -1684,9 +1686,10 @@ exports['deployment.js.findProject'] = {
       entryPoint: entryPoint,
       single: true,
       slim: true,
+      lang: deployment.js,
     };
 
-    deployment.js.findProject(opts).then(project => {
+    deploy.findProject(opts).then(project => {
       // Without the `single` flag, this would've continued upward
       // until it found a directory with a package.json.
       test.ok(project.pushdir, fs.realpathSync(path.dirname(pushdir)));
@@ -1713,7 +1716,7 @@ exports['deploy.sendBundle, error handling'] = {
   findProject: function(test) {
     test.expect(1);
 
-    this.findProject = sandbox.stub(deployment.js, 'findProject', () => Promise.reject(this.failure));
+    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.reject(this.failure));
 
     deploy.sendBundle(this.tessel, {
       lang: deployment.js
@@ -1726,7 +1729,7 @@ exports['deploy.sendBundle, error handling'] = {
   resolveBinaryModules: function(test) {
     test.expect(1);
 
-    this.findProject = sandbox.stub(deployment.js, 'findProject', () => Promise.resolve({
+    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
       pushdir: '',
       entryPoint: ''
     }));
@@ -1744,7 +1747,7 @@ exports['deploy.sendBundle, error handling'] = {
   tarBundle: function(test) {
     test.expect(1);
 
-    this.findProject = sandbox.stub(deployment.js, 'findProject', () => Promise.resolve({
+    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
       pushdir: '',
       entryPoint: ''
     }));
@@ -1769,8 +1772,8 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.relative = sandbox.stub(path, 'relative', () => {
       return path.join(FIXTURE_PATH, '/project-binary-modules/');
     });
-    this.globFiles = sandbox.spy(deployment.js.glob, 'files');
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globFiles = sandbox.spy(glob, 'files');
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
       ];
@@ -1856,7 +1859,7 @@ exports['deployment.js.resolveBinaryModules'] = {
 
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/release/binding.gyp'),
@@ -1890,7 +1893,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.readGypFileSync = sandbox.spy(deployment.js.resolveBinaryModules, 'readGypFileSync');
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/release/binding.gyp'),
@@ -1922,7 +1925,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.readGypFileSync = sandbox.spy(deployment.js.resolveBinaryModules, 'readGypFileSync');
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/release/binding.gyp'),
@@ -1968,7 +1971,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     test.expect(1);
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/missing/binding.gyp'),
       ];
@@ -2016,7 +2019,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.readGypFileSync.restore();
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/linked/build/bindings/linked.node'),
@@ -2151,8 +2154,8 @@ exports['deployment.js.injectBinaryModules'] = {
     this.relative = sandbox.stub(path, 'relative', () => {
       return path.join(FIXTURE_PATH, '/project-binary-modules/');
     });
-    this.globFiles = sandbox.spy(deployment.js.glob, 'files');
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globFiles = sandbox.spy(glob, 'files');
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
       ];
@@ -2196,7 +2199,7 @@ exports['deployment.js.injectBinaryModules'] = {
 
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/debug/build/Debug/debug.node'),
         path.normalize('node_modules/debug/binding.gyp'),
@@ -2365,7 +2368,7 @@ exports['deployment.js.injectBinaryModules'] = {
     test.expect(1);
     // This would normally result in 8 calls to this.copySync
     this.globSync.restore();
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/debug/build/Debug/debug.node'),
         path.normalize('node_modules/debug/binding.gyp'),
@@ -2433,7 +2436,7 @@ exports['deployment.js.injectBinaryModules'] = {
     this.copySync.onCall(0).throws(errorMessage);
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(deployment.js.glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync', () => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
       ];
