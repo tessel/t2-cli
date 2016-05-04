@@ -480,7 +480,8 @@ exports['deploy.run'] = {
     test.expect(1);
 
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, opts, callback) => {
-      return callback(null, this.tessel._rps);
+      callback(null, this.tessel._rps);
+      this.tessel._rps.emit('close');
     });
 
     deploy.run(this.tessel, {
@@ -490,9 +491,31 @@ exports['deploy.run'] = {
       test.deepEqual(this.exec.lastCall.args[0], ['node', '/tmp/remote-script/foo']);
       test.done();
     });
+  },
 
-    this.tessel._rps.emit('close');
+  runResolveEntryPointWithPreRun: function(test) {
+    test.expect(2);
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, opts, callback) => {
+      callback(null, this.tessel._rps);
+
+      if (this.exec.callCount === 1) {
+        test.deepEqual(command, ['chmod', '+x', '/tmp/remote-script/rust_executable']);
+      }
+      if (this.exec.callCount === 2) {
+        this.tessel._rps.emit('close');
+      }
+    });
+
+    deploy.run(this.tessel, {
+      entryPoint: 'foo',
+      lang: deployment.rs,
+    }).then(() => {
+      test.deepEqual(this.exec.lastCall.args[0], ['rust_executable']);
+      test.done();
+    });
   }
+
 };
 
 exports['deploy.createShellScript'] = {

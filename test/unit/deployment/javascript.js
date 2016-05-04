@@ -95,11 +95,7 @@ exports['Deployment: JavaScript'] = {
       exec node /app/remote-script/index.js
     `;
     var opts = {
-      lang: {
-        name: 'javascript',
-        extname: 'js',
-        binary: 'node',
-      },
+      lang: deployment.js,
       resolvedEntryPoint: 'index.js',
     };
     this.end.restore();
@@ -123,11 +119,7 @@ exports['Deployment: JavaScript'] = {
       exec node /app/remote-script/index.js
     `;
     var opts = {
-      lang: {
-        name: 'javascript',
-        extname: 'js',
-        binary: 'node',
-      },
+      lang: deployment.js,
       resolvedEntryPoint: 'index.js',
     };
     this.end.restore();
@@ -2459,37 +2451,6 @@ exports['deployment.js.injectBinaryModules'] = {
   }
 };
 
-
-exports['deploy.run'] = {
-  setUp: function(done) {
-    this.logsInfo = sandbox.stub(logs, 'info');
-    this.tessel = TesselSimulator();
-    done();
-  },
-  tearDown: function(done) {
-    sandbox.restore();
-    done();
-  },
-
-  runResolveEntryPoint: function(test) {
-    test.expect(1);
-
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, opts, callback) => {
-      return callback(null, this.tessel._rps);
-    });
-
-    deploy.run(this.tessel, {
-      lang: deployment.js,
-      entryPoint: 'foo'
-    }).then(() => {
-      test.deepEqual(this.exec.lastCall.args[0], ['node', '/tmp/remote-script/foo']);
-      test.done();
-    });
-
-    this.tessel._rps.emit('close');
-  }
-};
-
 exports['deploy.createShellScript'] = {
   setUp: function(done) {
     this.logsInfo = sandbox.stub(logs, 'info');
@@ -2510,11 +2471,7 @@ exports['deploy.createShellScript'] = {
     });
 
     var opts = {
-      lang: {
-        name: 'javascript',
-        extname: 'js',
-        binary: 'node',
-      },
+      lang: deployment.js,
       resolvedEntryPoint: 'foo'
     };
 
