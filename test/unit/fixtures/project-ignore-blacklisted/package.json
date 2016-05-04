@@ -1,0 +1,9 @@
+{
+  "name": "project-ignore-blacklisted",
+  "version": "0.0.1",
+  "description": "project-ignore-blacklisted",
+  "main": "index.js",
+  "dependencies": {
+    "release": "1.1.1"
+  }
+}

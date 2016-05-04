@@ -5,7 +5,8 @@ process.on('uncaughtException', function(err) {
 
 var codeContents = 'console.log("testing deploy");';
 var reference = new Buffer(codeContents);
-var builtInRulesCount = deployment.js.lists.includes.length;
+var lists = deployment.js.lists;
+var listRuleLength = lists.includes.length + lists.ignores.length + lists.blacklist.length;
 var sandbox = sinon.sandbox.create();
 
 var FIXTURE_PATH = path.join(__dirname, '/../../../test/unit/fixtures');
@@ -551,7 +552,7 @@ exports['deployment.js.tarBundle'] = {
       // One call for the single rule found within
       // Three calls for the deploy lists
       // * 2 (We need all ignore rules ahead of time for ignoring binaries)
-      test.equal(this.globSync.callCount, 5 + builtInRulesCount);
+      test.equal(this.globSync.callCount, 5 + listRuleLength);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -876,7 +877,7 @@ exports['deployment.js.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       slim: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 8 + builtInRulesCount);
+      test.equal(this.globSync.callCount, 8 + listRuleLength);
 
       /*
         All .tesselignore rules are negated by all .tesselinclude rules:
@@ -958,7 +959,7 @@ exports['deployment.js.tarBundle'] = {
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 8 + builtInRulesCount);
+      test.equal(this.globSync.callCount, 8 + listRuleLength);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1036,7 +1037,7 @@ exports['deployment.js.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       slim: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 5 + builtInRulesCount);
+      test.equal(this.globSync.callCount, 5 + listRuleLength);
 
       /*
         There are NO .tesselignore rules, but there are .tesselinclude rules:
@@ -1122,7 +1123,7 @@ exports['deployment.js.tarBundle'] = {
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 5 + builtInRulesCount);
+      test.equal(this.globSync.callCount, 5 + listRuleLength);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1209,7 +1210,7 @@ exports['deployment.js.tarBundle'] = {
       resolvedEntryPoint: entryPoint,
       slim: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 6 + builtInRulesCount);
+      test.equal(this.globSync.callCount, 6 + listRuleLength);
 
       /*
         There are NO .tesselignore rules, but there are .tesselinclude rules:
@@ -1293,7 +1294,7 @@ exports['deployment.js.tarBundle'] = {
       target: path.normalize(target),
       full: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 6 + builtInRulesCount);
+      test.equal(this.globSync.callCount, 6 + listRuleLength);
 
       // addIgnoreRules might be called many times, but we only
       // care about tracking the call that's explicitly made by
@@ -1386,7 +1387,7 @@ exports['deployment.js.tarBundle'] = {
       slim: true,
       single: true,
     }).then(bundle => {
-      test.equal(this.globSync.callCount, 5 + builtInRulesCount);
+      test.equal(this.globSync.callCount, 5 + listRuleLength);
 
       /*
         There are .tesselinclude rules, but the single flag is present
@@ -1504,93 +1505,44 @@ exports['deployment.js.tarBundle'] = {
       test.done();
     });
   },
-};
 
-exports['Tessel.prototype.restart'] = {
-  setUp: function(done) {
-    this.run = sandbox.stub(deploy, 'run', () => Promise.resolve());
-    this.start = sandbox.stub(deploy, 'start', () => Promise.resolve());
-    this.findProject = sandbox.stub(deployment.js, 'findProject', (entryPoint) => Promise.resolve({
-      entryPoint
-    }));
 
-    this.logsWarn = sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = sandbox.stub(logs, 'info', function() {});
-
-    this.tessel = TesselSimulator();
-
-    done();
-  },
-
-  tearDown: function(done) {
-    this.tessel.mockClose();
-
-    sandbox.restore();
-
-    done();
-  },
-
-  restartFromRam: function(test) {
-    test.expect(2);
-    var opts = {
-      type: 'ram',
-      entryPoint: 'index.js',
-    };
-
-    this.tessel.restart(opts)
-      .then(() => {
-        test.equal(this.run.callCount, 1);
-        test.deepEqual(this.run.lastCall.args[1], {
-          type: 'ram',
-          entryPoint: 'index.js'
-        });
-        test.done();
-      });
-
-    setImmediate(() => {
-      this.tessel._rps.emit('close');
-    });
-  },
-
-  restartFromFlash: function(test) {
-    test.expect(3);
-    var opts = {
-      type: 'flash',
-      entryPoint: 'index.js',
-    };
-
-    this.tessel.restart(opts)
-      .then(() => {
-        test.equal(this.start.callCount, 1);
-        test.equal(this.start.lastCall.args[1], 'index.js');
-        test.deepEqual(this.start.lastCall.args[2], {
-          type: 'flash',
-          entryPoint: 'index.js'
-        });
-        test.done();
-      });
-
-    setImmediate(() => {
-      this.tessel._rps.emit('close');
-    });
-  },
-
-  restartNonExistent: function(test) {
+  detectAndEliminateBlacklistedAssets: function(test) {
     test.expect(1);
-    var opts = {
-      type: 'flash',
-      entryPoint: 'index.js',
-    };
 
-    this.tessel.restart(opts)
-      .catch(error => {
-        test.equal(error, '"index.js" not found on undefined');
+    var entryPoint = 'index.js';
+    var target = 'test/unit/fixtures/project-ignore-blacklisted';
+
+    /*
+      project-ignore-blacklisted
+      ├── index.js
+      ├── node_modules
+      │   └── tessel
+      │       ├── index.js
+      │       └── package.json
+      └── package.json
+
+      2 directories, 4 files
+    */
+
+    deployment.js.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      slim: true,
+    }).then((bundle) => {
+      // Extract and inspect the bundle...
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
+        }
+
+        test.deepEqual(entries, [
+          'index.js',
+          'package.json'
+        ]);
         test.done();
       });
-
-    setImmediate(() => {
-      this.tessel._rps.stderr.emit('data', new Buffer('No such file or directory'));
-      this.tessel._rps.emit('close');
     });
   },
 };
@@ -2456,9 +2408,9 @@ exports['deployment.js.injectBinaryModules'] = {
       });
     });
 
-    var find = deployment.js.lists.binaryPathTranslations['*'][0].find;
+    var find = lists.binaryPathTranslations['*'][0].find;
 
-    deployment.js.lists.binaryPathTranslations['*'][0].find = 'FAKE_PLATFORM-FAKE_ARCH';
+    lists.binaryPathTranslations['*'][0].find = 'FAKE_PLATFORM-FAKE_ARCH';
 
     deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
       // If the replacement operation did not work, these would still be
@@ -2467,7 +2419,7 @@ exports['deployment.js.injectBinaryModules'] = {
       test.equal(this.copySync.firstCall.args[0].endsWith(path.normalize('linux-mipsel/serialport.node')), true);
       test.equal(this.copySync.firstCall.args[1].endsWith(path.normalize('linux-mipsel/serialport.node')), true);
       // Restore the path translation...
-      deployment.js.lists.binaryPathTranslations['*'][0].find = find;
+      lists.binaryPathTranslations['*'][0].find = find;
 
       test.done();
     });
@@ -2591,7 +2543,18 @@ exports['deployment.js.lists'] = {
       'socket.io-client/socket.io.js',
     ];
 
-    test.deepEqual(deployment.js.lists.includes, includes);
+    test.deepEqual(lists.includes, includes);
+    test.done();
+  },
+
+  checkIgnores: function(test) {
+    test.expect(1);
+
+    var ignores = [
+      'node_modules/tessel/**/*',
+    ];
+
+    test.deepEqual(lists.ignores, ignores);
     test.done();
   },
 
@@ -2616,7 +2579,7 @@ exports['deployment.js.lists'] = {
       },
     };
 
-    test.deepEqual(deployment.js.lists.compressionOptions, compressionOptions);
+    test.deepEqual(lists.compressionOptions, compressionOptions);
     test.done();
   }
 

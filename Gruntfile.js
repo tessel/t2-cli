@@ -37,6 +37,7 @@ module.exports = (grunt) => {
           '!test/unit/fixtures/project-binary-modules/**/*',
           '!test/unit/fixtures/project-skip-binary/**/*',
           '!test/unit/fixtures/project-ignore-binary/**/*',
+          '!test/unit/fixtures/project-ignore-blacklisted/**/*',
         ]
       }
     },
