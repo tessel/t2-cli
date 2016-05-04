@@ -1,9 +1,15 @@
 exports['deployment.resolveLanguage()'] = {
   setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.arg = '';
+    this.existsSync = this.sandbox.stub(fs, 'existsSync', (arg) => {
+      return this.arg === arg;
+    });
     done();
   },
 
   tearDown: function(done) {
+    this.sandbox.restore();
     done();
   },
 
@@ -16,12 +22,52 @@ exports['deployment.resolveLanguage()'] = {
     test.done();
   },
 
+  jsInferred: function(test) {
+    test.expect(4);
+    this.arg = 'package.json';
+    test.equal(deployment.resolveLanguage('.'), deployment.js);
+    test.equal(deployment.resolveLanguage('./'), deployment.js);
+    test.equal(deployment.resolveLanguage('../'), deployment.js);
+    test.equal(deployment.resolveLanguage('../../'), deployment.js);
+    test.done();
+  },
+
+  jsInferredInvalidProjectDirectory: function(test) {
+    test.expect(4);
+    this.arg = '';
+    test.equal(deployment.resolveLanguage('.'), null);
+    test.equal(deployment.resolveLanguage('./'), null);
+    test.equal(deployment.resolveLanguage('../'), null);
+    test.equal(deployment.resolveLanguage('../../'), null);
+    test.done();
+  },
+
   rs: function(test) {
     test.expect(4);
     test.equal(deployment.resolveLanguage('rs'), deployment.rs);
     test.equal(deployment.resolveLanguage('RS'), deployment.rs);
     test.equal(deployment.resolveLanguage('rust'), deployment.rs);
     test.equal(deployment.resolveLanguage('RUST'), deployment.rs);
+    test.done();
+  },
+
+  rsInferred: function(test) {
+    test.expect(4);
+    this.arg = 'Cargo.toml';
+    test.equal(deployment.resolveLanguage('.'), deployment.rs);
+    test.equal(deployment.resolveLanguage('./'), deployment.rs);
+    test.equal(deployment.resolveLanguage('../'), deployment.rs);
+    test.equal(deployment.resolveLanguage('../../'), deployment.rs);
+    test.done();
+  },
+
+  rsInferredInvalidProjectDirectory: function(test) {
+    test.expect(4);
+    this.arg = '';
+    test.equal(deployment.resolveLanguage('.'), null);
+    test.equal(deployment.resolveLanguage('./'), null);
+    test.equal(deployment.resolveLanguage('../'), null);
+    test.equal(deployment.resolveLanguage('../../'), null);
     test.done();
   },
 

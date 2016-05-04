@@ -155,6 +155,7 @@ exports['Tessel.prototype.deploy'] = {
     // This is used _solely_ to bailout of deployment early.
     this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.reject('Bailout'));
     this.resolveLanguage = sandbox.spy(deployment, 'resolveLanguage');
+    this.existsSync = sandbox.stub(fs, 'existsSync').returns(false);
 
     Promise.all([
       this.tessel.deploy({
@@ -483,7 +484,8 @@ exports['deploy.run'] = {
     });
 
     deploy.run(this.tessel, {
-      entryPoint: 'foo'
+      entryPoint: 'foo',
+      lang: deployment.js,
     }).then(() => {
       test.deepEqual(this.exec.lastCall.args[0], ['node', '/tmp/remote-script/foo']);
       test.done();
@@ -513,11 +515,7 @@ exports['deploy.createShellScript'] = {
     });
 
     var opts = {
-      lang: {
-        name: 'javascript',
-        extname: 'js',
-        binary: 'node',
-      },
+      lang: deployment.js,
       resolvedEntryPoint: 'foo'
     };
 

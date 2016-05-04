@@ -2479,6 +2479,7 @@ exports['deploy.run'] = {
     });
 
     deploy.run(this.tessel, {
+      lang: deployment.js,
       entryPoint: 'foo'
     }).then(() => {
       test.deepEqual(this.exec.lastCall.args[0], ['node', '/tmp/remote-script/foo']);
