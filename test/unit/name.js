@@ -20,6 +20,7 @@ exports['Tessel.prototype.rename'] = {
     this.commitHostname = this.sandbox.spy(commands, 'commitHostname');
     this.openStdinToFile = this.sandbox.spy(commands, 'openStdinToFile');
     this.setHostname = this.sandbox.spy(commands, 'setHostname');
+    this.setHostnameFlag = this.sandbox.spy(commands, 'setHostnameFlag');
     this.getHostname = this.sandbox.spy(commands, 'getHostname');
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
@@ -81,7 +82,7 @@ exports['Tessel.prototype.rename'] = {
   },
 
   resetName: function(test) {
-    test.expect(7);
+    test.expect(8);
 
     this.tessel.rename({
         reset: true
@@ -94,6 +95,7 @@ exports['Tessel.prototype.rename'] = {
         test.equal(this._getMACAddress.callCount, 1);
         test.equal(this.setName.callCount, 1);
         test.equal(this.setHostname.callCount, 1);
+        test.equal(this.setHostnameFlag.callCount, 1);
         test.equal(this.commitHostname.callCount, 1);
         test.equal(this.openStdinToFile.callCount, 1);
 
@@ -107,7 +109,7 @@ exports['Tessel.prototype.rename'] = {
   },
 
   validRename: function(test) {
-    test.expect(6);
+    test.expect(7);
 
     this.tessel.rename({
         newName: 'ValidAndUnique'
@@ -120,6 +122,7 @@ exports['Tessel.prototype.rename'] = {
         test.equal(this.getName.callCount, 1);
         test.equal(this.setName.callCount, 1);
         test.equal(this.setHostname.callCount, 1);
+        test.equal(this.setHostnameFlag.callCount, 1);
         test.equal(this.commitHostname.callCount, 1);
         test.equal(this.openStdinToFile.callCount, 1);
         test.ok(this.setHostname.lastCall.calledWith('ValidAndUnique'));
@@ -163,7 +166,7 @@ exports['Tessel.prototype.rename'] = {
   },
 
   invalidSetName: function(test) {
-    test.expect(2);
+    test.expect(3);
 
     this.tessel.setName('...')
       .then((value) => {
@@ -176,6 +179,7 @@ exports['Tessel.prototype.rename'] = {
         test.equal(this.isValidName.callCount, 1);
         // test.equal(this.tessel.connection.exec.callCount, 0);
         test.equal(this.setHostname.callCount, 0);
+        test.equal(this.setHostnameFlag.callCount, 0);
 
         test.done();
       });
