@@ -3,6 +3,7 @@ global.IS_TEST_ENV = true;
 // System Objects
 global.cp = require('child_process');
 global.events = require('events');
+global.os = require('os');
 global.path = require('path');
 global.stream = require('stream');
 global.util = require('util');

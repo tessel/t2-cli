@@ -47,6 +47,7 @@
     "NodeRSA": true,
     "RSA": true,
     "osenv": true,
+    "os": true,
     "path": true,
     "Preferences": true,
     "Project": true,

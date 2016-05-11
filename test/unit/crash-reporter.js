@@ -119,6 +119,7 @@ exports['CrashReporter.submit'] = {
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     this.crPost = this.sandbox.spy(CrashReporter, 'post');
+    this.crSanitize = this.sandbox.spy(CrashReporter, 'sanitize');
     this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
       return handler(null, {}, '{}');
     });
@@ -147,15 +148,20 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  removesIrrelevantPathData: function(test) {
-    test.expect(1);
+  sanitizes: function(test) {
+    test.expect(5);
 
     this.crPost.restore();
     this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+    var error = new Error(`This happened at ${__dirname}. Line 1 in ${__filename}`);
 
-    CrashReporter.submit(new Error('This happened')).then(() => {
+    CrashReporter.submit(error).then(() => {
+      test.equal(this.crSanitize.callCount, 1);
       // the actual dirname should not appear in the posted report contents
       test.equal(this.crPost.lastCall.args[0].includes(__dirname), false);
+      test.equal(this.crPost.lastCall.args[0].includes(__filename), false);
+      test.equal(this.crPost.lastCall.args[1].includes(__dirname), false);
+      test.equal(this.crPost.lastCall.args[1].includes(__filename), false);
       test.done();
     }).catch(error => {
       test.ok(false, error.message);
@@ -194,7 +200,81 @@ exports['CrashReporter.submit'] = {
       test.done();
     });
   },
+};
 
+
+exports['CrashReporter.sanitize'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.logsErr = this.sandbox.stub(logs, 'err');
+    this.logsInfo = this.sandbox.stub(logs, 'info');
+    this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
+    this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
+    this.crPost = this.sandbox.spy(CrashReporter, 'post');
+    this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
+      return handler(null, {}, '{}');
+    });
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  dirname: function(test) {
+    test.expect(2);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    var error = new Error(`This happened at ${__dirname}. Line 1 in ${__filename}`);
+
+    CrashReporter.submit(error).then(() => {
+      test.equal(this.crPost.lastCall.args[0].includes(__dirname), false);
+      test.equal(this.crPost.lastCall.args[1].includes(__dirname), false);
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
+  filename: function(test) {
+    test.expect(2);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    var error = new Error(`This happened at ${__dirname}. Line 1 in ${__filename}`);
+
+    CrashReporter.submit(error).then(() => {
+      test.equal(this.crPost.lastCall.args[0].includes(__filename), false);
+      test.equal(this.crPost.lastCall.args[1].includes(__filename), false);
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
+  home: function(test) {
+    test.expect(2);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    var error = new Error(`permission denied, open '${path.join(os.homedir(), '.config')}'`);
+
+    CrashReporter.submit(error).then(() => {
+      test.equal(this.crPost.lastCall.args[0].includes(os.homedir()), false);
+      test.equal(this.crPost.lastCall.args[1].includes(os.homedir()), false);
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
 };
 
 exports['CrashReporter.post'] = {
