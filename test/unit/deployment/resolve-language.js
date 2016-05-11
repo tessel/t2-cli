@@ -24,6 +24,7 @@ exports['deployment.resolveLanguage()'] = {
 
   jsInferred: function(test) {
     test.expect(4);
+    // Set the stub return value
     this.arg = 'package.json';
     test.equal(deployment.resolveLanguage('.'), deployment.js);
     test.equal(deployment.resolveLanguage('./'), deployment.js);
@@ -34,6 +35,7 @@ exports['deployment.resolveLanguage()'] = {
 
   jsInferredInvalidProjectDirectory: function(test) {
     test.expect(4);
+    // Set the stub return value
     this.arg = '';
     test.equal(deployment.resolveLanguage('.'), null);
     test.equal(deployment.resolveLanguage('./'), null);
@@ -53,6 +55,7 @@ exports['deployment.resolveLanguage()'] = {
 
   rsInferred: function(test) {
     test.expect(4);
+    // Set the stub return value
     this.arg = 'Cargo.toml';
     test.equal(deployment.resolveLanguage('.'), deployment.rs);
     test.equal(deployment.resolveLanguage('./'), deployment.rs);
@@ -63,6 +66,7 @@ exports['deployment.resolveLanguage()'] = {
 
   rsInferredInvalidProjectDirectory: function(test) {
     test.expect(4);
+    // Set the stub return value
     this.arg = '';
     test.equal(deployment.resolveLanguage('.'), null);
     test.equal(deployment.resolveLanguage('./'), null);

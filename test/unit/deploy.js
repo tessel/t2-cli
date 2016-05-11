@@ -381,6 +381,7 @@ exports['Tessel.prototype.deploy'] = {
 
 exports['Tessel.prototype.restart'] = {
   setUp: function(done) {
+    this.resolveLanguage = sandbox.spy(deployment, 'resolveLanguage');
     this.run = sandbox.stub(deploy, 'run', () => Promise.resolve());
     this.start = sandbox.stub(deploy, 'start', () => Promise.resolve());
     this.logsWarn = sandbox.stub(logs, 'warn', function() {});
@@ -400,19 +401,21 @@ exports['Tessel.prototype.restart'] = {
   },
 
   restartFromRam: function(test) {
-    test.expect(2);
+    test.expect(4);
     var opts = {
       type: 'ram',
-      entryPoint: 'index.ext',
+      entryPoint: 'index.js',
     };
 
     this.tessel.restart(opts)
       .then(() => {
         test.equal(this.run.callCount, 1);
-        test.deepEqual(this.run.lastCall.args[1], {
-          type: 'ram',
-          entryPoint: 'index.ext'
-        });
+        var options = this.run.lastCall.args[1];
+
+        test.equal(options.type, 'ram');
+        test.equal(options.entryPoint, 'index.js');
+        test.equal(options.lang.meta.name, 'javascript');
+
         test.done();
       });
 
@@ -422,20 +425,21 @@ exports['Tessel.prototype.restart'] = {
   },
 
   restartFromFlash: function(test) {
-    test.expect(3);
+    test.expect(5);
     var opts = {
       type: 'flash',
-      entryPoint: 'index.ext',
+      entryPoint: 'index.js',
     };
 
     this.tessel.restart(opts)
       .then(() => {
         test.equal(this.start.callCount, 1);
-        test.equal(this.start.lastCall.args[1], 'index.ext');
-        test.deepEqual(this.start.lastCall.args[2], {
-          type: 'flash',
-          entryPoint: 'index.ext'
-        });
+        test.equal(this.start.lastCall.args[1], 'index.js');
+
+        var options = this.start.lastCall.args[2];
+        test.equal(options.type, 'flash');
+        test.equal(options.entryPoint, 'index.js');
+        test.equal(options.lang.meta.name, 'javascript');
         test.done();
       });
 
@@ -448,12 +452,12 @@ exports['Tessel.prototype.restart'] = {
     test.expect(1);
     var opts = {
       type: 'flash',
-      entryPoint: 'index.ext',
+      entryPoint: 'index.js',
     };
 
     this.tessel.restart(opts)
       .catch(error => {
-        test.equal(error, '"index.ext" not found on undefined');
+        test.equal(error, '"index.js" not found on undefined');
         test.done();
       });
 
