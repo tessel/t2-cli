@@ -148,7 +148,7 @@ module.exports = (grunt) => {
 
 
   grunt.registerTask('changelog', '`changelog:0.0.0--0.0.2` or `changelog`', (range) => {
-    var done = this.async();
+    var done = grunt.task.current.async();
 
     if (!range) {
       // grunt changelog
