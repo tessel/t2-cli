@@ -23,6 +23,7 @@ global.fs = require('fs-extra');
 global.fsTemp = require('fs-temp');
 global.Ignore = require('fstream-ignore');
 global.inquirer = require('inquirer');
+// using 'mdns-js' for unit testing purposes
 global.mdns = require('mdns-js');
 global.mkdirp = require('mkdirp');
 global.osenv = require('osenv');

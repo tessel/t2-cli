@@ -84,9 +84,11 @@ parser.command('install-drivers')
   .callback(function() {
     require('./tessel-install-drivers');
     drivers.install()
-      .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
+      .then(drivers.installMDNS)
+      .then(module.exports.closeSuccessfulCommand)
+      .catch(module.exports.closeFailedCommand);
   })
-  .help('Install drivers');
+  .help('Install usb and mdns discovery drivers');
 
 parser.command('crash-reporter')
   .callback(opts => {

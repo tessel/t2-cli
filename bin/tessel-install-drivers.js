@@ -10,6 +10,16 @@ var fs = require('fs');
 // Internal
 var logs = require('../lib/logs');
 
+function mdnsInstall(resolve, reject) {
+  child_process.exec('npm install mdns', function(error) {
+    if (error) {
+      return reject(error);
+    }
+
+    return resolve();
+  });
+}
+
 module.exports.install = function() {
   return new Promise(function(resolve, reject) {
     if (process.platform === 'linux') {
@@ -42,8 +52,28 @@ module.exports.install = function() {
         }
       });
     } else {
-      logs.info('No driver installation necessary.');
+      logs.info('No usb driver installation necessary.');
       return resolve();
     }
   });
 };
+
+module.exports.installMDNS = () => new Promise((resolve, reject) => {
+  if (process.platform === 'linux') {
+    child_process.exec('apt-get install -y libavahi-compat-libdnssd-dev', (error) => {
+      if (error) {
+        if (error.code === 'EACCES') {
+          logs.info('Could not install "libavahi-compat-libdnssd-dev" for mDNS discovery');
+          logs.info('Run `sudo t2 install-drivers`');
+          return -1;
+        } else {
+          throw error;
+        }
+      }
+
+      return mdnsInstall(resolve, reject);
+    });
+  } else if (process.platform === 'darwin') {
+    return mdnsInstall(resolve, reject);
+  }
+});
