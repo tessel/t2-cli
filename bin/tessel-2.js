@@ -6,6 +6,7 @@
 // Third Party Dependencies
 var parser = require('nomnom').script('t2');
 const updateNotifier = require('update-notifier');
+const isRoot = require('is-root');
 
 // Internal
 var controller = require('../lib/controller');
@@ -20,14 +21,24 @@ const CLI_ENTRYPOINT = 'cli.entrypoint';
 // Check for updates
 const pkg = require('../package.json');
 
-try {
-  updateNotifier({
-    pkg
-  }).notify();
-} catch (err) {
-  CrashReporter.submit(err.stack, {
-    silent: true
-  });
+/*
+ * If a command has been run with root,
+ * do not try to read the update-notifier config file.
+ * It will change the read permissions of the file and fail
+ * for all subsequent command line calls.
+ * Can be removed once https://github.com/npm/write-file-atomic/issues/11
+ * has been resolved.
+ */
+if (!isRoot()) {
+  try {
+    updateNotifier({
+      pkg
+    }).notify();
+  } catch (err) {
+    CrashReporter.submit(err.stack, {
+      silent: true
+    });
+  }
 }
 
 function makeCommand(commandName) {
