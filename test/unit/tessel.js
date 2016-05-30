@@ -1,4 +1,5 @@
 // Test dependencies are required and exposed in common/bootstrap.js
+/*global Menu */
 
 exports['Tessel (get)'] = {
 
@@ -23,7 +24,7 @@ exports['Tessel (get)'] = {
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
 
-    this.menu = this.sandbox.stub(controller, 'menu', function() {
+    this.menu = this.sandbox.stub(Menu, 'prompt', function() {
       return Promise.resolve();
     });
 
@@ -539,7 +540,7 @@ exports['Tessel (get); filter: unauthorized'] = {
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
     this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
 
-    this.menu = this.sandbox.stub(controller, 'menu', function() {
+    this.menu = this.sandbox.stub(Menu, 'prompt', function() {
       return Promise.resolve();
     });
 

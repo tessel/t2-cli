@@ -3,11 +3,12 @@
 
 exports['CrashReporter'] = {
   surface: function(test) {
-    test.expect(5);
+    test.expect(6);
     test.equal(typeof CrashReporter.on, 'function');
     test.equal(typeof CrashReporter.off, 'function');
     test.equal(typeof CrashReporter.post, 'function');
     test.equal(typeof CrashReporter.submit, 'function');
+    test.equal(typeof CrashReporter.prompt, 'function');
     test.equal(typeof CrashReporter.test, 'function');
     test.done();
   },
@@ -118,6 +119,7 @@ exports['CrashReporter.submit'] = {
     this.logsInfo = this.sandbox.stub(logs, 'info');
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
+    this.crPrompt = this.sandbox.stub(CrashReporter, 'prompt').returns(Promise.resolve(true));
     this.crPost = this.sandbox.spy(CrashReporter, 'post');
     this.crSanitize = this.sandbox.spy(CrashReporter, 'sanitize');
     this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
@@ -132,11 +134,12 @@ exports['CrashReporter.submit'] = {
   },
 
   submit: function(test) {
-    test.expect(7);
+    test.expect(8);
 
     var report = 'Error: undefined is not a function';
     CrashReporter.submit(report).then(() => {
       var args = this.crPost.lastCall.args;
+      test.equal(this.crPrompt.callCount, 1);
       test.equal(this.crPost.callCount, 1);
       test.equal(typeof args[0], 'string');
       test.ok(args[0].includes('CLI version'), 'Label CLI version should be present');
@@ -210,6 +213,7 @@ exports['CrashReporter.sanitize'] = {
     this.logsInfo = this.sandbox.stub(logs, 'info');
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
+    this.crPrompt = this.sandbox.stub(CrashReporter, 'prompt').returns(Promise.resolve(true));
     this.crPost = this.sandbox.spy(CrashReporter, 'post');
     this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
       return handler(null, {}, '{}');

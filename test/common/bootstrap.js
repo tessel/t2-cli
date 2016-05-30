@@ -48,6 +48,7 @@ global.RSA = require('../../lib/tessel/rsa-delegation');
 
 // ./lib/*
 global.CrashReporter = require('../../lib/crash-reporter');
+global.Menu = require('../../lib/menu');
 global.Preferences = require('../../lib/preferences');
 global.controller = require('../../lib/controller');
 global.discover = require('../../lib/discover');

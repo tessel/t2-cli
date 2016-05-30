@@ -1,6 +1,7 @@
 // Test dependencies are required and exposed in common/bootstrap.js
+/*global Menu */
 
-exports['controller.menu'] = {
+exports['Menu.prompt'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
@@ -35,7 +36,7 @@ exports['controller.menu'] = {
       });
     });
 
-    controller.menu({
+    Menu.prompt({
       prompt: {
         name: 'selected',
         type: 'list',
@@ -78,7 +79,7 @@ exports['controller.menu'] = {
       });
     });
 
-    controller.menu({
+    Menu.prompt({
       prompt: {
         name: 'selected',
         type: 'list',
