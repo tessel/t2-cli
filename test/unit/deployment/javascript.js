@@ -2498,10 +2498,10 @@ exports['deployment.js.lists'] = {
     test.expect(1);
 
     var includes = [
-      'aws-sdk/apis/*.json',
-      'mime/types/*.types',
-      'negotiator/**/*.js',
-      'socket.io-client/socket.io.js',
+      'node_modules/**/aws-sdk/apis/*.json',
+      'node_modules/**/mime/types/*.types',
+      'node_modules/**/negotiator/**/*.js',
+      'node_modules/**/socket.io-client/socket.io.js',
     ];
 
     test.deepEqual(lists.includes, includes);
@@ -2512,7 +2512,7 @@ exports['deployment.js.lists'] = {
     test.expect(1);
 
     var ignores = [
-      'node_modules/tessel/**/*',
+      'node_modules/**/tessel/**/*',
     ];
 
     test.deepEqual(lists.ignores, ignores);
