@@ -38,6 +38,15 @@ exports['Preferences.load'] = {
       test.done();
     });
   },
+
+  homedir: function(test) {
+    test.expect(1);
+
+    Preferences.load().then(() => {
+      test.ok(this.exists.firstCall.args[0].startsWith(os.homedir()));
+      test.done();
+    });
+  }
 };
 
 exports['Preferences.read'] = {

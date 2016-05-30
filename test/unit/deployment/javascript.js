@@ -1553,12 +1553,9 @@ exports['deploy.findProject'] = {
   home: function(test) {
     test.expect(1);
 
-    var key = /^win/.test(process.platform) ? 'USERPROFILE' : 'HOME';
-    var real = process.env[key];
     var fake = path.normalize('/fake/test/home/dir');
 
-    process.env[key] = fake;
-
+    this.homedir = sandbox.stub(os, 'homedir').returns(fake);
     this.lstatSync = sandbox.stub(fs, 'lstatSync', (file) => {
       return {
         isDirectory: () => {
@@ -1569,8 +1566,6 @@ exports['deploy.findProject'] = {
     });
 
     this.realpathSync = sandbox.stub(fs, 'realpathSync', (arg) => {
-      process.env[key] = real;
-
       // Ensure that "~" was transformed
       test.equal(arg, path.normalize('/fake/test/home/dir/foo'));
       test.done();
