@@ -106,6 +106,7 @@ exports['Tessel.prototype.deploy'] = {
     this.deploy = sandbox.spy(Tessel.prototype, 'deploy');
     this.appStop = sandbox.spy(commands.app, 'stop');
     this.appStart = sandbox.spy(commands.app, 'start');
+    this.appEnable = sandbox.spy(commands.app, 'enable');
     this.deleteFolder = sandbox.spy(commands, 'deleteFolder');
     this.createFolder = sandbox.spy(commands, 'createFolder');
     this.untarStdin = sandbox.spy(commands, 'untarStdin');
@@ -278,7 +279,7 @@ exports['Tessel.prototype.deploy'] = {
   },
 
   push: function(test) {
-    test.expect(11);
+    test.expect(12);
     deployTestCode(this.tessel, {
       push: true,
       single: false
@@ -301,6 +302,7 @@ exports['Tessel.prototype.deploy'] = {
       test.equal(this.execute.callCount, 0);
       test.equal(this.openStdinToFile.callCount, 1);
       test.equal(this.chmod.callCount, 1);
+      test.equal(this.appEnable.callCount, 1);
       test.equal(this.appStart.callCount, 1);
       test.equal(this.end.callCount, 1);
       test.done();
@@ -308,7 +310,7 @@ exports['Tessel.prototype.deploy'] = {
   },
 
   pushSingle: function(test) {
-    test.expect(9);
+    test.expect(10);
     deployTestCode(this.tessel, {
       push: true,
       single: true
@@ -325,6 +327,7 @@ exports['Tessel.prototype.deploy'] = {
       test.equal(this.openStdinToFile.callCount, 1);
       test.equal(this.chmod.callCount, 1);
       test.equal(this.appStart.callCount, 1);
+      test.equal(this.appEnable.callCount, 1);
       test.equal(this.end.callCount, 1);
       test.done();
     });
