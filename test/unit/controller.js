@@ -375,6 +375,24 @@ exports['controller.tesselEnvVersions'] = {
       return Promise.resolve('4.2.1');
     });
 
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', () => {
+      return Promise.resolve(
+        [{
+          'released': '2015-08-20T16:20:08.704Z',
+          'sha': '78f2bd20af9eaf76796657186f3010f03a979dc8',
+          'version': '0.0.3',
+        }, {
+          'released': '2015-08-18T15:12:13.070Z',
+          'sha': 'bf327359b4a13b4da07bc5776fe8a22ae88d54f9',
+          'version': '0.0.2',
+        }, {
+          'released': '2015-08-12T03:01:57.856Z',
+          'sha': '9a85c84f5a03c715908921baaaa9e7397985bc7f',
+          'version': '0.0.1',
+        }]
+      );
+    });
+
     done();
   },
 
