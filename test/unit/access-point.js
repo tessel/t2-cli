@@ -16,7 +16,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
     this.setLanNetworkNetmask = this.sandbox.spy(commands, 'setLanNetworkNetmask');
     this.commitNetwork = this.sandbox.spy(commands, 'commitNetwork');
     this.setAccessPoint = this.sandbox.spy(commands, 'setAccessPoint');
-    this.getAccessPointSSID = this.sandbox.spy(commands, 'getAccessPointSSID');
+    this.getAccessPoint = this.sandbox.spy(commands, 'getAccessPoint');
     this.setAccessPointDevice = this.sandbox.spy(commands, 'setAccessPointDevice');
     this.setAccessPointNetwork = this.sandbox.spy(commands, 'setAccessPointNetwork');
     this.setAccessPointMode = this.sandbox.spy(commands, 'setAccessPointMode');
@@ -29,6 +29,12 @@ exports['Tessel.prototype.createAccessPoint'] = {
     this.reconnectDhcp = this.sandbox.spy(commands, 'reconnectDhcp');
 
     this.tessel = TesselSimulator();
+    // These are needed because the sheer number of commands run within
+    // each test exceeds the default maximum number of listeners. This
+    // is only an issue with tests because we re-use the same remote
+    // process simulator across all command calls
+    this.tessel._rps.stdout.setMaxListeners(100);
+    this.tessel._rps.stderr.setMaxListeners(100);
 
     done();
   },
@@ -47,7 +53,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
       security: 'psk2'
     };
 
-    // Test is expecting two closes...;
+    // Immediately close any opened connections
     this.tessel._rps.on('control', () => {
       setImmediate(() => {
         this.tessel._rps.emit('close');
@@ -70,7 +76,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
     this.tessel.createAccessPoint(creds)
       .then(() => {
-        test.equal(this.getAccessPointSSID.callCount, 1);
+        test.equal(this.getAccessPoint.callCount, 1);
         test.equal(this.setAccessPoint.callCount, 1);
         test.equal(this.setAccessPointDevice.callCount, 1);
         test.equal(this.setAccessPointNetwork.callCount, 1);
@@ -116,7 +122,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
     this.tessel.createAccessPoint(creds)
       .then(() => {
-        test.equal(this.getAccessPointSSID.callCount, 1);
+        test.equal(this.getAccessPoint.callCount, 1);
         test.equal(this.setAccessPointSSID.callCount, 1);
         test.equal(this.setAccessPointPassword.callCount, 0);
         test.equal(this.setAccessPointSecurity.callCount, 1);
@@ -150,7 +156,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
     this.tessel.createAccessPoint(creds)
       .then(() => {
-        test.equal(this.getAccessPointSSID.callCount, 1);
+        test.equal(this.getAccessPoint.callCount, 1);
         test.equal(this.setAccessPointSSID.callCount, 1);
         test.equal(this.setAccessPointPassword.callCount, 1);
         test.equal(this.setAccessPointSecurity.callCount, 1);
@@ -185,7 +191,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
 
     this.tessel.createAccessPoint(creds)
       .then(() => {
-        test.equal(this.getAccessPointSSID.callCount, 1);
+        test.equal(this.getAccessPoint.callCount, 1);
         test.equal(this.setAccessPointSSID.callCount, 1);
         test.equal(this.setAccessPointPassword.callCount, 1);
         test.equal(this.setAccessPointSecurity.callCount, 1);
@@ -242,7 +248,7 @@ exports['Tessel.prototype.enableAccessPoint'] = {
       ip: '192.168.200.1'
     };
 
-    // Test is expecting two closes...;
+
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
         var info = new Buffer(tags.stripIndent `
