@@ -1679,11 +1679,29 @@ exports['deploy.findProject'] = {
     deploy.findProject(opts).then(project => {
       // Without the `single` flag, this would've continued upward
       // until it found a directory with a package.json.
-      test.ok(project.pushdir, fs.realpathSync(path.dirname(pushdir)));
+      test.equal(project.pushdir, fs.realpathSync(pushdir));
       test.done();
     });
   },
 
+  noPackageJsonUseProgramDirname: function(test) {
+    test.expect(1);
+
+    // This is no package.json here
+    var entryPoint = path.normalize('test/unit/fixtures/project-no-package.json/index.js');
+    var opts = {
+      entryPoint: entryPoint,
+      lang: deployment.js,
+      single: false,
+    };
+
+    this.endOfLookup = sandbox.stub(deploy, 'endOfLookup').returns(true);
+
+    deploy.findProject(opts).then(project => {
+      test.equal(project.pushdir, path.dirname(path.join(process.cwd(), entryPoint)));
+      test.done();
+    });
+  },
 };
 
 
