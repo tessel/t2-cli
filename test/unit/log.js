@@ -315,9 +315,16 @@ exports['log.isEnabled/isDisabled'] = {
 
 exports['log.spinner'] = {
   setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+
+    this.spinnerCount = 0;
+    this.charSpinner = this.sandbox.stub(log, 'charSpinner', () => this.spinnerCount++);
+    this.clearInterval = this.sandbox.stub(global, 'clearInterval');
     done();
   },
   tearDown: function(done) {
+    this.sandbox.restore();
+    log.spinner.interval = null;
     log.configure({
       spinner: true
     });
@@ -340,6 +347,44 @@ exports['log.spinner'] = {
     });
     log.spinner.start();
     test.equal(log.spinner.interval, null);
+    test.done();
+  },
+  startMakesCharSpinner: function(test) {
+    test.expect(2);
+    test.equal(log.spinner.interval, null);
+    log.spinner.start();
+    test.equal(this.charSpinner.callCount, 1);
+    test.done();
+  },
+  duplicateStartIsNoop: function(test) {
+    test.expect(4);
+    test.equal(log.spinner.interval, null);
+    log.spinner.start();
+    test.equal(this.charSpinner.callCount, 1);
+    log.spinner.start();
+    test.equal(this.charSpinner.callCount, 1);
+    log.spinner.start();
+    test.equal(this.charSpinner.callCount, 1);
+    test.done();
+  },
+  stopClearsCharSpinner: function(test) {
+    test.expect(2);
+    log.spinner.interval = Math.PI;
+    log.spinner.stop();
+    test.equal(this.clearInterval.callCount, 1);
+    test.equal(log.spinner.interval, null);
+    test.done();
+  },
+  duplicateStopIsNoop: function(test) {
+    test.expect(4);
+    log.spinner.interval = Math.PI;
+    log.spinner.stop();
+    test.equal(this.clearInterval.callCount, 1);
+    test.equal(log.spinner.interval, null);
+    log.spinner.stop();
+    test.equal(this.clearInterval.callCount, 1);
+    log.spinner.stop();
+    test.equal(this.clearInterval.callCount, 1);
     test.done();
   },
 };

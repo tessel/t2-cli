@@ -477,6 +477,7 @@ module.exports = function(args) {
 };
 
 module.exports.closeSuccessfulCommand = function() {
+  log.spinner.stop();
   process.exit(0);
 };
 
@@ -485,6 +486,8 @@ module.exports.closeFailedCommand = function(status, options) {
   var code = 1;
 
   options = options || {};
+
+  log.spinner.stop();
 
   if (status instanceof Error) {
     log.error(status.toString());
