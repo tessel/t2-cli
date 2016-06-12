@@ -79,6 +79,11 @@ function makeCommand(commandName) {
       choices: [true, false],
       abbr: 'o',
       help: 'Enable or disable writing command output to stdout/stderr. Useful for CLI API consumers.'
+    })
+    .option('loglevel', {
+      default: 'basic',
+      choices: ['trace', 'debug', 'basic', 'info', 'http', 'warn', 'error'],
+      help: 'Set the loglevel.',
     });
 }
 
@@ -88,15 +93,12 @@ function callControllerWith(methodName, opts) {
     .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
 }
 
-function callControllerCallback(methodName) {
-  log.spinner.stop();
-  return function(opts) {
-    return callControllerWith(methodName, opts);
-  };
-}
-
 parser.command('install-drivers')
-  .callback(function() {
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+
     require('./tessel-install-drivers');
     drivers.install()
       .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
@@ -104,19 +106,23 @@ parser.command('install-drivers')
   .help('Install drivers');
 
 parser.command('crash-reporter')
-  .callback(opts => {
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+
     var cr = Promise.resolve();
 
     // t2 crash-reporter --on
-    if (opts.on) {
+    if (options.on) {
       cr = CrashReporter.on();
-    } else if (opts.off) {
+    } else if (options.off) {
       // t2 crash-reporter --off
       cr = CrashReporter.off();
     }
 
     // t2 crash-reporter --test
-    if (opts.test) {
+    if (options.test) {
       // not handling failures, as we want to trigger a crash
       cr.then(CrashReporter.test)
         .then(module.exports.closeSuccessfulCommand);
@@ -140,7 +146,12 @@ parser.command('crash-reporter')
   .help('Configure the Crash Reporter.');
 
 parser.command('provision')
-  .callback(callControllerCallback('provisionTessel'))
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+    callControllerWith('provisionTessel', options);
+  })
   .option('force', {
     abbr: 'f',
     flag: true,
@@ -149,27 +160,31 @@ parser.command('provision')
   .help('Authorize your computer to control the USB-connected Tessel');
 
 makeCommand('restart')
-  .callback(function(opts) {
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+
     // 1. Check that the type is a valid type
-    if (opts.type !== 'ram' && opts.type !== 'flash') {
+    if (options.type !== 'ram' && options.type !== 'flash') {
       return module.exports.closeFailedCommand('--type Invalid ');
     }
 
     // 2. If an entry point file wasn't specified, get the last
     //    known entry point file name and use that.
-    if (opts.entryPoint === undefined) {
+    if (options.entryPoint === undefined) {
       Preferences.read(CLI_ENTRYPOINT, undefined).then(entryPoint => {
         if (entryPoint) {
-          opts.entryPoint = entryPoint;
+          options.entryPoint = entryPoint;
         } else {
           // 3. However, if that doesn't exist either,
           //    there is nothing further to do.
           return module.exports.closeFailedCommand('Cannot determine entry point file name');
         }
-        callControllerWith('restart', opts);
+        callControllerWith('restart', options);
       });
     } else {
-      callControllerWith('restart', opts);
+      callControllerWith('restart', options);
     }
   })
   .option('entryPoint', {
@@ -183,12 +198,16 @@ makeCommand('restart')
   .help('Restart a previously deployed script in RAM or Flash memory (does not rebundle)');
 
 makeCommand('run')
-  .callback(function(opts) {
-    opts.lanPrefer = true;
-    opts.push = false;
-    // Overridden in tarBundle if opts.full is `true`
-    opts.slim = true;
-    callControllerWith('deploy', opts);
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+
+    options.lanPrefer = true;
+    options.push = false;
+    // Overridden in tarBundle if options.full is `true`
+    options.slim = true;
+    callControllerWith('deploy', options);
   })
   .option('entryPoint', {
     position: 1,
@@ -227,12 +246,16 @@ makeCommand('run')
   `);
 
 makeCommand('push')
-  .callback(function(opts) {
-    opts.lanPrefer = true;
-    opts.push = true;
-    // Overridden in tarBundle if opts.full is `true`
-    opts.slim = true;
-    callControllerWith('deploy', opts);
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+
+    options.lanPrefer = true;
+    options.push = true;
+    // Overridden in tarBundle if options.full is `true`
+    options.slim = true;
+    callControllerWith('deploy', options);
   })
   .option('entryPoint', {
     position: 1,
@@ -272,7 +295,12 @@ makeCommand('push')
   `);
 
 makeCommand('erase')
-  .callback(callControllerCallback('eraseScript'))
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+    callControllerWith('eraseScript', options);
+  })
   .option('verbose', {
     flag: true,
     abbr: 'v',
@@ -281,11 +309,21 @@ makeCommand('erase')
   .help('Erases files pushed to Flash using the tessel push command');
 
 makeCommand('list')
-  .callback(callControllerCallback('listTessels'))
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+    return callControllerWith('listTessels', options);
+  })
   .help('Lists all connected Tessels and their authorization status.');
 
 parser.command('init')
-  .callback(init)
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+    init();
+  })
   .option('interactive', {
     flag: true,
     abbr: 'i',
@@ -294,19 +332,22 @@ parser.command('init')
   .help('Initialize repository for your Tessel project');
 
 makeCommand('wifi')
-  .callback(function(opts) {
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
     // TODO: Refactor switch case into controller.wifi
-    if (opts.list) {
-      callControllerWith('printAvailableNetworks', opts);
-    } else if (opts.off || opts.on) {
-      if (opts.off) {
-        opts.on = false;
+    if (options.list) {
+      callControllerWith('printAvailableNetworks', options);
+    } else if (options.off || options.on) {
+      if (options.off) {
+        options.on = false;
       }
-      callControllerWith('setWiFiState', opts);
-    } else if (opts.ssid) {
-      callControllerWith('connectToNetwork', opts);
+      callControllerWith('setWiFiState', options);
+    } else if (options.ssid) {
+      callControllerWith('connectToNetwork', options);
     } else {
-      callControllerWith('getWifiInfo', opts);
+      callControllerWith('getWifiInfo', options);
     }
   })
   .option('list', {
@@ -340,8 +381,12 @@ makeCommand('wifi')
   .help('Configure the wireless connection');
 
 parser.command('key')
-  .callback(function(opts) {
-    controller.setupLocal(opts)
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+
+    controller.setupLocal(options)
       .then(function() {
         log.info('Key successfully generated.');
       })
@@ -355,6 +400,12 @@ parser.command('key')
   .help('Manage ssh keys for connecting to a Tessel');
 
 makeCommand('rename')
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+    callControllerWith('renameTessel', options);
+  })
   .option('newName', {
     help: 'The new name for the selected Tessel',
     position: 1,
@@ -363,10 +414,19 @@ makeCommand('rename')
     abbr: 'r',
     flag: true
   })
-  .callback(callControllerCallback('renameTessel'))
   .help('Change the name of a Tessel to something new');
 
 makeCommand('update')
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+    if (options.list) {
+      callControllerWith('printAvailableUpdates');
+    } else {
+      callControllerWith('update', options);
+    }
+  })
   .option('version', {
     abbr: 'v',
     required: false,
@@ -401,20 +461,35 @@ makeCommand('update')
     required: false,
     help: 'Update with the firmware image at the indicated local path.'
   })
-  .callback(function(opts) {
-    if (opts.list) {
-      callControllerWith('printAvailableUpdates');
-    } else {
-      callControllerWith('update', opts);
-    }
-  })
   .help('Update the Tessel firmware and openWRT image');
 
 makeCommand('version')
-  .callback(callControllerCallback('tesselEnvVersions'))
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+    callControllerWith('tesselEnvVersions', options);
+  })
   .help('Display Tessel\'s current firmware version');
 
 makeCommand('ap')
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+
+    if (options.on || options.off) {
+      if (options.on) {
+        callControllerWith('enableAccessPoint', options);
+      } else {
+        callControllerWith('disableAccessPoint', options);
+      }
+    } else if (options.ssid) {
+      callControllerWith('createAccessPoint', options);
+    } else {
+      callControllerWith('getAccessPointInfo', options);
+    }
+  })
   .option('ssid', {
     abbr: 'n',
     help: 'Name of the network.'
@@ -435,24 +510,14 @@ makeCommand('ap')
     flag: true,
     help: 'Enable the access point'
   })
-  .help('Configure the Tessel as an access point')
-  .callback(function(opts) {
-    if (opts.on || opts.off) {
-      if (opts.on) {
-        callControllerWith('enableAccessPoint', opts);
-      } else {
-        callControllerWith('disableAccessPoint', opts);
-      }
-    } else if (opts.ssid) {
-      callControllerWith('createAccessPoint', opts);
-    } else {
-      callControllerWith('getAccessPointInfo', opts);
-    }
-  });
+  .help('Configure the Tessel as an access point');
 
 makeCommand('root')
-  .callback(function(opts) {
-    callControllerWith('root', opts);
+  .callback(options => {
+    if (options.loglevel !== log.level()) {
+      log.level(options.loglevel);
+    }
+    callControllerWith('root', options);
   })
   .option('lan', {
     flag: true,

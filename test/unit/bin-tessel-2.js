@@ -203,7 +203,8 @@ exports['Tessel (cli: update)'] = {
       _: ['update'],
       timeout: 5,
       lanPrefer: false,
-      output: true
+      output: true,
+      loglevel: 'basic',
     });
 
     cli(['update', '--list']);
