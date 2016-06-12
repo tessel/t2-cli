@@ -49,7 +49,6 @@
     "char-spinner": "^1.0.1",
     "colors": "^1.1.0",
     "common-tags": "0.0.1",
-    "debug": "^2.2.0",
     "fs-extra": "^0.26.2",
     "fs-temp": "^1.0.0",
     "fstream": "^1.0.8",
