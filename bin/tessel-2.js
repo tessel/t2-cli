@@ -95,9 +95,8 @@ function callControllerWith(methodName, opts) {
 
 parser.command('install-drivers')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
 
     require('./tessel-install-drivers');
     drivers.install()
@@ -107,9 +106,8 @@ parser.command('install-drivers')
 
 parser.command('crash-reporter')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
 
     var cr = Promise.resolve();
 
@@ -147,9 +145,8 @@ parser.command('crash-reporter')
 
 parser.command('provision')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
     callControllerWith('provisionTessel', options);
   })
   .option('force', {
@@ -161,9 +158,8 @@ parser.command('provision')
 
 makeCommand('restart')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
 
     // 1. Check that the type is a valid type
     if (options.type !== 'ram' && options.type !== 'flash') {
@@ -199,9 +195,8 @@ makeCommand('restart')
 
 makeCommand('run')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
 
     options.lanPrefer = true;
     options.push = false;
@@ -247,9 +242,8 @@ makeCommand('run')
 
 makeCommand('push')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
 
     options.lanPrefer = true;
     options.push = true;
@@ -296,9 +290,8 @@ makeCommand('push')
 
 makeCommand('erase')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
     callControllerWith('eraseScript', options);
   })
   .option('verbose', {
@@ -310,18 +303,16 @@ makeCommand('erase')
 
 makeCommand('list')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
     return callControllerWith('listTessels', options);
   })
   .help('Lists all connected Tessels and their authorization status.');
 
 parser.command('init')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
     init();
   })
   .option('interactive', {
@@ -333,9 +324,8 @@ parser.command('init')
 
 makeCommand('wifi')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
     // TODO: Refactor switch case into controller.wifi
     if (options.list) {
       callControllerWith('printAvailableNetworks', options);
@@ -382,9 +372,8 @@ makeCommand('wifi')
 
 parser.command('key')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
 
     controller.setupLocal(options)
       .then(function() {
@@ -401,9 +390,8 @@ parser.command('key')
 
 makeCommand('rename')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
     callControllerWith('renameTessel', options);
   })
   .option('newName', {
@@ -418,9 +406,8 @@ makeCommand('rename')
 
 makeCommand('update')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
     if (options.list) {
       callControllerWith('printAvailableUpdates');
     } else {
@@ -465,18 +452,15 @@ makeCommand('update')
 
 makeCommand('version')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
     callControllerWith('tesselEnvVersions', options);
   })
   .help('Display Tessel\'s current firmware version');
 
 makeCommand('ap')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
 
     if (options.on || options.off) {
       if (options.on) {
@@ -514,9 +498,8 @@ makeCommand('ap')
 
 makeCommand('root')
   .callback(options => {
-    if (options.loglevel !== log.level()) {
-      log.level(options.loglevel);
-    }
+    log.level(options.loglevel);
+
     callControllerWith('root', options);
   })
   .option('lan', {
