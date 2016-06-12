@@ -34,6 +34,9 @@ exports['controller.update'] = {
     this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
 
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     done();
   },
 

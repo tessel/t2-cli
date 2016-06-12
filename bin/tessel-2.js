@@ -41,6 +41,8 @@ if (!isRoot()) {
   }
 }
 
+log.spinner.start();
+
 function makeCommand(commandName) {
   return parser.command(commandName)
     .option('timeout', {
@@ -81,11 +83,13 @@ function makeCommand(commandName) {
 }
 
 function callControllerWith(methodName, opts) {
+  log.spinner.stop();
   return controller[methodName](opts)
     .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
 }
 
 function callControllerCallback(methodName) {
+  log.spinner.stop();
   return function(opts) {
     return callControllerWith(methodName, opts);
   };

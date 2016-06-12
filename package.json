@@ -46,6 +46,7 @@
     "acorn": "^3.0.2",
     "async": "^1.4.2",
     "bindings": "^1.2.1",
+    "char-spinner": "^1.0.1",
     "colors": "^1.1.0",
     "common-tags": "0.0.1",
     "debug": "^2.2.0",
