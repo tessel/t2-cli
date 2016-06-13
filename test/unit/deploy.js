@@ -521,8 +521,26 @@ exports['deploy.run'] = {
       test.deepEqual(this.exec.lastCall.args[0], ['rust_executable']);
       test.done();
     });
-  }
+  },
 
+  runStdInOut: function(test) {
+    test.expect(1);
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, options, callback) => {
+      callback(null, this.tessel._rps);
+      this.tessel._rps.emit('close');
+    });
+
+    this.stdinPipe = sandbox.stub(process.stdin, 'pipe');
+
+    deploy.run(this.tessel, {
+      resolvedEntryPoint: 'foo',
+      lang: deployment.js,
+    }).then(() => {
+      test.equal(this.stdinPipe.callCount, 1);
+      test.done();
+    });
+  },
 };
 
 exports['deploy.createShellScript'] = {
