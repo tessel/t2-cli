@@ -313,7 +313,7 @@ parser.command('init')
   .callback(options => {
     log.level(options.loglevel);
 
-    init();
+    init(options);
   })
   .option('interactive', {
     flag: true,
