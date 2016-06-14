@@ -13,9 +13,12 @@ var builds = [{
 exports['controller.update'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
-    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+
     this.tessel = TesselSimulator();
 
     this.getTessel = this.sandbox.stub(Tessel, 'get', (opts) => {
@@ -34,8 +37,6 @@ exports['controller.update'] = {
     this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
 
-    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
-    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
 
     done();
   },
@@ -59,10 +60,10 @@ exports['controller.update'] = {
         test.equal(this.requestBuildList.callCount, 1);
         // Print info that these are log
         // 'Latest builds:'
-        test.equal(this.logInfo.callCount, 1);
+        test.equal(this.info.callCount, 1);
         // Print each version out
         // '\t Version:', build.version, '\tPublished:', build.released.toLocaleString()
-        test.equal(this.logBasic.callCount, 2);
+        test.equal(this.basic.callCount, 2);
         // Finish
         test.done();
       })
@@ -756,9 +757,12 @@ exports['controller.update'] = {
 exports['update-fetch'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
-    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
 
     var mixedBuilds = [{
       sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
@@ -808,9 +812,12 @@ exports['update-fetch'] = {
 exports['Tessel.update'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
-    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
     this.tessel = TesselSimulator();
 
     this.tessel.connection.enterBootloader = function() {};

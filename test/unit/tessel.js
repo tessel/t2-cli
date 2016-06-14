@@ -6,6 +6,8 @@ exports['Tessel (get)'] = {
   setUp: function(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.activeSeeker = undefined;
     // This is necessary to prevent an Emitter memory leak warning
     this.processOn = this.sandbox.stub(process, 'on');
@@ -519,6 +521,8 @@ exports['Tessel (get); filter: unauthorized'] = {
   setUp: function(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.activeSeeker = undefined;
     // This is necessary to prevent an Emitter memory leak warning
     this.processOn = this.sandbox.stub(process, 'on');
@@ -590,6 +594,9 @@ exports['Tessel (get); filter: unauthorized'] = {
 exports['Tessel.simpleExec'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.tessel = new TesselSimulator();
     done();
   },

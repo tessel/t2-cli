@@ -4,6 +4,9 @@
 exports['Tessel.prototype.createAccessPoint'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.createAccessPoint = this.sandbox.spy(Tessel.prototype, 'createAccessPoint');
     this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.setLanNetwork = this.sandbox.spy(commands, 'setLanNetwork');
@@ -204,6 +207,9 @@ exports['Tessel.prototype.createAccessPoint'] = {
 exports['Tessel.prototype.enableAccessPoint'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.enableAccessPoint = this.sandbox.spy(Tessel.prototype, 'enableAccessPoint');
     this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.turnAccessPointOn = this.sandbox.spy(commands, 'turnAccessPointOn');
@@ -331,6 +337,8 @@ exports['Tessel.prototype.enableAccessPoint'] = {
 exports['Tessel.prototype.disableAccessPoint'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.disableAccessPoint = this.sandbox.spy(Tessel.prototype, 'disableAccessPoint');
     this.logInfo = this.sandbox.stub(log, 'info', function() {});
     this.turnAccessPointOff = this.sandbox.spy(commands, 'turnAccessPointOff');

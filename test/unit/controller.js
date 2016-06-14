@@ -22,6 +22,8 @@ exports['controller.closeTesselConnections'] = {
 
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn', function() {});
     this.info = this.sandbox.stub(log, 'info', function() {});
     this.basic = this.sandbox.stub(log, 'basic', function() {});
@@ -112,6 +114,8 @@ exports['controller.closeTesselConnections'] = {
 exports['controller.runHeuristics'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.processOn = this.sandbox.stub(process, 'on');
     done();
   },
@@ -353,6 +357,8 @@ exports['controller.runHeuristics'] = {
 exports['controller.tesselEnvVersions'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn', function() {});
     this.info = this.sandbox.stub(log, 'info', function() {});
     this.basic = this.sandbox.stub(log, 'basic', function() {});
@@ -521,6 +527,8 @@ exports['Tessel.list'] = {
   setUp: function(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function() {
@@ -681,6 +689,8 @@ exports['Tessel.get'] = {
   setUp: function(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
@@ -962,6 +972,8 @@ exports['Tessel.get'] = {
 exports['controller.closeTesselConnections'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn', function() {});
     this.info = this.sandbox.stub(log, 'info', function() {});
     this.basic = this.sandbox.stub(log, 'basic', function() {});
@@ -1058,6 +1070,8 @@ exports['controller.closeTesselConnections'] = {
 exports['controller.root'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn', function() {});
     this.info = this.sandbox.stub(log, 'info', function() {});
     this.basic = this.sandbox.stub(log, 'basic', function() {});

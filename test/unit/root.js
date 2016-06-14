@@ -2,6 +2,8 @@ exports['tessel.root'] = {
   setUp: function(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.spawn = this.sandbox.stub(cp, 'spawn', () => {
       var child = new Emitter();
 

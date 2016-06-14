@@ -6,6 +6,9 @@ exports['Tessel.prototype.fetchCurrentNodeVersion'] = {
     this.warn = this.sandbox.stub(log, 'warn', function() {});
     this.info = this.sandbox.stub(log, 'info', function() {});
     this.basic = this.sandbox.stub(log, 'basic', function() {});
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.tessel = TesselSimulator();
 
     this.simpleExec = this.sandbox.stub(Tessel.prototype, 'simpleExec', () => {

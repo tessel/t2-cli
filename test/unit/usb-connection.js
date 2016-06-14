@@ -2,11 +2,16 @@
 
 exports['USB.Connection'] = {
   setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.usbConnection = new USB.Connection({});
     done();
   },
 
   tearDown: function(done) {
+    this.sandbox.restore();
     done();
   },
 
@@ -26,6 +31,9 @@ exports['USB.Connection'] = {
 exports['USB.Connection.prototype.exec'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.openProcess = this.sandbox.stub(Daemon, 'openProcess');
     this.usbConnection = new USB.Connection({});
     done();
@@ -51,6 +59,9 @@ exports['USB.Connection.prototype.exec'] = {
 exports['USB.Connection.prototype._write'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.openProcess = this.sandbox.stub(Daemon, 'openProcess');
     this.usbConnection = new USB.Connection({});
     this.usbConnection.epOut = new Emitter();
@@ -96,7 +107,10 @@ exports['USB.Connection.prototype.open'] = {
   setUp: function(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
-    this.err = this.sandbox.stub(log, 'error');
+    this.error = this.sandbox.stub(log, 'error');
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.processExit = this.sandbox.stub(process, 'exit');
     this.usbConnection = new USB.Connection({});
     this.usbConnection.epOut = new Emitter();
@@ -214,7 +228,10 @@ exports['USB.Connection.prototype.end'] = {
   setUp: function(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
-    this.err = this.sandbox.stub(log, 'error');
+    this.error = this.sandbox.stub(log, 'error');
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.processExit = this.sandbox.stub(process, 'exit');
     this.usbConnection = new USB.Connection({});
     this.usbConnection.epOut = new Emitter();
@@ -316,7 +333,10 @@ exports['USB.Connection.prototype.end'] = {
 exports['USB.Connection.prototype._receiveMessages'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.err = this.sandbox.stub(log, 'error');
+    this.error = this.sandbox.stub(log, 'error');
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
     this.processExit = this.sandbox.stub(process, 'exit');
     this.usbConnection = new USB.Connection({});
     this.usbConnection.epIn = new Emitter();

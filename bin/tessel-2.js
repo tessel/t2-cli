@@ -41,7 +41,42 @@ if (!isRoot()) {
   }
 }
 
-log.spinner.start();
+controller.t2Init = init;
+
+controller.crashReporter = function(options) {
+  var cr = Promise.resolve();
+
+  // t2 crash-reporter --on
+  if (options.on) {
+    cr = CrashReporter.on();
+  } else if (options.off) {
+    // t2 crash-reporter --off
+    cr = CrashReporter.off();
+  }
+
+  // t2 crash-reporter --test
+  if (options.test) {
+    // not handling failures, as we want to trigger a crash
+    cr.then(CrashReporter.test)
+      .then(module.exports.closeSuccessfulCommand);
+  } else {
+    cr.then(CrashReporter.status)
+      .then(
+        module.exports.closeSuccessfulCommand,
+        module.exports.closeFailedCommand
+      );
+  }
+
+  return cr;
+};
+
+
+controller.installDrivers = function() {
+  drivers.install().then(
+    module.exports.closeSuccessfulCommand,
+    module.exports.closeFailedCommand
+  );
+};
 
 function makeCommand(commandName) {
   return parser.command(commandName)
@@ -88,7 +123,7 @@ function makeCommand(commandName) {
 }
 
 function callControllerWith(methodName, opts) {
-  log.spinner.stop();
+  log.spinner.start();
   return controller[methodName](opts)
     .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
 }
@@ -97,10 +132,7 @@ parser.command('install-drivers')
   .callback(options => {
     log.level(options.loglevel);
 
-
-    require('./tessel-install-drivers');
-    drivers.install()
-      .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
+    callControllerWith('installDrivers', options);
   })
   .help('Install drivers');
 
@@ -108,26 +140,7 @@ parser.command('crash-reporter')
   .callback(options => {
     log.level(options.loglevel);
 
-
-    var cr = Promise.resolve();
-
-    // t2 crash-reporter --on
-    if (options.on) {
-      cr = CrashReporter.on();
-    } else if (options.off) {
-      // t2 crash-reporter --off
-      cr = CrashReporter.off();
-    }
-
-    // t2 crash-reporter --test
-    if (options.test) {
-      // not handling failures, as we want to trigger a crash
-      cr.then(CrashReporter.test)
-        .then(module.exports.closeSuccessfulCommand);
-    } else {
-      cr.then(CrashReporter.status)
-        .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
-    }
+    callControllerWith('crashReporter', options);
   })
   .option('off', {
     flag: true,
@@ -197,11 +210,11 @@ makeCommand('run')
   .callback(options => {
     log.level(options.loglevel);
 
-
     options.lanPrefer = true;
     options.push = false;
     // Overridden in tarBundle if options.full is `true`
     options.slim = true;
+
     callControllerWith('deploy', options);
   })
   .option('entryPoint', {
@@ -244,11 +257,11 @@ makeCommand('push')
   .callback(options => {
     log.level(options.loglevel);
 
-
     options.lanPrefer = true;
     options.push = true;
     // Overridden in tarBundle if options.full is `true`
     options.slim = true;
+
     callControllerWith('deploy', options);
   })
   .option('entryPoint', {
@@ -305,7 +318,7 @@ makeCommand('list')
   .callback(options => {
     log.level(options.loglevel);
 
-    return callControllerWith('listTessels', options);
+    callControllerWith('listTessels', options);
   })
   .help('Lists all connected Tessels and their authorization status.');
 
@@ -313,7 +326,7 @@ parser.command('init')
   .callback(options => {
     log.level(options.loglevel);
 
-    init(options);
+    callControllerWith('t2Init', options);
   })
   .option('interactive', {
     flag: true,
@@ -374,12 +387,7 @@ parser.command('key')
   .callback(options => {
     log.level(options.loglevel);
 
-
-    controller.setupLocal(options)
-      .then(function() {
-        log.info('Key successfully generated.');
-      })
-      .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
+    callControllerWith('setupLocal', options);
   })
   .option('generate', {
     position: 1,
@@ -409,7 +417,7 @@ makeCommand('update')
     log.level(options.loglevel);
 
     if (options.list) {
-      callControllerWith('printAvailableUpdates');
+      callControllerWith('printAvailableUpdates', options);
     } else {
       callControllerWith('update', options);
     }
@@ -456,7 +464,7 @@ makeCommand('version')
 
     callControllerWith('tesselEnvVersions', options);
   })
-  .help('Display Tessel\'s current firmware version');
+  .help('Display a list of present Tessel 2 environment versions (CLI, Firmware, Node)');
 
 makeCommand('ap')
   .callback(options => {
@@ -535,7 +543,6 @@ module.exports.closeFailedCommand = function(status, options) {
 
   options = options || {};
 
-  log.spinner.stop();
 
   if (status instanceof Error) {
     log.error(status.toString());
@@ -547,6 +554,7 @@ module.exports.closeFailedCommand = function(status, options) {
     }
   }
 
+  log.spinner.stop();
   process.exit(options.code || status.code || code);
 };
 

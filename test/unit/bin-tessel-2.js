@@ -76,6 +76,8 @@ exports['Tessel (cli: makeCommand)'] = {
 exports['Tessel (cli: restart)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.error = this.sandbox.stub(log, 'error');
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
@@ -177,6 +179,8 @@ exports['Tessel (cli: restart)'] = {
 exports['Tessel (cli: update)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.error = this.sandbox.stub(log, 'error');
     this.warn = this.sandbox.stub(log, 'warn');
     this.printAvailableUpdates = this.sandbox.stub(controller, 'printAvailableUpdates').returns(Promise.resolve());
@@ -253,6 +257,8 @@ exports['Tessel (cli: update)'] = {
 exports['Tessel (cli: provision)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.error = this.sandbox.stub(log, 'error');
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
@@ -304,6 +310,8 @@ exports['Tessel (cli: provision)'] = {
 exports['Tessel (cli: wifi)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.printAvailableNetworks = this.sandbox.stub(controller, 'printAvailableNetworks').returns(Promise.resolve());
@@ -395,6 +403,8 @@ exports['Tessel (cli: wifi)'] = {
 exports['Tessel (cli: root)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.root = this.sandbox.stub(controller, 'root').returns(Promise.resolve());
@@ -427,6 +437,8 @@ exports['Tessel (cli: root)'] = {
 exports['Tessel (cli: run)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.deploy = this.sandbox.stub(controller, 'deploy').returns(Promise.resolve());
@@ -483,6 +495,8 @@ exports['Tessel (cli: run)'] = {
 exports['Tessel (cli: push)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.deploy = this.sandbox.stub(controller, 'deploy').returns(Promise.resolve());
@@ -538,6 +552,8 @@ exports['Tessel (cli: push)'] = {
 exports['Tessel (cli: list)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.controllerList = this.sandbox.spy(controller, 'listTessels');
@@ -599,6 +615,8 @@ exports['Tessel (cli: list)'] = {
 exports['closeFailedCommand'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.error = this.sandbox.stub(log, 'error');
     this.warn = this.sandbox.stub(log, 'warn');
     this.processExit = this.sandbox.stub(process, 'exit');
@@ -671,6 +689,8 @@ exports['closeFailedCommand'] = {
 exports['--output true/false'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     // console.error is used by the underlying log.info/error/warn calls
     this.info = this.sandbox.stub(log, 'info');
     this.error = this.sandbox.stub(log, 'error');
@@ -739,6 +759,8 @@ exports['--output true/false'] = {
 exports['Tessel (cli: crash-reporter)'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
 
