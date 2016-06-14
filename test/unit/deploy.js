@@ -524,7 +524,7 @@ exports['deploy.run'] = {
   },
 
   runStdInOut: function(test) {
-    test.expect(1);
+    test.expect(4);
 
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, options, callback) => {
       callback(null, this.tessel._rps);
@@ -532,12 +532,16 @@ exports['deploy.run'] = {
     });
 
     this.stdinPipe = sandbox.stub(process.stdin, 'pipe');
+    this.stdinSetRawMode = sandbox.stub(process.stdin, 'setRawMode');
 
     deploy.run(this.tessel, {
       resolvedEntryPoint: 'foo',
       lang: deployment.js,
     }).then(() => {
       test.equal(this.stdinPipe.callCount, 1);
+      test.equal(this.stdinPipe.lastCall.args[0], this.tessel._rps.stdin);
+      test.equal(this.stdinSetRawMode.callCount, 1);
+      test.equal(this.stdinSetRawMode.lastCall.args[0], true);
       test.done();
     });
   },
