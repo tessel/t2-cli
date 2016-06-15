@@ -215,10 +215,10 @@ exports['TesselSeeker Scan Time'] = {
   setUp: function(done) {
 
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'err', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
+    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
+    this.logBasic = this.sandbox.stub(log, 'error', function() {});
 
     this.stop = this.sandbox.spy(FakeScanner.prototype, 'stop');
 

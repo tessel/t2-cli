@@ -2,10 +2,14 @@
 
 exports['Tessel'] = {
   setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     done();
   },
 
   tearDown: function(done) {
+    this.sandbox.restore();
     done();
   },
 
@@ -57,6 +61,9 @@ exports['Tessel'] = {
 
 exports['Tessel.prototype.receive'] = {
   setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.rps = new RemoteProcessSimulator();
     this.tessel = new Tessel({
       connectionType: 'USB'
@@ -66,6 +73,7 @@ exports['Tessel.prototype.receive'] = {
   },
 
   tearDown: function(done) {
+    this.sandbox.restore();
     done();
   },
 

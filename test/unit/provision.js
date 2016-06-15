@@ -91,8 +91,8 @@ exports['controller.provisionTessel'] = {
       return Promise.resolve(this.tessel);
     });
 
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
 
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
 
@@ -200,8 +200,8 @@ exports['Tessel.prototype.provisionTessel'] = {
     this.sandbox = sinon.sandbox.create();
 
     this.provision = this.sandbox.spy(Tessel.prototype, 'provisionTessel');
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
     this.setupLocal = this.sandbox.spy(provision, 'setupLocal');
     this.fileExists = this.sandbox.spy(commands, 'ensureFileExists');
     this.appendStdinToFile = this.sandbox.spy(commands, 'appendStdinToFile');
@@ -244,7 +244,7 @@ exports['Tessel.prototype.provisionTessel'] = {
 
     this.tessel.provisionTessel()
       .then(() => {
-        test.equal(this.logsInfo.lastCall.args[0], 'Tessel is already authenticated with this computer.');
+        test.equal(this.info.lastCall.args[0], 'Tessel is already authenticated with this computer.');
         test.done();
       })
       .catch(() => {
@@ -448,9 +448,9 @@ exports['Tessel.prototype.provisionTessel'] = {
 exports['provision.setDefaultKey'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsWarn = this.sandbox.stub(logs, 'warn', function() {});
-    this.logsInfo = this.sandbox.stub(logs, 'info', function() {});
-    this.logsBasic = this.sandbox.stub(logs, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.basic = this.sandbox.stub(log, 'basic', function() {});
 
     done();
   },

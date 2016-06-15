@@ -13,8 +13,8 @@ exports['Preferences'] = {
 exports['Preferences.load'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsErr = this.sandbox.stub(logs, 'err');
-    this.logsInfo = this.sandbox.stub(logs, 'info');
+    this.error = this.sandbox.stub(log, 'error');
+    this.info = this.sandbox.stub(log, 'info');
 
     this.exists = this.sandbox.stub(fs, 'exists', (file, handler) => {
       handler(true);
@@ -52,8 +52,8 @@ exports['Preferences.load'] = {
 exports['Preferences.read'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logsErr = this.sandbox.stub(logs, 'err');
-    this.logsInfo = this.sandbox.stub(logs, 'info');
+    this.error = this.sandbox.stub(log, 'error');
+    this.info = this.sandbox.stub(log, 'info');
 
     this.exists = this.sandbox.stub(fs, 'exists', (file, handler) => {
       handler(true);
@@ -127,8 +127,8 @@ exports['Preferences.write'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.state = {};
-    this.logsErr = this.sandbox.stub(logs, 'err');
-    this.logsInfo = this.sandbox.stub(logs, 'info');
+    this.error = this.sandbox.stub(log, 'error');
+    this.info = this.sandbox.stub(log, 'info');
     this.exists = this.sandbox.stub(fs, 'exists', (file, handler) => {
       handler(true);
     });

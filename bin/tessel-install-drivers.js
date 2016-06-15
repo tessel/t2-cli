@@ -8,7 +8,7 @@ var fs = require('fs');
 // ...
 
 // Internal
-var logs = require('../lib/logs');
+var log = require('../lib/log');
 
 module.exports.install = function() {
   return new Promise(function(resolve, reject) {
@@ -21,28 +21,28 @@ module.exports.install = function() {
         fs.writeFileSync(dest, rules);
       } catch (e) {
         if (e.code === 'EACCES') {
-          logs.info('Could not write to ' + dest);
-          logs.info('Run `sudo t2 install-drivers`');
+          log.info(`Could not write to ${dest}`);
+          log.info('Run "sudo t2 install-drivers"');
           return -1;
         } else {
           throw e;
         }
       }
-      logs.info('udev rules installed to ' + dest);
+      log.info(`udev rules installed to ${dest}`);
 
 
       var udevadm = child_process.spawn('udevadm', ['control', '--reload-rules']);
       udevadm.on('close', function(code) {
         if (code !== 0) {
-          logs.err('Error reloading udev');
+          log.error('Error reloading udev');
           return reject(code);
         } else {
-          logs.info('Done. Unplug and re-plug Tessel to update permissions.');
+          log.info('Done. Unplug and re-plug Tessel to update permissions.');
           return resolve(code);
         }
       });
     } else {
-      logs.info('No driver installation necessary.');
+      log.info('No driver installation necessary.');
       return resolve();
     }
   });
