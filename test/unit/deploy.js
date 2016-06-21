@@ -523,8 +523,10 @@ exports['deploy.run'] = {
     });
   },
 
-  runStdInOut: function(test) {
+  runStdInOutLan: function(test) {
     test.expect(4);
+
+    this.tessel.connection.connectionType = 'LAN';
 
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, options, callback) => {
       callback(null, this.tessel._rps);
@@ -545,6 +547,30 @@ exports['deploy.run'] = {
       test.done();
     });
   },
+
+  runStdInOutUsb: function(test) {
+    test.expect(2);
+
+    this.tessel.connection.connectionType = 'USB';
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, options, callback) => {
+      callback(null, this.tessel._rps);
+      this.tessel._rps.emit('close');
+    });
+
+    this.stdinPipe = sandbox.stub(process.stdin, 'pipe');
+    this.stdinSetRawMode = sandbox.stub(process.stdin, 'setRawMode');
+
+    deploy.run(this.tessel, {
+      resolvedEntryPoint: 'foo',
+      lang: deployment.js,
+    }).then(() => {
+      test.equal(this.stdinPipe.callCount, 0);
+      test.equal(this.stdinSetRawMode.callCount, 0);
+      test.done();
+    });
+  },
+
 };
 
 exports['deploy.createShellScript'] = {
