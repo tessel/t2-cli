@@ -1,8 +1,8 @@
 exports['init (language args)'] = {
-  setUp: (done) => {
+  setUp: function(done) {
     done();
   },
-  tearDown: (done) => {
+  tearDown: function(done) {
     done();
   },
   javascriptArgs: function(test) {
@@ -62,17 +62,17 @@ exports['init (language args)'] = {
 };
 
 exports['init --lang rust'] = {
-  setUp: (done) => {
+  setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
     done();
   },
-  tearDown: (done) => {
+  tearDown: function(done) {
     this.sandbox.restore();
     done();
   },
-  cargoVerifySucceed: (test) => {
+  cargoVerifySucceed: function(test) {
     test.expect(3);
     // Stub our own exec so we don't try running cargo on the host cpu
     this.exec = this.sandbox.stub(cp, 'exec', (command, callback) => {
@@ -101,7 +101,7 @@ exports['init --lang rust'] = {
       });
   },
 
-  cargoVerifyFail: (test) => {
+  cargoVerifyFail: function(test) {
     test.expect(4);
 
     // Stub our own exec so we don't try running cargo on the host cpu
@@ -136,26 +136,26 @@ exports['init --lang rust'] = {
 };
 
 exports['init --lang javascript'] = {
-  setUp: (done) => {
+  setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
     done();
   },
-  tearDown: (done) => {
+  tearDown: function(done) {
     this.sandbox.restore();
     done();
   },
 };
 
 exports['init --lang python'] = {
-  setUp: (done) => {
+  setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.info = this.sandbox.stub(log, 'info', function() {});
     done();
   },
-  tearDown: (done) => {
+  tearDown: function(done) {
     this.sandbox.restore();
     done();
   },
