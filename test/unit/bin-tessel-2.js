@@ -914,8 +914,8 @@ exports['Tessel (init)'] = {
     this.failedCommand = this.sandbox.stub(cli, 'closeFailedCommand');
     this.initProject = this.sandbox.spy(controller, 't2Init');
     this.detectLanguage = this.sandbox.spy(init, 'detectLanguage');
-    this.generateJavaScriptProject = this.sandbox.stub(initJavaScript, 'generateProject').returns(Promise.resolve());
-    this.generateRustProject = this.sandbox.stub(initRust, 'generateProject').returns(Promise.resolve());
+    this.generateJavaScriptProject = this.sandbox.stub(init.js, 'generateProject').returns(Promise.resolve());
+    this.generateRustProject = this.sandbox.stub(init.rs, 'generateProject').returns(Promise.resolve());
     done();
   },
 
