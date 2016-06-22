@@ -1,62 +1,44 @@
-exports['init (language args)'] = {
+exports['init.resolveLanguage()'] = {
   setUp: function(done) {
     done();
   },
   tearDown: function(done) {
     done();
   },
-  javascriptArgs: function(test) {
+  javascript: function(test) {
     test.expect(4);
     // No language arg indicates JavaScript by default
-    test.ok(init.resolveLanguage({}) === init.js);
+    test.equal(init.resolveLanguage(), init.js);
     // Can request JavaScript with explicit name
-    test.ok(init.resolveLanguage({
-      lang: 'javascript'
-    }) === init.js);
+    test.equal(init.resolveLanguage('javascript'), init.js);
     // Can request JavaScript with abbr
-    test.ok(init.resolveLanguage({
-      lang: 'js'
-    }) === init.js);
+    test.equal(init.resolveLanguage('js'), init.js);
     // This won't request JavaScript init
-    test.ok(init.resolveLanguage({
-      lang: 'something else'
-    }) !== init.js);
+    test.equal(init.resolveLanguage('something else'), null);
     test.done();
   },
-  rustArgs: function(test) {
+  rust: function(test) {
     test.expect(4);
     // No language arg does not mean Rust
-    test.ok(init.resolveLanguage({}) !== init.rs);
+    test.notEqual(init.resolveLanguage(), init.rs);
     // Can request Rust with explicit name
-    test.ok(init.resolveLanguage({
-      lang: 'rust'
-    }) === init.rs);
+    test.equal(init.resolveLanguage('rust'), init.rs);
     // Can request Rust with abbr
-    test.ok(init.resolveLanguage({
-      lang: 'rs'
-    }) === init.rs);
+    test.equal(init.resolveLanguage('rs'), init.rs);
     // This won't request Rust init
-    test.ok(init.resolveLanguage({
-      lang: 'whitespace'
-    }) !== init.rs);
+    test.equal(init.resolveLanguage('whitespace'), null);
     test.done();
   },
-  pythonArgs: function(test) {
+  python: function(test) {
     test.expect(4);
     // No language arg does not mean Rust
-    test.ok(init.resolveLanguage({}) !== init.py);
+    test.notEqual(init.resolveLanguage(), init.py);
     // Can request Rust with explicit name
-    test.ok(init.resolveLanguage({
-      lang: 'python'
-    }) === init.py);
+    test.equal(init.resolveLanguage('python'), init.py);
     // Can request Rust with abbr
-    test.ok(init.resolveLanguage({
-      lang: 'py'
-    }) === init.py);
+    test.equal(init.resolveLanguage('py'), init.py);
     // This won't request Rust init
-    test.ok(init.resolveLanguage({
-      lang: 'morse-code'
-    }) !== init.py);
+    test.equal(init.resolveLanguage('morse-code'), null);
     test.done();
   }
 };
@@ -64,8 +46,8 @@ exports['init (language args)'] = {
 exports['init --lang rust'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
     done();
   },
   tearDown: function(done) {
@@ -83,17 +65,17 @@ exports['init --lang rust'] = {
     });
 
     // Stub the generating sample code so we don't write to fs
-    this.generateRustSample = this.sandbox.stub(init.rs, 'generateRustSample').returns(Promise.resolve());
+    this.createSampleProgram = this.sandbox.stub(init.rs, 'createSampleProgram').returns(Promise.resolve());
 
     // Attempt to initialize a Rust projec
-    init.initProject({
+    init.createNewProject({
         lang: 'rust'
       })
       // It should not succeed
       .then(() => {
         // Ensure exec was called just once
         test.equal(this.exec.callCount, 1);
-        test.equal(this.generateRustSample.callCount, 1);
+        test.equal(this.createSampleProgram.callCount, 1);
         test.done();
       })
       .catch(() => {
@@ -113,10 +95,10 @@ exports['init --lang rust'] = {
     });
 
     // Stub the generating sample code so we don't write to fs
-    this.generateRustSample = this.sandbox.stub(init.rs, 'generateRustSample').returns(Promise.resolve());
+    this.createSampleProgram = this.sandbox.stub(init.rs, 'createSampleProgram').returns(Promise.resolve());
 
     // Attempt to initialize a Rust projec
-    return init.initProject({
+    init.createNewProject({
         lang: 'rust'
       })
       // It should not succeed
@@ -127,7 +109,7 @@ exports['init --lang rust'] = {
         // Ensure exec was called just once
         test.equal(this.exec.callCount, 1);
         // Ensure we did not attempt to generate Rust code
-        test.equal(this.generateRustSample.callCount, 0);
+        test.equal(this.createSampleProgram.callCount, 0);
         // Ensure we received an error
         test.ok(err instanceof Error);
         test.done();
@@ -138,21 +120,58 @@ exports['init --lang rust'] = {
 exports['init --lang javascript'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
     done();
   },
   tearDown: function(done) {
     this.sandbox.restore();
     done();
   },
+  createSampleProgram: function(test) {
+    test.expect(3);
+
+    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+      callback(false);
+    });
+
+    this.copy = this.sandbox.stub(fs, 'copy', (src, dest, callback) => {
+      callback();
+    });
+
+    init.js.createSampleProgram()
+      .then(() => {
+        test.equal(this.copy.callCount, 1);
+        test.equal(this.copy.lastCall.args[0].endsWith(path.normalize('resources/javascript/index.js')), true);
+        test.equal(this.copy.lastCall.args[1].endsWith(path.normalize('index.js')), true);
+        test.done();
+      });
+  },
+
+  createSampleProgramExists: function(test) {
+    test.expect(1);
+
+    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+      callback(true);
+    });
+
+    this.copy = this.sandbox.stub(fs, 'copy', (src, dest, callback) => {
+      callback();
+    });
+
+    init.js.createSampleProgram()
+      .then(() => {
+        test.equal(this.copy.callCount, 0);
+        test.done();
+      });
+  },
 };
 
 exports['init --lang python'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
     done();
   },
   tearDown: function(done) {

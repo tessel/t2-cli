@@ -9,11 +9,9 @@ const updateNotifier = require('update-notifier');
 const isRoot = require('is-root');
 
 // Internal
-var controller = require('../lib/controller');
 var CrashReporter = require('../lib/crash-reporter');
-var init = require('../lib/init');
+var controller = require('../lib/controller');
 var log = require('../lib/log');
-var drivers = require('./tessel-install-drivers');
 var Preferences = require('../lib/preferences');
 
 const CLI_ENTRYPOINT = 'cli.entrypoint';
@@ -40,40 +38,6 @@ if (!isRoot()) {
     });
   }
 }
-
-controller.t2Init = init.initProject;
-
-controller.crashReporter = function(options) {
-  var cr = Promise.resolve();
-
-  // t2 crash-reporter --on
-  if (options.on) {
-    cr = CrashReporter.on();
-  } else if (options.off) {
-    // t2 crash-reporter --off
-    cr = CrashReporter.off();
-  }
-
-  // t2 crash-reporter --test
-  if (options.test) {
-    // not handling failures, as we want to trigger a crash
-    cr.then(CrashReporter.test)
-      .then(module.exports.closeSuccessfulCommand);
-  } else {
-    cr.then(CrashReporter.status)
-      .then(
-        module.exports.closeSuccessfulCommand,
-        module.exports.closeFailedCommand
-      );
-  }
-
-  return cr;
-};
-
-
-controller.installDrivers = function() {
-  return drivers.install();
-};
 
 function makeCommand(commandName) {
   return parser.command(commandName)
@@ -323,7 +287,7 @@ parser.command('init')
   .callback(options => {
     log.level(options.loglevel);
 
-    callControllerWith('t2Init', options);
+    callControllerWith('createNewProject', options);
   })
   .option('interactive', {
     flag: true,
@@ -334,7 +298,7 @@ parser.command('init')
     metavar: 'LANG',
     abbr: 'l',
     default: 'js',
-    help: 'The language to use <javascript|rust|js|rs>. Javascript by default'
+    help: 'The language to use <javascript|rust|js|rs>. JavaScript by default'
   })
   .help('Initialize repository for your Tessel project');
 

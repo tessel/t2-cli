@@ -912,10 +912,8 @@ exports['Tessel (init)'] = {
 
     this.successfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
     this.failedCommand = this.sandbox.stub(cli, 'closeFailedCommand');
-    this.initProject = this.sandbox.spy(controller, 't2Init');
     this.resolveLanguage = this.sandbox.spy(init, 'resolveLanguage');
-    this.generateJavaScriptProject = this.sandbox.stub(init.js, 'generateProject').returns(Promise.resolve());
-    this.generateRustProject = this.sandbox.stub(init.rs, 'generateProject').returns(Promise.resolve());
+
     done();
   },
 
@@ -924,42 +922,84 @@ exports['Tessel (init)'] = {
     done();
   },
 
-  noOpts: function(test) {
-    test.expect(5);
-    // Call the CLI with the init command
+  'defaults to --lang=js': function(test) {
+    test.expect(3);
+
+    var resolve = Promise.resolve();
+    this.createNewProject = this.sandbox.stub(controller, 'createNewProject').returns(resolve);
+
     cli(['init']);
 
-    setImmediate(() => {
-      // Ensure it calls our internal init function
-      test.equal(this.initProject.callCount, 1);
-      // Ensure it checks the language being requested
-      test.equal(this.resolveLanguage.callCount, 1);
-      // It should generate a js project
-      test.equal(this.generateJavaScriptProject.callCount, 1);
-      // It should not generate a Rust project
-      test.equal(this.generateRustProject.callCount, 0);
-      // Ensure it continues to call our exit function
-      test.equal(this.successfulCommand.callCount, 1);
+    resolve.then(() => {
+      // Infers that the stub above called and not the actual createNewProject
+      test.equal(this.resolveLanguage.callCount, 0);
+      test.equal(this.createNewProject.callCount, 1);
+      test.equal(this.createNewProject.lastCall.args[0].lang, 'js');
       test.done();
     });
   },
 
-  rustOpts: function(test) {
-    test.expect(5);
-    // Call the CLI with the init command
+  'explicit --lang=js': function(test) {
+    test.expect(3);
+
+    var resolve = Promise.resolve();
+    this.createNewProject = this.sandbox.stub(controller, 'createNewProject').returns(resolve);
+
+    cli(['init', '--lang=js']);
+
+    resolve.then(() => {
+      // Infers that the stub above called and not the actual createNewProject
+      test.equal(this.resolveLanguage.callCount, 0);
+      test.equal(this.createNewProject.callCount, 1);
+      test.equal(this.createNewProject.lastCall.args[0].lang, 'js');
+      test.done();
+    });
+  },
+  'explicit --lang=javascript': function(test) {
+    test.expect(3);
+
+    var resolve = Promise.resolve();
+    this.createNewProject = this.sandbox.stub(controller, 'createNewProject').returns(resolve);
+
+    cli(['init', '--lang=javascript']);
+
+    resolve.then(() => {
+      // Infers that the stub above called and not the actual createNewProject
+      test.equal(this.resolveLanguage.callCount, 0);
+      test.equal(this.createNewProject.callCount, 1);
+      test.equal(this.createNewProject.lastCall.args[0].lang, 'javascript');
+      test.done();
+    });
+  },
+  'explicit --lang=rs': function(test) {
+    test.expect(3);
+
+    var resolve = Promise.resolve();
+    this.createNewProject = this.sandbox.stub(controller, 'createNewProject').returns(resolve);
+
+    cli(['init', '--lang=rs']);
+
+    resolve.then(() => {
+      // Infers that the stub above called and not the actual createNewProject
+      test.equal(this.resolveLanguage.callCount, 0);
+      test.equal(this.createNewProject.callCount, 1);
+      test.equal(this.createNewProject.lastCall.args[0].lang, 'rs');
+      test.done();
+    });
+  },
+  'explicit --lang=rust': function(test) {
+    test.expect(3);
+
+    var resolve = Promise.resolve();
+    this.createNewProject = this.sandbox.stub(controller, 'createNewProject').returns(resolve);
+
     cli(['init', '--lang=rust']);
 
-    setImmediate(() => {
-      // Ensure it calls our internal init function
-      test.equal(this.initProject.callCount, 1);
-      // Ensure it checks the language being requested
-      test.equal(this.resolveLanguage.callCount, 1);
-      // Ensure it does not attempt to generate a Rust project
-      test.equal(this.generateJavaScriptProject.callCount, 0);
-      // Ensure it does generate a Rust project
-      test.equal(this.generateRustProject.callCount, 1);
-      // Ensure it continues to call our exit function
-      test.equal(this.successfulCommand.callCount, 1);
+    resolve.then(() => {
+      // Infers that the stub above called and not the actual createNewProject
+      test.equal(this.resolveLanguage.callCount, 0);
+      test.equal(this.createNewProject.callCount, 1);
+      test.equal(this.createNewProject.lastCall.args[0].lang, 'rust');
       test.done();
     });
   },
