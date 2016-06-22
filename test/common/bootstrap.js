@@ -59,9 +59,6 @@ global.updates = require('../../lib/update-fetch');
 global.lan = require('../../lib/lan-connection');
 global.usb = require('../../lib/usb-connection');
 global.init = require('../../lib/init');
-global.initJavaScript = require('../../lib/init/javascript');
-global.initRust = require('../../lib/init/rust');
-global.initPython = require('../../lib/init/python');
 
 // ./lib/usb/*
 global.Daemon = require('../../lib/usb/usb-daemon');

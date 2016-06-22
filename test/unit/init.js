@@ -8,55 +8,55 @@ exports['init (language args)'] = {
   javascriptArgs: function(test) {
     test.expect(4);
     // No language arg indicates JavaScript by default
-    test.ok(init.detectLanguage({}) === initJavaScript);
+    test.ok(init.detectLanguage({}) === init.js);
     // Can request JavaScript with explicit name
     test.ok(init.detectLanguage({
       lang: 'javascript'
-    }) === initJavaScript);
+    }) === init.js);
     // Can request JavaScript with abbr
     test.ok(init.detectLanguage({
       lang: 'js'
-    }) === initJavaScript);
+    }) === init.js);
     // This won't request JavaScript init
     test.ok(init.detectLanguage({
       lang: 'something else'
-    }) !== initJavaScript);
+    }) !== init.js);
     test.done();
   },
   rustArgs: function(test) {
     test.expect(4);
     // No language arg does not mean Rust
-    test.ok(init.detectLanguage({}) !== initRust);
+    test.ok(init.detectLanguage({}) !== init.rs);
     // Can request Rust with explicit name
     test.ok(init.detectLanguage({
       lang: 'rust'
-    }) === initRust);
+    }) === init.rs);
     // Can request Rust with abbr
     test.ok(init.detectLanguage({
       lang: 'rs'
-    }) === initRust);
+    }) === init.rs);
     // This won't request Rust init
     test.ok(init.detectLanguage({
       lang: 'whitespace'
-    }) !== initRust);
+    }) !== init.rs);
     test.done();
   },
   pythonArgs: function(test) {
     test.expect(4);
     // No language arg does not mean Rust
-    test.ok(init.detectLanguage({}) !== initPython);
+    test.ok(init.detectLanguage({}) !== init.py);
     // Can request Rust with explicit name
     test.ok(init.detectLanguage({
       lang: 'python'
-    }) === initPython);
+    }) === init.py);
     // Can request Rust with abbr
     test.ok(init.detectLanguage({
       lang: 'py'
-    }) === initPython);
+    }) === init.py);
     // This won't request Rust init
     test.ok(init.detectLanguage({
       lang: 'morse-code'
-    }) !== initPython);
+    }) !== init.py);
     test.done();
   }
 };
@@ -83,7 +83,7 @@ exports['init --lang rust'] = {
     });
 
     // Stub the generating sample code so we don't write to fs
-    this.generateRustSample = this.sandbox.stub(initRust, 'generateRustSample').returns(Promise.resolve());
+    this.generateRustSample = this.sandbox.stub(init.rs, 'generateRustSample').returns(Promise.resolve());
 
     // Attempt to initialize a Rust projec
     init.initProject({
@@ -113,7 +113,7 @@ exports['init --lang rust'] = {
     });
 
     // Stub the generating sample code so we don't write to fs
-    this.generateRustSample = this.sandbox.stub(initRust, 'generateRustSample').returns(Promise.resolve());
+    this.generateRustSample = this.sandbox.stub(init.rs, 'generateRustSample').returns(Promise.resolve());
 
     // Attempt to initialize a Rust projec
     return init.initProject({
