@@ -5,7 +5,7 @@
   "main": "./index.js",
   "scripts": {
     "test": "grunt test",
-    "postinstall": "t2 install-drivers || true"
+    "postinstall": "t2 install-drivers --loglevel=error || true"
   },
   "bin": {
     "t2": "./bin/tessel-2.js"

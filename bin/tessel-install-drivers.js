@@ -10,9 +10,13 @@ var fs = require('fs');
 // Internal
 var log = require('../lib/log');
 
-module.exports.install = function() {
+module.exports.install = function(options) {
   return new Promise(function(resolve, reject) {
     if (process.platform === 'linux') {
+      // --loglevel may be at "error" for npm postinstall script.
+      // if it's relevant, set the loglevel to info
+      log.level('info');
+
       var rules_name = '85-tessel.rules';
       var dest = '/etc/udev/rules.d/' + rules_name;
       var rules = fs.readFileSync(__dirname + '/../resources/' + rules_name);
@@ -21,7 +25,7 @@ module.exports.install = function() {
         fs.writeFileSync(dest, rules);
       } catch (e) {
         if (e.code === 'EACCES') {
-          log.info(`Could not write to ${dest}`);
+          log.error(`Could not write to ${dest}`);
           log.info('Run "sudo t2 install-drivers"');
           return -1;
         } else {

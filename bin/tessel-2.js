@@ -72,10 +72,7 @@ controller.crashReporter = function(options) {
 
 
 controller.installDrivers = function() {
-  drivers.install().then(
-    module.exports.closeSuccessfulCommand,
-    module.exports.closeFailedCommand
-  );
+  return drivers.install();
 };
 
 function makeCommand(commandName) {
@@ -122,9 +119,9 @@ function makeCommand(commandName) {
     });
 }
 
-function callControllerWith(methodName, opts) {
+function callControllerWith(methodName, options) {
   log.spinner.start();
-  return controller[methodName](opts)
+  return controller[methodName](options)
     .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
 }
 
