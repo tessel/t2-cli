@@ -10,7 +10,7 @@ var fs = require('fs');
 // Internal
 var log = require('../lib/log');
 
-module.exports.install = function(options) {
+module.exports.install = function() {
   return new Promise(function(resolve, reject) {
     if (process.platform === 'linux') {
       // --loglevel may be at "error" for npm postinstall script.
