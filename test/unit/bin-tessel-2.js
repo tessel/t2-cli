@@ -913,7 +913,7 @@ exports['Tessel (init)'] = {
     this.successfulCommand = this.sandbox.stub(cli, 'closeSuccessfulCommand');
     this.failedCommand = this.sandbox.stub(cli, 'closeFailedCommand');
     this.initProject = this.sandbox.spy(controller, 't2Init');
-    this.detectLanguage = this.sandbox.spy(init, 'detectLanguage');
+    this.resolveLanguage = this.sandbox.spy(init, 'resolveLanguage');
     this.generateJavaScriptProject = this.sandbox.stub(init.js, 'generateProject').returns(Promise.resolve());
     this.generateRustProject = this.sandbox.stub(init.rs, 'generateProject').returns(Promise.resolve());
     done();
@@ -933,7 +933,7 @@ exports['Tessel (init)'] = {
       // Ensure it calls our internal init function
       test.equal(this.initProject.callCount, 1);
       // Ensure it checks the language being requested
-      test.equal(this.detectLanguage.callCount, 1);
+      test.equal(this.resolveLanguage.callCount, 1);
       // It should generate a js project
       test.equal(this.generateJavaScriptProject.callCount, 1);
       // It should not generate a Rust project
@@ -953,7 +953,7 @@ exports['Tessel (init)'] = {
       // Ensure it calls our internal init function
       test.equal(this.initProject.callCount, 1);
       // Ensure it checks the language being requested
-      test.equal(this.detectLanguage.callCount, 1);
+      test.equal(this.resolveLanguage.callCount, 1);
       // Ensure it does not attempt to generate a Rust project
       test.equal(this.generateJavaScriptProject.callCount, 0);
       // Ensure it does generate a Rust project

@@ -8,17 +8,17 @@ exports['init (language args)'] = {
   javascriptArgs: function(test) {
     test.expect(4);
     // No language arg indicates JavaScript by default
-    test.ok(init.detectLanguage({}) === init.js);
+    test.ok(init.resolveLanguage({}) === init.js);
     // Can request JavaScript with explicit name
-    test.ok(init.detectLanguage({
+    test.ok(init.resolveLanguage({
       lang: 'javascript'
     }) === init.js);
     // Can request JavaScript with abbr
-    test.ok(init.detectLanguage({
+    test.ok(init.resolveLanguage({
       lang: 'js'
     }) === init.js);
     // This won't request JavaScript init
-    test.ok(init.detectLanguage({
+    test.ok(init.resolveLanguage({
       lang: 'something else'
     }) !== init.js);
     test.done();
@@ -26,17 +26,17 @@ exports['init (language args)'] = {
   rustArgs: function(test) {
     test.expect(4);
     // No language arg does not mean Rust
-    test.ok(init.detectLanguage({}) !== init.rs);
+    test.ok(init.resolveLanguage({}) !== init.rs);
     // Can request Rust with explicit name
-    test.ok(init.detectLanguage({
+    test.ok(init.resolveLanguage({
       lang: 'rust'
     }) === init.rs);
     // Can request Rust with abbr
-    test.ok(init.detectLanguage({
+    test.ok(init.resolveLanguage({
       lang: 'rs'
     }) === init.rs);
     // This won't request Rust init
-    test.ok(init.detectLanguage({
+    test.ok(init.resolveLanguage({
       lang: 'whitespace'
     }) !== init.rs);
     test.done();
@@ -44,17 +44,17 @@ exports['init (language args)'] = {
   pythonArgs: function(test) {
     test.expect(4);
     // No language arg does not mean Rust
-    test.ok(init.detectLanguage({}) !== init.py);
+    test.ok(init.resolveLanguage({}) !== init.py);
     // Can request Rust with explicit name
-    test.ok(init.detectLanguage({
+    test.ok(init.resolveLanguage({
       lang: 'python'
     }) === init.py);
     // Can request Rust with abbr
-    test.ok(init.detectLanguage({
+    test.ok(init.resolveLanguage({
       lang: 'py'
     }) === init.py);
     // This won't request Rust init
-    test.ok(init.detectLanguage({
+    test.ok(init.resolveLanguage({
       lang: 'morse-code'
     }) !== init.py);
     test.done();
