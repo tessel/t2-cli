@@ -43,7 +43,7 @@ exports['init.resolveLanguage()'] = {
   }
 };
 
-exports['init --lang rust'] = {
+exports['init --lang=rust'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(log, 'warn');
@@ -117,17 +117,114 @@ exports['init --lang rust'] = {
   }
 };
 
-exports['init --lang javascript'] = {
+exports['init --lang=javascript'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
+
+    this.writeFile = this.sandbox.stub(fs, 'writeFile', (filename, encoding, callback) => {
+      callback(null, {
+        stub: true,
+        filename
+      });
+    });
+    this.readFile = this.sandbox.stub(fs, 'readFile', (filename, encoding, callback) => {
+      callback(null, {
+        stub: true,
+        filename
+      });
+    });
+    this.copy = this.sandbox.stub(fs, 'copy', (src, dest, callback) => {
+      callback();
+    });
+
+
     done();
   },
   tearDown: function(done) {
     this.sandbox.restore();
     done();
   },
+
+
+  allOperations: function(test) {
+    test.expect(11);
+
+    // THIS TEST ONLY ASSERTS THAT ALL EXPECTED
+    // OPERATIONS ARE CALLED
+    var operations = [{
+      name: 'loadNpm',
+      callCount: 1,
+    }, {
+      name: 'resolveNpmConfig',
+      callCount: 1,
+    }, {
+      name: 'buildJSON',
+      callCount: 1,
+    }, {
+      name: 'prettyPrintJson',
+      callCount: 1,
+    }, {
+      name: 'writePackageJson',
+      callCount: 1,
+    }, {
+      name: 'readPackageJson',
+      callCount: 2,
+    }, {
+      name: 'getDependencies',
+      callCount: 1,
+    }, {
+      name: 'npmInstall',
+      callCount: 1,
+    }, {
+      name: 'createTesselinclude',
+      callCount: 1,
+    }, {
+      name: 'createSampleProgram',
+      callCount: 1,
+    }, ];
+
+    operations.forEach(operation => {
+      if (this[operation.name] && this[operation.name].restore) {
+        this[operation.name].restore();
+      }
+
+      this[operation.name] = this.sandbox.stub(init.js, operation.name, () => Promise.resolve('{"a":1}'));
+    });
+
+    init.js.generateProject({})
+      .then(() => {
+        test.ok(true);
+        operations.forEach(operation => {
+          test.equal(init.js[operation.name].callCount, operation.callCount);
+        });
+        test.done();
+      });
+  },
+
+  resolveNpmConfig: function(test) {
+    test.expect(1);
+
+    init.js.resolveNpmConfig({
+        config: {
+          list: {
+            'a': 1,
+            'b': 2,
+            'c': 3
+          }
+        }
+      })
+      .then((list) => {
+        test.deepEqual(list, {
+          a: 1,
+          b: 2,
+          c: 3
+        });
+        test.done();
+      });
+  },
+
   createSampleProgram: function(test) {
     test.expect(3);
 
@@ -135,9 +232,6 @@ exports['init --lang javascript'] = {
       callback(false);
     });
 
-    this.copy = this.sandbox.stub(fs, 'copy', (src, dest, callback) => {
-      callback();
-    });
 
     init.js.createSampleProgram()
       .then(() => {
@@ -155,11 +249,37 @@ exports['init --lang javascript'] = {
       callback(true);
     });
 
-    this.copy = this.sandbox.stub(fs, 'copy', (src, dest, callback) => {
-      callback();
+    init.js.createSampleProgram()
+      .then(() => {
+        test.equal(this.copy.callCount, 0);
+        test.done();
+      });
+  },
+
+  createTesselinclude: function(test) {
+    test.expect(3);
+
+    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+      callback(false);
     });
 
-    init.js.createSampleProgram()
+    init.js.createTesselinclude()
+      .then(() => {
+        test.equal(this.copy.callCount, 1);
+        test.equal(this.copy.lastCall.args[0].endsWith(path.normalize('resources/javascript/.tesselinclude')), true);
+        test.equal(this.copy.lastCall.args[1].endsWith(path.normalize('.tesselinclude')), true);
+        test.done();
+      });
+  },
+
+  createTesselincludeExists: function(test) {
+    test.expect(1);
+
+    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+      callback(true);
+    });
+
+    init.js.createTesselinclude()
       .then(() => {
         test.equal(this.copy.callCount, 0);
         test.done();
@@ -167,7 +287,7 @@ exports['init --lang javascript'] = {
   },
 };
 
-exports['init --lang python'] = {
+exports['init --lang=python'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(log, 'warn');
