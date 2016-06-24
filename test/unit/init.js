@@ -48,12 +48,16 @@ exports['init --lang=rust'] = {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
+    this.copy = this.sandbox.stub(fs, 'copy', (source, target, callback) => {
+      callback();
+    });
     done();
   },
   tearDown: function(done) {
     this.sandbox.restore();
     done();
   },
+
   cargoVerifySucceed: function(test) {
     test.expect(3);
     // Stub our own exec so we don't try running cargo on the host cpu
@@ -114,7 +118,33 @@ exports['init --lang=rust'] = {
         test.ok(err instanceof Error);
         test.done();
       });
-  }
+  },
+
+  'src/main.rs created': function(test) {
+    test.expect(5);
+
+    // Does not exist, will be created.
+    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+      callback(false);
+    });
+
+    this.mkdir = this.sandbox.stub(fs, 'mkdir', (dirname, callback) => {
+      callback(false);
+    });
+
+    init.rs.createSampleProgram()
+      .then(() => {
+        test.equal(this.copy.callCount, 2);
+        test.equal(this.copy.firstCall.args[0].endsWith(path.normalize('/resources/rust/Cargo.toml')), true);
+        test.equal(this.copy.firstCall.args[1].endsWith(path.normalize('Cargo.toml')), true);
+        test.equal(this.copy.lastCall.args[0].endsWith(path.normalize('/resources/rust/main.rs')), true);
+        test.equal(this.copy.lastCall.args[1].endsWith(path.normalize('/src/main.rs')), true);
+        test.done();
+      })
+      .catch(() => {
+        test.ok(false, 'a rejection should not be served if cargo is installed');
+      });
+  },
 };
 
 exports['init --lang=javascript'] = {
