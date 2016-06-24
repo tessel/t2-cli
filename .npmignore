@@ -1,0 +1,10 @@
+.gitignore
+.jscsrc
+.jshintrc
+.mailmap
+.travis.yml
+/coverage/
+/node_modules/
+/test/
+appveyor.yml
+example.env
