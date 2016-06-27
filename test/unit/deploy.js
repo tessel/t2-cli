@@ -1,3 +1,5 @@
+var rust = require('../../lib/tessel/deployment/rust');
+
 process.on('uncaughtException', function(err) {
   console.error(err.stack);
 });
@@ -507,7 +509,7 @@ exports['deploy.run'] = {
       callback(null, this.tessel._rps);
 
       if (this.exec.callCount === 1) {
-        test.deepEqual(command, ['chmod', '+x', '/tmp/remote-script/rust_executable']);
+        test.deepEqual(command, ['chmod', '+x', '/tmp/remote-script/' + rust.exports.meta.binary]);
       }
       if (this.exec.callCount === 2) {
         this.tessel._rps.emit('close');
@@ -518,7 +520,7 @@ exports['deploy.run'] = {
       entryPoint: 'foo',
       lang: deployment.rs,
     }).then(() => {
-      test.deepEqual(this.exec.lastCall.args[0], ['rust_executable']);
+      test.deepEqual(this.exec.lastCall.args[0], [rust.exports.meta.binary]);
       test.done();
     });
   },
