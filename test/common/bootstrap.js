@@ -3,9 +3,11 @@ global.IS_TEST_ENV = true;
 // System Objects
 global.cp = require('child_process');
 global.events = require('events');
+global.http = require('http');
 global.os = require('os');
 global.path = require('path');
 global.stream = require('stream');
+global.url = require('url');
 global.util = require('util');
 global.zlib = require('zlib');
 
@@ -20,6 +22,7 @@ global.acorn = require('acorn');
 global.async = require('async');
 global.bindings = require('bindings');
 global.charSpinner = require('char-spinner');
+global.concat = require('concat-stream');
 global.fs = require('fs-extra');
 global.fsTemp = require('fs-temp');
 global.Ignore = require('fstream-ignore');
@@ -29,12 +32,14 @@ global.mkdirp = require('mkdirp');
 global.npmlog = require('npmlog');
 global.osenv = require('osenv');
 global.Project = require('t2-project');
+global.fstream = require('fstream');
 global.request = require('request');
 global.sinon = require('sinon');
 global.sshpk = require('sshpk');
 global.ssh = require('ssh2');
 global.tags = require('common-tags');
 global.tar = require('tar');
+global.toml = require('toml');
 global.uglify = require('uglify-js');
 
 
@@ -90,10 +95,12 @@ util.inherits(global.Request, global.Stream);
 // - test/unit/deployment/rust.js
 //
 
-global.DEPLOY_DIR = path.join(process.cwd(), 'test/unit/', 'tmp');
-global.DEPLOY_FILE = path.join(global.DEPLOY_DIR, 'app.js');
-global.codeContents = 'console.log("testing deploy");';
-global.reference = new Buffer(global.codeContents);
+global.DEPLOY_DIR_JS = path.join(process.cwd(), 'test/unit/', 'tmp');
+global.DEPLOY_FILE_JS = path.join(global.DEPLOY_DIR_JS, 'app.js');
+global.jsCodeContents = 'console.log("testing deploy");';
+global.jsCodeReference = new Buffer(global.jsCodeContents);
+
+global.DEPLOY_DIR_RS = path.join(process.cwd(), 'test/unit/fixtures', 'rust-deploy-template');
 
 
 global.deployTestCode = function(tessel, opts, callback) {
@@ -115,7 +122,7 @@ global.deployTestCode = function(tessel, opts, callback) {
 
       // Actually deploy the script
       tessel.deploy({
-          entryPoint: path.relative(process.cwd(), global.DEPLOY_FILE),
+          entryPoint: path.relative(process.cwd(), global.DEPLOY_FILE_JS),
           push: opts.push,
           single: opts.single
         })
@@ -131,11 +138,11 @@ global.deployTestCode = function(tessel, opts, callback) {
 
 global.createTemporaryDeployCode = function() {
   return new Promise((resolve, reject) => {
-    mkdirp(global.DEPLOY_DIR, (err) => {
+    mkdirp(global.DEPLOY_DIR_JS, (err) => {
       if (err) {
         return reject(err);
       } else {
-        fs.writeFile(global.DEPLOY_FILE, codeContents, (err) => {
+        fs.writeFile(global.DEPLOY_FILE_JS, jsCodeContents, (err) => {
           if (err) {
             reject(err);
           } else {
@@ -149,7 +156,7 @@ global.createTemporaryDeployCode = function() {
 
 global.deleteTemporaryDeployCode = function() {
   return new Promise(function(resolve, reject) {
-    fs.remove(global.DEPLOY_DIR, (err) => {
+    fs.remove(global.DEPLOY_DIR_JS, (err) => {
       if (err) {
         reject(err);
       } else {
