@@ -64,7 +64,7 @@ exports['Deployment: JavaScript'] = {
 
     createTemporaryDeployCode().then(() => {
       var tb = deployment.js.tarBundle({
-        target: DEPLOY_DIR
+        target: DEPLOY_DIR_JS
       });
 
       tb.then(bundle => {
@@ -169,7 +169,7 @@ exports['Deployment: JavaScript'] = {
 
         // Actually deploy the script
         this.tessel.deploy({
-            entryPoint: path.relative(process.cwd(), DEPLOY_FILE),
+            entryPoint: path.relative(process.cwd(), DEPLOY_FILE_JS),
             push: false,
             single: false
           })
