@@ -1721,6 +1721,7 @@ exports['deploy.sendBundle, error handling'] = {
   },
 
   tearDown: function(done) {
+    this.tessel.mockClose();
     sandbox.restore();
     done();
   },
@@ -2478,6 +2479,7 @@ exports['deploy.createShellScript'] = {
     done();
   },
   tearDown: function(done) {
+    this.tessel.mockClose();
     sandbox.restore();
     done();
   },
@@ -2564,4 +2566,50 @@ exports['deployment.js.lists'] = {
     test.done();
   }
 
+};
+
+
+exports['deployment.js.postRun'] = {
+  setUp: function(done) {
+    this.info = sandbox.stub(log, 'info');
+    this.stdinPipe = sandbox.stub(process.stdin, 'pipe');
+    this.stdinSetRawMode = sandbox.stub(process.stdin, 'setRawMode');
+    this.tessel = TesselSimulator();
+    done();
+  },
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    sandbox.restore();
+    done();
+  },
+
+  postRunLAN: function(test) {
+    test.expect(2);
+
+    this.tessel.connection.connectionType = 'LAN';
+    deployment.js.postRun(this.tessel, {
+      remoteProcess: {
+        stdin: null
+      }
+    }).then(() => {
+      test.equal(this.stdinPipe.callCount, 1);
+      test.equal(this.stdinSetRawMode.callCount, 1);
+      test.done();
+    });
+  },
+
+  postRunUSB: function(test) {
+    test.expect(2);
+
+    this.tessel.connection.connectionType = 'USB';
+    deployment.js.postRun(this.tessel, {
+      remoteProcess: {
+        stdin: null
+      }
+    }).then(() => {
+      test.equal(this.stdinPipe.callCount, 0);
+      test.equal(this.stdinSetRawMode.callCount, 0);
+      test.done();
+    });
+  },
 };

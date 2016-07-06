@@ -397,9 +397,7 @@ exports['Tessel.prototype.restart'] = {
 
   tearDown: function(done) {
     this.tessel.mockClose();
-
     sandbox.restore();
-
     done();
   },
 
@@ -479,6 +477,7 @@ exports['deploy.run'] = {
     done();
   },
   tearDown: function(done) {
+    this.tessel.mockClose();
     sandbox.restore();
     done();
   },
@@ -523,54 +522,45 @@ exports['deploy.run'] = {
     });
   },
 
-  runStdInOutLan: function(test) {
-    test.expect(4);
+  runPostRunExistsLAN: function(test) {
+    test.expect(1);
 
     this.tessel.connection.connectionType = 'LAN';
 
+    this.postRun = sandbox.stub(deployment.js, 'postRun', () => Promise.resolve());
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, options, callback) => {
       callback(null, this.tessel._rps);
       this.tessel._rps.emit('close');
     });
 
-    this.stdinPipe = sandbox.stub(process.stdin, 'pipe');
-    this.stdinSetRawMode = sandbox.stub(process.stdin, 'setRawMode');
-
     deploy.run(this.tessel, {
       resolvedEntryPoint: 'foo',
       lang: deployment.js,
     }).then(() => {
-      test.equal(this.stdinPipe.callCount, 1);
-      test.equal(this.stdinPipe.lastCall.args[0], this.tessel._rps.stdin);
-      test.equal(this.stdinSetRawMode.callCount, 1);
-      test.equal(this.stdinSetRawMode.lastCall.args[0], true);
+      test.equal(this.postRun.callCount, 1);
       test.done();
     });
   },
 
-  runStdInOutUsb: function(test) {
-    test.expect(2);
+  runPostRunExistsUSB: function(test) {
+    test.expect(1);
 
     this.tessel.connection.connectionType = 'USB';
-
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, options, callback) => {
       callback(null, this.tessel._rps);
       this.tessel._rps.emit('close');
     });
 
-    this.stdinPipe = sandbox.stub(process.stdin, 'pipe');
-    this.stdinSetRawMode = sandbox.stub(process.stdin, 'setRawMode');
+    this.postRun = sandbox.stub(deployment.js, 'postRun', () => Promise.resolve());
 
     deploy.run(this.tessel, {
       resolvedEntryPoint: 'foo',
       lang: deployment.js,
     }).then(() => {
-      test.equal(this.stdinPipe.callCount, 0);
-      test.equal(this.stdinSetRawMode.callCount, 0);
+      test.equal(this.postRun.callCount, 1);
       test.done();
     });
   },
-
 };
 
 exports['deploy.createShellScript'] = {
@@ -580,6 +570,7 @@ exports['deploy.createShellScript'] = {
     done();
   },
   tearDown: function(done) {
+    this.tessel.mockClose();
     sandbox.restore();
     done();
   },
