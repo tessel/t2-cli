@@ -391,6 +391,7 @@ exports['Tessel.prototype.restart'] = {
     this.info = sandbox.stub(log, 'info', function() {});
 
     this.tessel = TesselSimulator();
+    this.simpleExec = sandbox.spy(this.tessel, 'simpleExec');
 
     done();
   },
@@ -402,7 +403,7 @@ exports['Tessel.prototype.restart'] = {
   },
 
   restartFromRam: function(test) {
-    test.expect(4);
+    test.expect(6);
     var opts = {
       type: 'ram',
       entryPoint: 'index.js',
@@ -417,6 +418,9 @@ exports['Tessel.prototype.restart'] = {
         test.equal(options.entryPoint, 'index.js');
         test.equal(options.lang.meta.name, 'javascript');
 
+        test.equal(this.simpleExec.callCount, 1);
+        test.deepEqual(this.simpleExec.lastCall.args[0], [ 'cat', '/tmp/remote-script/index.js' ]);
+
         test.done();
       });
 
@@ -426,7 +430,7 @@ exports['Tessel.prototype.restart'] = {
   },
 
   restartFromFlash: function(test) {
-    test.expect(5);
+    test.expect(7);
     var opts = {
       type: 'flash',
       entryPoint: 'index.js',
@@ -441,6 +445,10 @@ exports['Tessel.prototype.restart'] = {
         test.equal(options.type, 'flash');
         test.equal(options.entryPoint, 'index.js');
         test.equal(options.lang.meta.name, 'javascript');
+
+        test.equal(this.simpleExec.callCount, 1);
+        test.deepEqual(this.simpleExec.lastCall.args[0], [ 'cat', '/app/remote-script/index.js' ]);
+
         test.done();
       });
 
@@ -466,6 +474,39 @@ exports['Tessel.prototype.restart'] = {
       this.tessel._rps.stderr.emit('data', new Buffer('No such file or directory'));
       this.tessel._rps.emit('close');
     });
+  },
+};
+
+
+exports['deploy.start'] = {
+  setUp: function(done) {
+    this.resolveLanguage = sandbox.spy(deployment, 'resolveLanguage');
+    this.warn = sandbox.stub(log, 'warn', function() {});
+    this.info = sandbox.stub(log, 'info', function() {});
+
+    this.tessel = TesselSimulator();
+    this.simpleExec = sandbox.stub(this.tessel, 'simpleExec', () => Promise.resolve());
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    sandbox.restore();
+    done();
+  },
+
+  start: function(test) {
+    test.expect(4);
+
+    deploy.start(this.tessel, 'index.js')
+      .then(() => {
+        test.equal(this.simpleExec.callCount, 3);
+        test.deepEqual(this.simpleExec.firstCall.args[0], [ 'mv', '/tmp/remote-script/', '/app/' ]);
+        test.deepEqual(this.simpleExec.secondCall.args[0], [ '/etc/init.d/tessel-app', 'enable' ]);
+        test.deepEqual(this.simpleExec.thirdCall.args[0], [ '/etc/init.d/tessel-app', 'start' ]);
+        test.done();
+      });
   },
 };
 
@@ -593,5 +634,19 @@ exports['deploy.createShellScript'] = {
       test.deepEqual(this.exec.lastCall.args[0], ['chmod', '+x', '/app/start']);
       test.done();
     });
+  }
+};
+
+
+exports['Tessel.REMOTE_*_PATH'] = {
+  expectedPaths: function(test) {
+    test.expect(4);
+
+    test.equal(Tessel.REMOTE_APP_PATH, '/app/');
+    test.equal(Tessel.REMOTE_TMP_PATH, '/tmp/');
+    test.equal(Tessel.REMOTE_SCRIPT_PATH, '/remote-script/');
+    test.equal(Tessel.REMOTE_RUN_PATH, path.posix.join(Tessel.REMOTE_TMP_PATH, Tessel.REMOTE_SCRIPT_PATH));
+
+    test.done();
   }
 };
