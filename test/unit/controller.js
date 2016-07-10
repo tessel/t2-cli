@@ -1065,6 +1065,104 @@ exports['controller.closeTesselConnections'] = {
         test.done();
       });
   },
+
+  invalidAccessPointWEPPasswordCharacters: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+      ssid: 'test',
+      password: 'nothexdigits',
+      security: 'wep'
+    })
+    .catch(error => {
+      test.ok(error);
+      test.done();
+    });
+  },
+
+  invalidAccessPointWEPPasswordLength: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+      ssid: 'test',
+      password: '0123456789ABCDEF',
+      security: 'wep'
+    })
+    .catch(error => {
+      test.ok(error);
+      test.done();
+    });
+  },
+
+  invalidAccessPointPSKPasswordCharacters: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+      ssid: 'test',
+      password: 'Password™',
+      security: 'psk'
+    })
+    .catch(error => {
+      test.ok(error);
+      test.done();
+    });
+  },
+
+  invalidAccessPointPSKASCIIPasswordTooShort: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+      ssid: 'test',
+      password: 'short',
+      security: 'psk'
+    })
+    .catch(error => {
+      test.ok(error);
+      test.done();
+    });
+  },
+
+  invalidAccessPointPSKASCIIPasswordTooLong: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+      ssid: 'test',
+      password: 'this is a very long passphrase. in fact, it is over 63 characters, which makes it invalid.',
+      security: 'psk'
+    })
+    .catch(error => {
+      test.ok(error);
+      test.done();
+    });
+  },
+
+  invalidAccessPointPSKHexPasswordTooShort: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+      ssid: 'test',
+      password: 'DEAD',
+      security: 'psk'
+    })
+    .catch(error => {
+      test.ok(error);
+      test.done();
+    });
+  },
+
+  invalidAccessPointPSKHexPasswordTooLong: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+      ssid: 'test',
+      password: 'DEADDEADDEADDEADDEADDEADDEADDEADDEADDEADDEADDEADDEADDEADDEADDEADDEAD',
+      security: 'psk'
+    })
+    .catch(error => {
+      test.ok(error);
+      test.done();
+    });
+  },
 };
 
 exports['controller.root'] = {
