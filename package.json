@@ -32,6 +32,7 @@
   "homepage": "https://github.com/tessel/t2-cli",
   "devDependencies": {
     "coveralls": "^2.11.9",
+    "concat-stream": "^1.5.1",
     "grunt": "^0.4.5",
     "grunt-cli": "^0.1.13",
     "grunt-contrib-jshint": "^0.11.2",
@@ -113,6 +114,7 @@
     "Rahul Ravikumar <rahul@rahulrav.com>",
     "Neil Kistner <neil.kistner@gmail.com>",
     "Thomas Jansen <thojansen@gmail.com>",
-    "Scott González <scott.gonzalez@gmail.com>"
+    "Scott González <scott.gonzalez@gmail.com>",
+    "Chris Lewis <cflewis@google.com>"
   ]
 }

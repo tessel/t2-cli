@@ -121,7 +121,7 @@ exports['Tessel.prototype.deploy'] = {
     this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.resolve());
     this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', function() {
       return new Promise(function(resolve) {
-        resolve(reference);
+        resolve(jsCodeReference);
       });
     });
 
@@ -365,7 +365,7 @@ exports['Tessel.prototype.deploy'] = {
 
         // Actually deploy the script
         this.tessel.deploy({
-            entryPoint: path.relative(process.cwd(), DEPLOY_FILE),
+            entryPoint: path.relative(process.cwd(), DEPLOY_FILE_JS),
             push: false,
             single: false
           })
@@ -526,16 +526,18 @@ exports['deploy.run'] = {
   runResolveEntryPoint: function(test) {
     test.expect(1);
 
+    var entryPoint = 'foo';
+
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, opts, callback) => {
       callback(null, this.tessel._rps);
       this.tessel._rps.emit('close');
     });
 
     deploy.run(this.tessel, {
-      entryPoint: 'foo',
+      entryPoint: entryPoint,
       lang: deployment.js,
     }).then(() => {
-      test.deepEqual(this.exec.lastCall.args[0], ['node', '/tmp/remote-script/foo']);
+      test.deepEqual(this.exec.lastCall.args[0], [deployment.js.meta.binary, Tessel.REMOTE_RUN_PATH + entryPoint]);
       test.done();
     });
   },
@@ -543,22 +545,32 @@ exports['deploy.run'] = {
   runResolveEntryPointWithPreRun: function(test) {
     test.expect(2);
 
+    var entryPoint = 'foo';
+
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, opts, callback) => {
+
+      if (callback === undefined) {
+        callback = opts;
+        opts = {};
+      }
+
       callback(null, this.tessel._rps);
 
       if (this.exec.callCount === 1) {
-        test.deepEqual(command, ['chmod', '+x', '/tmp/remote-script/rust_executable']);
+        test.deepEqual(command, ['chmod', '+x', '/tmp/remote-script/' + entryPoint]);
       }
+
       if (this.exec.callCount === 2) {
-        this.tessel._rps.emit('close');
+        test.deepEqual(command, [Tessel.REMOTE_RUN_PATH + entryPoint]);
       }
+
+      this.tessel._rps.emit('close');
     });
 
     deploy.run(this.tessel, {
-      entryPoint: 'foo',
+      entryPoint: entryPoint,
       lang: deployment.rs,
     }).then(() => {
-      test.deepEqual(this.exec.lastCall.args[0], ['rust_executable']);
       test.done();
     });
   },
