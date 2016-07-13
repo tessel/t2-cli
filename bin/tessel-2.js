@@ -204,8 +204,7 @@ makeCommand('run')
     help: 'Deploy a project containing all files within, including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.'
   })
   .option('rustcc', {
-    // TODO: make this point to a long-lived server somewhere
-    default: 'http://localhost:8080',
+    default: 'http://192.241.138.79:49160',
     help: 'Specify the location and port of the Rust cross-compilation server.'
   })
   .help(`
@@ -254,6 +253,10 @@ makeCommand('push')
     flag: true,
     default: false,
     help: 'Deploy a project containing all files within, including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.'
+  })
+  .option('rustcc', {
+    default: 'http://192.241.138.79:49160',
+    help: 'Specify the location and port of the Rust cross-compilation server.'
   })
   .help(`
     Pushes the file/dir to Flash memory to be run anytime the Tessel is powered,
