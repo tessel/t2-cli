@@ -419,7 +419,7 @@ exports['Tessel.prototype.restart'] = {
         test.equal(options.lang.meta.name, 'javascript');
 
         test.equal(this.simpleExec.callCount, 1);
-        test.deepEqual(this.simpleExec.lastCall.args[0], [ 'cat', '/tmp/remote-script/index.js' ]);
+        test.deepEqual(this.simpleExec.lastCall.args[0], ['cat', '/tmp/remote-script/index.js']);
 
         test.done();
       });
@@ -447,7 +447,7 @@ exports['Tessel.prototype.restart'] = {
         test.equal(options.lang.meta.name, 'javascript');
 
         test.equal(this.simpleExec.callCount, 1);
-        test.deepEqual(this.simpleExec.lastCall.args[0], [ 'cat', '/app/remote-script/index.js' ]);
+        test.deepEqual(this.simpleExec.lastCall.args[0], ['cat', '/app/remote-script/index.js']);
 
         test.done();
       });
@@ -502,9 +502,9 @@ exports['deploy.start'] = {
     deploy.start(this.tessel, 'index.js')
       .then(() => {
         test.equal(this.simpleExec.callCount, 3);
-        test.deepEqual(this.simpleExec.firstCall.args[0], [ 'mv', '/tmp/remote-script/', '/app/' ]);
-        test.deepEqual(this.simpleExec.secondCall.args[0], [ '/etc/init.d/tessel-app', 'enable' ]);
-        test.deepEqual(this.simpleExec.thirdCall.args[0], [ '/etc/init.d/tessel-app', 'start' ]);
+        test.deepEqual(this.simpleExec.firstCall.args[0], ['mv', '/tmp/remote-script/', '/app/']);
+        test.deepEqual(this.simpleExec.secondCall.args[0], ['/etc/init.d/tessel-app', 'enable']);
+        test.deepEqual(this.simpleExec.thirdCall.args[0], ['/etc/init.d/tessel-app', 'start']);
         test.done();
       });
   },
