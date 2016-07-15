@@ -1,4 +1,5 @@
 // Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
 
 var builds = [{
   sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',

@@ -1,4 +1,5 @@
 // Test dependencies are required and exposed in common/bootstrap.js
+require('./bootstrap');
 
 function TesselSimulator(options) {
 

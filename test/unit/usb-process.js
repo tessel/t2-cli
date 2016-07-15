@@ -1,3 +1,6 @@
+// Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
+
 exports['USBProcess death'] = {
   setUp: function(done) {
     this.context = sinon.sandbox.create();

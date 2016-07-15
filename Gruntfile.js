@@ -11,7 +11,6 @@ module.exports = (grunt) => {
   grunt.initConfig({
     nodeunit: {
       tests: [
-        'test/common/bootstrap.js',
         'test/unit/*.js',
         'test/unit/deployment/*.js',
       ]

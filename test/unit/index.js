@@ -1,3 +1,6 @@
+// Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
+
 var api = require('../../index');
 
 exports['API Surface'] = {

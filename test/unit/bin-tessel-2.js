@@ -1,4 +1,5 @@
 // Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
 
 // If the defaults are intentionally changed in bin-tessel-2,
 // then they must be changed here as well. This ensures that the

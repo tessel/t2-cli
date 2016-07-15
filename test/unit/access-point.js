@@ -1,5 +1,5 @@
 // Test dependencies are required and exposed in common/bootstrap.js
-
+require('../common/bootstrap');
 
 exports['Tessel.prototype.createAccessPoint'] = {
   setUp: function(done) {
