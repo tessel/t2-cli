@@ -164,7 +164,7 @@ exports['deploy.rust'] = {
 
   remoteRustCompilationStderr: function(test) {
 
-    test.expect(3);
+    test.expect(2);
 
     // stderr will be written to when compilation fails
     var stderr = 'Compilation failed: you need to camelcase everything.';
@@ -173,7 +173,7 @@ exports['deploy.rust'] = {
     var result = JSON.stringify({
       stderr: stderr,
       stdout: '',
-      binary: null,
+      binary: new Buffer(0),
     });
 
     // When we get a write to the post request
@@ -186,15 +186,12 @@ exports['deploy.rust'] = {
         rustcc: 'remote-server',
         target: DEPLOY_DIR_RS
       })
-      .catch((err) => {
+      .then(() => {
         // Check the options of the call to http
         test.equal(this.httpRequest.callCount, 1);
 
-        // Ensure it fails with the provided error
-        test.equal(stderr, err.message);
-
-        // Ensure that this error is an Error Oject
-        test.ok(err instanceof Error);
+        // Ensure it prints out the standard error
+        test.equal(this.info.secondCall.args[0], stderr);
 
         // We have finished the test
         test.done();
