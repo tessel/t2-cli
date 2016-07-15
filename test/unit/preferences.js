@@ -1,3 +1,5 @@
+// Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
 /*global Preferences */
 
 exports['Preferences'] = {

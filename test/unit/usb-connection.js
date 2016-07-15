@@ -1,4 +1,5 @@
 // Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
 
 exports['USB.Connection'] = {
   setUp: function(done) {

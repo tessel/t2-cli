@@ -1,4 +1,5 @@
 // Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
 
 var testDir = __dirname + '/tmp/';
 var testFile = 'test_rsa';

@@ -1,7 +1,9 @@
+// Test dependencies are required and exposed in common/bootstrap.js
+require('../../common/bootstrap');
+
 process.on('uncaughtException', function(err) {
   console.error(err.stack);
 });
-// Test dependencies are required and exposed in common/bootstrap.js
 
 var codeContents = 'console.log("testing deploy");';
 var reference = new Buffer(codeContents);

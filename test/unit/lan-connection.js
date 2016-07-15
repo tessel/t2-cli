@@ -1,4 +1,5 @@
 // Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
 
 exports['LAN.Connection'] = {
   setUp: function(done) {

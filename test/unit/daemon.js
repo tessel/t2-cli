@@ -1,3 +1,6 @@
+// Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
+
 module.exports['Daemon._nextID'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();

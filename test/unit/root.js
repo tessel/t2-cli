@@ -1,3 +1,6 @@
+// Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
+
 exports['tessel.root'] = {
   setUp: function(done) {
     var testContext = this;

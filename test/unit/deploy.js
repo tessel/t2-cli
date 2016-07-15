@@ -1,7 +1,9 @@
+// Test dependencies are required and exposed in common/bootstrap.js
+require('../common/bootstrap');
+
 process.on('uncaughtException', function(err) {
   console.error(err.stack);
 });
-// Test dependencies are required and exposed in common/bootstrap.js
 
 var meminfo = fs.readFileSync('test/unit/fixtures/proc-meminfo', 'utf8');
 var sandbox = sinon.sandbox.create();
