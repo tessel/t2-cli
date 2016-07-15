@@ -1,4 +1,4 @@
-/// A blinky example for Tessel
+//! A blinky example for Tessel
 
 // Import the tessel library
 extern crate rust_tessel;
