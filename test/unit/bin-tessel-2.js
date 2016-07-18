@@ -1005,3 +1005,70 @@ exports['Tessel (init)'] = {
     });
   },
 };
+
+
+exports['Tessel (cli: installer-*)'] = {
+
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+
+    this.closeSuccessful = this.sandbox.stub(cli, 'closeSuccessfulCommand');
+    this.closeFailed = this.sandbox.stub(cli, 'closeFailedCommand');
+
+    this.drivers = this.sandbox.stub(installer, 'drivers').returns(Promise.resolve());
+    this.homedir = this.sandbox.stub(installer, 'homedir').returns(Promise.resolve());
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  npmScriptPostinstall: function(test) {
+    test.expect(1);
+
+    test.equal(
+      cliPackageJson.scripts.postinstall,
+      't2 install-drivers --loglevel=error || true; t2 install-homedir --loglevel=error || true;'
+    );
+
+    test.done();
+  },
+
+  callThroughNoOptions: function(test) {
+    test.expect(8);
+
+    var dresolve = Promise.resolve();
+    var hresolve = Promise.resolve();
+
+    this.drivers.restore();
+    this.homedir.restore();
+
+    this.drivers = this.sandbox.stub(installer, 'drivers').returns(dresolve);
+    this.homedir = this.sandbox.stub(installer, 'homedir').returns(hresolve);
+
+    cli(['install-drivers']);
+    cli(['install-homedir']);
+
+    test.equal(this.drivers.callCount, 1);
+    test.equal(this.homedir.callCount, 1);
+
+    Promise.all([dresolve, hresolve]).then(() => {
+      test.equal(this.drivers.callCount, 1);
+      test.equal(this.homedir.callCount, 1);
+
+      test.equal(this.drivers.lastCall.args[0][0], 'install-drivers');
+      test.equal(this.homedir.lastCall.args[0][0], 'install-homedir');
+
+      test.equal(this.drivers.lastCall.args[0].operation, 'drivers');
+      test.equal(this.homedir.lastCall.args[0].operation, 'homedir');
+
+      test.done();
+    });
+  },
+};
