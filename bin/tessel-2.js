@@ -213,6 +213,11 @@ makeCommand('run')
     default: false,
     help: 'Deploy a project containing all files within, including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.'
   })
+  .option('compress', {
+    flag: true,
+    default: true,
+    help: 'Compression steps during deployment. To skip compression, use --compress=false.'
+  })
   .option('rustcc', {
     default: 'http://192.241.138.79:49160',
     help: 'Specify the location and port of the Rust cross-compilation server.'
