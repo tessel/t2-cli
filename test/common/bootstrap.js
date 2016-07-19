@@ -59,11 +59,12 @@ global.Menu = require('../../lib/menu');
 global.Preferences = require('../../lib/preferences');
 global.controller = require('../../lib/controller');
 global.discover = require('../../lib/discover');
+global.init = require('../../lib/init');
+global.installer = require('../../lib/installer');
 global.log = require('../../lib/log');
 global.updates = require('../../lib/update-fetch');
 global.lan = require('../../lib/lan-connection');
 global.usb = require('../../lib/usb-connection');
-global.init = require('../../lib/init');
 
 // ./lib/usb/*
 global.Daemon = require('../../lib/usb/usb-daemon');
@@ -76,6 +77,8 @@ global.RemoteProcessSimulator = require('../common/remote-process-simulator');
 // ./bin/*
 global.cli = require('../../bin/tessel-2');
 
+// ./package.json
+global.cliPackageJson = require('../../package.json');
 
 // Shorthands
 global.LAN = lan.LAN;

@@ -93,9 +93,19 @@ parser.command('install-drivers')
   .callback(options => {
     log.level(options.loglevel);
 
-    callControllerWith('installDrivers', options);
+    options.operation = 'drivers';
+    callControllerWith('installer', options);
   })
   .help('Install drivers');
+
+parser.command('install-homedir')
+  .callback(options => {
+    log.level(options.loglevel);
+
+    options.operation = 'homedir';
+    callControllerWith('installer', options);
+  })
+  .help('Install homedir: ~/.tessel');
 
 parser.command('crash-reporter')
   .callback(options => {
