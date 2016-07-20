@@ -72,6 +72,57 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
     });
   },
 
+  dedupeNetworks: function(test) {
+    test.expect(2);
+
+    var networks =
+      `Cell 01 - Address: 14:35:8B:11:30:F0
+              ESSID: "technicallyHome"
+              Mode: Master  Channel: 11
+              Signal: -55 dBm  Quality: 55/70
+              Encryption: mixed WPA/WPA2 PSK (TKIP, CCMP)
+
+    Cell 02 - Address: 6C:70:9F:D9:7A:5C
+              ESSID: "Fried Chicken Sandwich"
+              Mode: Master  Channel: 2
+              Signal: -51 dBm  Quality: 59/70
+              Encryption: WPA2 PSK (CCMP)
+
+    Cell 03 - Address: 6C:70:9F:D9:7A:5C
+              ESSID: "Fried Chicken Sandwich"
+              Mode: Master  Channel: 2
+              Signal: -51 dBm  Quality: 59/70
+              Encryption: WPA2 PSK (CCMP)
+
+    Cell 04 - Address: 6C:70:9F:D9:7A:5C
+              ESSID: "Fried Chicken Sandwich"
+              Mode: Master  Channel: 2
+              Signal: -51 dBm  Quality: 59/70
+              Encryption: WPA2 PSK (CCMP)
+
+    Cell 05 - Address: 6C:70:9F:D9:7A:5C
+              ESSID: "Fried Chicken Sandwich"
+              Mode: Master  Channel: 2
+              Signal: -51 dBm  Quality: 59/70
+              Encryption: WPA2 PSK (CCMP)
+
+`;
+    // Do not remove the blank line at the end of preceding string!!
+
+    this.tessel.findAvailableNetworks()
+      .then((found) => {
+        test.equal(found.length, 2);
+        test.equal(this.findAvailableNetworks.callCount, 1);
+        test.done();
+      });
+
+    this.tessel._rps.stdout.push(networks);
+
+    setImmediate(() => {
+      this.tessel._rps.emit('close');
+    });
+  },
+
   compareSignalStrengths: function(test) {
     test.expect(5);
 
