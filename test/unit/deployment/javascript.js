@@ -96,11 +96,37 @@ exports['Deployment: JavaScript'] = {
 
     var shellScript = tags.stripIndent `
       #!/bin/sh
+      exec node /app/remote-script/index.js --key=value
+    `;
+    var opts = {
+      lang: deployment.js,
+      resolvedEntryPoint: 'index.js',
+      subargs: ['--key=value'],
+    };
+    this.end.restore();
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
+      test.equal(buffer.toString(), shellScript);
+      test.done();
+    });
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      return callback(null, this.tessel._rps);
+    });
+
+    deploy.createShellScript(this.tessel, opts);
+  },
+
+  createShellScriptDefaultEntryPointNoSubargs: function(test) {
+    test.expect(1);
+
+    var shellScript = tags.stripIndent `
+      #!/bin/sh
       exec node /app/remote-script/index.js
     `;
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'index.js',
+      subargs: [],
     };
     this.end.restore();
     this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
@@ -120,11 +146,12 @@ exports['Deployment: JavaScript'] = {
 
     var shellScript = tags.stripIndent `
       #!/bin/sh
-      exec node /app/remote-script/index.js
+      exec node /app/remote-script/index.js --key=value
     `;
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'index.js',
+      subargs: ['--key=value'],
     };
     this.end.restore();
     this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
@@ -2552,7 +2579,29 @@ exports['deploy.createShellScript'] = {
 
     var opts = {
       lang: deployment.js,
-      resolvedEntryPoint: 'foo'
+      resolvedEntryPoint: 'foo',
+      subargs: [],
+    };
+
+    deploy.createShellScript(this.tessel, opts).then(() => {
+      test.deepEqual(this.exec.firstCall.args[0], ['dd', 'of=/app/start']);
+      test.deepEqual(this.exec.lastCall.args[0], ['chmod', '+x', '/app/start']);
+      test.done();
+    });
+  },
+
+  remoteShellScriptPathIsNotPathNormalizedWithSubargs: function(test) {
+    test.expect(2);
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      callback(null, this.tessel._rps);
+      this.tessel._rps.emit('close');
+    });
+
+    var opts = {
+      lang: deployment.js,
+      resolvedEntryPoint: 'foo',
+      subargs: ['--key=value'],
     };
 
     deploy.createShellScript(this.tessel, opts).then(() => {
