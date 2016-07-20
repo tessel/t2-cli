@@ -172,6 +172,7 @@ exports['Deployment: JavaScript'] = {
         // Actually deploy the script
         this.tessel.deploy({
             entryPoint: path.relative(process.cwd(), DEPLOY_FILE_JS),
+            compress: true,
             push: false,
             single: false
           })
@@ -542,6 +543,7 @@ exports['deployment.js.tarBundle'] = {
 
     deployment.js.tarBundle({
       target: path.normalize(target),
+      compress: true,
       full: true,
     }).then(bundle => {
 
@@ -612,6 +614,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then(bundle => {
       // These things happen in the --slim path
@@ -670,6 +673,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then(bundle => {
       extract(bundle, (error, entries) => {
@@ -682,6 +686,40 @@ exports['deployment.js.tarBundle'] = {
           'index.js',
           'package.json',
         ]);
+        test.done();
+      });
+    }).catch(() => {
+      test.ok(false, 'Compression should not produce errors');
+      test.done();
+    });
+  },
+
+  compressionIsSkipped: function(test) {
+    test.expect(2);
+
+    var entryPoint = 'index.js';
+    var target = 'test/unit/fixtures/syntax-error';
+
+    deployment.js.tarBundle({
+      target: path.normalize(target),
+      resolvedEntryPoint: entryPoint,
+      compress: false,
+      slim: true,
+    }).then(bundle => {
+      extract(bundle, (error, entries) => {
+        if (error) {
+          test.ok(false, error.toString());
+          test.done();
+        }
+
+        // compression mechanism is never called when --compress=false
+        test.equal(this.compress.callCount, 0);
+        test.deepEqual(entries, [
+          'arrow.js',
+          'index.js',
+          'package.json',
+        ]);
+
         test.done();
       });
     }).catch(() => {
@@ -707,6 +745,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then(bundle => {
       test.equal(this.project.callCount, 1);
@@ -739,6 +778,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       entryPoint: entryPoint,
+      compress: true,
       resolvedEntryPoint: entryPoint,
       single: true,
       slim: true,
@@ -768,6 +808,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       entryPoint: entryPoint,
+      compress: true,
       resolvedEntryPoint: path.join('nested', entryPoint),
       single: true,
       slim: true,
@@ -798,6 +839,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       entryPoint: entryPoint,
+      compress: true,
       resolvedEntryPoint: entryPoint,
       single: true,
       full: true,
@@ -826,6 +868,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       entryPoint: entryPoint,
+      compress: true,
       resolvedEntryPoint: path.join('nested', entryPoint),
       single: true,
       full: true,
@@ -872,6 +915,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then(bundle => {
       test.equal(this.globSync.callCount, 8 + listRuleLength);
@@ -954,6 +998,7 @@ exports['deployment.js.tarBundle'] = {
 
     deployment.js.tarBundle({
       target: path.normalize(target),
+      compress: true,
       full: true,
     }).then(bundle => {
       test.equal(this.globSync.callCount, 8 + listRuleLength);
@@ -1032,6 +1077,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then(bundle => {
       test.equal(this.globSync.callCount, 5 + listRuleLength);
@@ -1118,6 +1164,7 @@ exports['deployment.js.tarBundle'] = {
 
     deployment.js.tarBundle({
       target: path.normalize(target),
+      compress: true,
       full: true,
     }).then(bundle => {
       test.equal(this.globSync.callCount, 5 + listRuleLength);
@@ -1205,6 +1252,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then(bundle => {
       test.equal(this.globSync.callCount, 6 + listRuleLength);
@@ -1289,6 +1337,7 @@ exports['deployment.js.tarBundle'] = {
 
     deployment.js.tarBundle({
       target: path.normalize(target),
+      compress: true,
       full: true,
     }).then(bundle => {
       test.equal(this.globSync.callCount, 6 + listRuleLength);
@@ -1381,6 +1430,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
       single: true,
     }).then(bundle => {
@@ -1435,6 +1485,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then(() => {
 
@@ -1472,6 +1523,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then(() => {
       test.equal(this.readdirSync.callCount, 1);
@@ -1493,6 +1545,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then(() => {
       test.deepEqual(this.project.lastCall.args[0], {
@@ -1525,6 +1578,7 @@ exports['deployment.js.tarBundle'] = {
     deployment.js.tarBundle({
       target: path.normalize(target),
       resolvedEntryPoint: entryPoint,
+      compress: true,
       slim: true,
     }).then((bundle) => {
       // Extract and inspect the bundle...
@@ -1583,7 +1637,8 @@ exports['deploy.findProject'] = {
 
     deploy.findProject({
       lang: deployment.js,
-      entryPoint: '~/foo/'
+      entryPoint: '~/foo/',
+      compress: true,
     });
   },
 
@@ -1593,7 +1648,8 @@ exports['deploy.findProject'] = {
 
     deploy.findProject({
       lang: deployment.js,
-      entryPoint: target
+      entryPoint: target,
+      compress: true,
     }).then(project => {
       test.deepEqual(project, {
         pushdir: fixtures.project,
