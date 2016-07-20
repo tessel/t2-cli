@@ -200,30 +200,69 @@ exports['LAN.Scanner.prototype.start'] = {
   },
 
   updateDiscovered: function(test) {
-    test.expect(1);
+    test.expect(3);
 
     var data = {};
     var connectionHandler = this.sandbox.spy();
 
     this.scanner.start();
+    test.equal(this.scanner.discovered.length, 0);
     this.scanner.on('connection', connectionHandler);
     this.scanner.browser.emit('update', data);
 
     test.equal(connectionHandler.callCount, 1);
+    test.equal(this.scanner.discovered.length, 1);
     test.done();
   },
 
   updateDiscoveredExists: function(test) {
-    test.expect(1);
+    test.expect(4);
 
     var connectionHandler = this.sandbox.spy();
+    var discovery = {
+      addresses: ['192.168.1.9'],
+      query: ['_tessel._tcp.local'],
+      type: [{
+        name: 'tessel',
+        protocol: 'tcp',
+        subtypes: [],
+        description: undefined
+      }],
+      port: 22,
+      fullname: 'bishop._tessel._tcp.local',
+      txt: [''],
+      host: 'bishop.local',
+      interfaceIndex: 0,
+      networkInterface: 'en0'
+    };
 
-    this.scanner.start();
+    var connection = {
+      auth: {
+        host: '192.168.1.9',
+        port: 22,
+        username: 'root',
+        passphrase: '',
+        privateKey: undefined,
+        readyTimeout: 5000
+      },
+      ip: '192.168.1.9',
+      host: 'bishop.local',
+      connectionType: 'LAN',
+      authorized: false,
+      ssh: undefined
+    };
+
+    test.equal(this.scanner.discovered.length, 0);
+
     this.scanner.on('connection', connectionHandler);
-    this.scanner.discovered.push(1);
-    this.scanner.browser.emit('update', 1);
+    this.scanner.start();
+
+    this.scanner.discovered.push(connection);
+    test.equal(this.scanner.discovered.length, 1);
+    this.scanner.browser.emit('update', discovery);
 
     test.equal(connectionHandler.callCount, 0);
+    test.equal(this.scanner.discovered.length, 1);
     test.done();
   },
 
