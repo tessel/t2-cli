@@ -1229,3 +1229,89 @@ exports['controller.root'] = {
     });
   }
 };
+
+exports['controller.printAvailableNetworks'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+
+    this.tessel = TesselSimulator();
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+      callback(this.tessel);
+      return Promise.resolve(this.tessel);
+    });
+
+    this.tessel.name = 'robocop';
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  listCountOfVisibleToTesselSingle: function(test) {
+    test.expect(5);
+
+    this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks', () => {
+      return Promise.resolve([{
+        ssid: 'foo',
+        quality: '100/100'
+      }]);
+    });
+
+    controller.printAvailableNetworks({})
+      .then(() => {
+
+        test.equal(this.info.callCount, 2);
+        test.equal(this.basic.callCount, 1);
+
+        test.equal(this.info.firstCall.args[0], 'Scanning for visible networks...');
+        test.equal(this.info.lastCall.args[0], 'Found 1 network visible to robocop:');
+        test.equal(this.basic.lastCall.args[0], '\tfoo (100/100)');
+        test.done();
+      })
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
+      });
+  },
+
+  listCountOfVisibleToTesselPlural: function(test) {
+    test.expect(6);
+
+    this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks', () => {
+      return Promise.resolve([{
+        ssid: 'foo',
+        quality: '100/100'
+      }, {
+        ssid: 'bar',
+        quality: '100/100'
+      }]);
+    });
+
+    controller.printAvailableNetworks({})
+      .then(() => {
+
+        test.equal(this.info.callCount, 2);
+        test.equal(this.basic.callCount, 2);
+
+        test.equal(this.info.firstCall.args[0], 'Scanning for visible networks...');
+        test.equal(this.info.lastCall.args[0], 'Found 2 networks visible to robocop:');
+        test.equal(this.basic.firstCall.args[0], '\tfoo (100/100)');
+        test.equal(this.basic.lastCall.args[0], '\tbar (100/100)');
+        test.done();
+      })
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
+      });
+  },
+
+};
