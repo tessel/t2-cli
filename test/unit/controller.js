@@ -1314,4 +1314,27 @@ exports['controller.printAvailableNetworks'] = {
       });
   },
 
+  listCountOfVisibleToTesselPluralZero: function(test) {
+    test.expect(4);
+
+    this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks', () => {
+      return Promise.resolve([]);
+    });
+
+    controller.printAvailableNetworks({})
+      .then(() => {
+
+        test.equal(this.info.callCount, 2);
+        test.equal(this.basic.callCount, 0);
+
+        test.equal(this.info.firstCall.args[0], 'Scanning for visible networks...');
+        test.equal(this.info.lastCall.args[0], 'Found 0 networks visible to robocop:');
+        test.done();
+      })
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
+      });
+  },
+
 };
