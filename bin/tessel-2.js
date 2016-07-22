@@ -185,6 +185,7 @@ makeCommand('run')
     options.push = false;
     // Overridden in tarBundle if options.full is `true`
     options.slim = true;
+    options.subargs = parser.subargs || [];
 
     callControllerWith('deploy', options);
   })
@@ -241,6 +242,7 @@ makeCommand('push')
     options.push = true;
     // Overridden in tarBundle if options.full is `true`
     options.slim = true;
+    options.subargs = parser.subargs || [];
 
     callControllerWith('deploy', options);
   })
@@ -516,6 +518,42 @@ makeCommand('root')
 
 
 module.exports = function(args) {
+  var sIndexOfSA = -1;
+  var eIndexOfSA = -1;
+
+  // Check to see if there are any subargs...
+  // It would've been nice to use subarg to parse this stuff,
+  // but in reality we don't actually want to parse these yet
+  // because there is no clear path to reassembling them as
+  // the string they will need to be when the remote process is invoked.
+  for (var i = 0; i < args.length; i++) {
+    var arg = args[i];
+
+    if (arg.startsWith('[') && sIndexOfSA === -1) {
+      // Remove the leading '[', replace existing arg at this position
+      args[i] = arg.slice(1, arg.length);
+      sIndexOfSA = i;
+    }
+
+    if (arg.endsWith(']') && sIndexOfSA !== -1) {
+      // Remove the trailing ']', replace existing arg at this position
+      args[i] = arg.slice(0, arg.length - 1);
+      eIndexOfSA = i;
+    }
+  }
+
+  // If there are, remove them from the `args`
+  // that get passed to parser.parse().
+  //
+  // If these are not removed, they will be
+  // treated like they are part of the t2-cli args
+  // themselves, which is undesirable.
+  if (sIndexOfSA !== -1 && eIndexOfSA !== -1) {
+    // Splice the subargs from the args that will be passed to nomnom,
+    // store on parser so we can get to them later.
+    parser.subargs = args.splice(sIndexOfSA, eIndexOfSA);
+  }
+
   // Clear the spec from one call to the next. This is
   // only necessary for testing the CLI (each call must be "fresh")
   parser.specs = {};

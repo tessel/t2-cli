@@ -284,7 +284,8 @@ exports['Tessel.prototype.deploy'] = {
     test.expect(12);
     deployTestCode(this.tessel, {
       push: true,
-      single: false
+      single: false,
+      subargs: [],
     }, (error) => {
       if (error) {
         test.ok(false, `deployTestCode failed: ${error.toString()}`);
@@ -538,8 +539,10 @@ exports['deploy.run'] = {
     deploy.run(this.tessel, {
       entryPoint: entryPoint,
       lang: deployment.js,
+      subargs: ['--key=value'],
     }).then(() => {
-      test.deepEqual(this.exec.lastCall.args[0], [deployment.js.meta.binary, Tessel.REMOTE_RUN_PATH + entryPoint]);
+      test.deepEqual(
+        this.exec.lastCall.args[0], [deployment.js.meta.binary, Tessel.REMOTE_RUN_PATH + entryPoint, '--key=value']);
       test.done();
     });
   },
@@ -572,6 +575,7 @@ exports['deploy.run'] = {
     deploy.run(this.tessel, {
       entryPoint: entryPoint,
       lang: deployment.rs,
+      subargs: [],
     }).then(() => {
       test.done();
     });
@@ -591,6 +595,7 @@ exports['deploy.run'] = {
     deploy.run(this.tessel, {
       resolvedEntryPoint: 'foo',
       lang: deployment.js,
+      subargs: [],
     }).then(() => {
       test.equal(this.postRun.callCount, 1);
       test.done();
@@ -640,7 +645,8 @@ exports['deploy.createShellScript'] = {
 
     var opts = {
       lang: deployment.js,
-      resolvedEntryPoint: 'foo'
+      resolvedEntryPoint: 'foo',
+      subargs: ['--key=value'],
     };
 
     deploy.createShellScript(this.tessel, opts).then(() => {
