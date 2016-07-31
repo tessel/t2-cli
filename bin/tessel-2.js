@@ -141,7 +141,10 @@ parser.command('provision')
   .help('Authorize your computer to control the USB-connected Tessel');
 
 parser.command('restore')
-  .callback(callControllerCallback('restoreTessel'))
+  .callback(options => {
+    log.level(options.loglevel);
+    callControllerWith('restoreTessel', options);
+  })
   .option('openwrt', {
     abbr: 'o',
     flag: true,
