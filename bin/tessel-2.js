@@ -140,6 +140,15 @@ parser.command('provision')
   })
   .help('Authorize your computer to control the USB-connected Tessel');
 
+parser.command('restore')
+  .callback(callControllerCallback('restoreTessel'))
+  .option('openwrt', {
+    abbr: 'o',
+    flag: true,
+    help: 'Restore a factory version of OpenWrt'
+  })
+  .help('Restore your Tessel by installing the factory version of OpenWrt.');
+
 makeCommand('restart')
   .callback(options => {
     log.level(options.loglevel);
@@ -583,7 +592,7 @@ module.exports.closeFailedCommand = function(status, options) {
   }
 
   log.spinner.stop();
-  process.exit(options.code || status.code || code);
+  process.exit(options.code || (status && status.code) || code);
 };
 
 
