@@ -145,11 +145,6 @@ parser.command('restore')
     log.level(options.loglevel);
     callControllerWith('restoreTessel', options);
   })
-  .option('openwrt', {
-    abbr: 'o',
-    flag: true,
-    help: 'Restore a factory version of OpenWrt'
-  })
   .help('Restore your Tessel by installing the factory version of OpenWrt.');
 
 makeCommand('restart')
