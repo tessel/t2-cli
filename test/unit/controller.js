@@ -970,7 +970,7 @@ exports['Tessel.get'] = {
   },
 };
 
-exports['controller.closeTesselConnections'] = {
+exports['controller.createAccessPoint'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
@@ -978,6 +978,9 @@ exports['controller.closeTesselConnections'] = {
     this.warn = this.sandbox.stub(log, 'warn', function() {});
     this.info = this.sandbox.stub(log, 'info', function() {});
     this.basic = this.sandbox.stub(log, 'basic', function() {});
+
+    // stub this command to avoid authoized Tessel validation
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').returns(Promise.resolve(true));
 
     done();
   },
@@ -1095,6 +1098,24 @@ exports['controller.closeTesselConnections'] = {
       });
   },
 
+  validAccessPointWEPPassword: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+      ssid: 'test',
+      password: '01234ABCDE',
+      security: 'wep'
+    })
+    .then((settings) => {
+      test.ok(settings);
+      test.done();
+    })
+    .catch(error => {
+      test.fail(error.toString());
+      test.done();
+    });
+  },
+
   invalidAccessPointPSKPasswordCharacters: function(test) {
     test.expect(1);
 
@@ -1163,6 +1184,24 @@ exports['controller.closeTesselConnections'] = {
         test.ok(error);
         test.done();
       });
+  },
+
+  validAccessPointPSKPassword: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+      ssid: 'test',
+      password: 'ValidPassword!',
+      security: 'psk'
+    })
+    .then((settings) => {
+      test.ok(settings);
+      test.done();
+    })
+    .catch((error) => {
+      test.fail(error.toString());
+      test.done();
+    });
   },
 };
 
