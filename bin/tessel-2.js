@@ -495,7 +495,7 @@ makeCommand('ap')
     abbr: 'n',
     help: 'Name of the network.'
   })
-  .option('pass', {
+  .option('password', {
     abbr: 'p',
     help: 'Password to access network.'
   })
