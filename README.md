@@ -3,6 +3,9 @@ The starting point for the Tessel 2 command line interface.
 
 Join the [conversation on Slack](https://tessel-slack.herokuapp.com/), our project's chat client!
 
+[![Code of Conduct](https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat)](https://github.com/tessel/project/blob/master/CONDUCT.md)
+
+
 [![Slack](http://tessel-slack.herokuapp.com/badge.svg)](https://tessel-slack.herokuapp.com/)
 
 [![Travis-CI Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli)
