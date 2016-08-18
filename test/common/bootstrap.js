@@ -51,6 +51,7 @@ global.deploy = require('../../lib/tessel/deploy');
 global.deployment = require('../../lib/tessel/deployment/index');
 global.glob = require('../../lib/tessel/deployment/glob');
 global.provision = require('../../lib/tessel/provision');
+global.restore = require('../../lib/tessel/restore');
 global.RSA = require('../../lib/tessel/rsa-delegation');
 
 // ./lib/*

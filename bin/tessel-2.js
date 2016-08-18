@@ -140,10 +140,15 @@ parser.command('provision')
   })
   .help('Authorize your computer to control the USB-connected Tessel');
 
-parser.command('restore')
+makeCommand('restore')
   .callback(options => {
     log.level(options.loglevel);
     callControllerWith('restoreTessel', options);
+  })
+  .option('force', {
+    abbr: 'f',
+    flag: true,
+    help: 'Skip the Device ID check and restore. Including this flag is not recommended, but may be necessary if Tessel memory device contents are corrupt.'
   })
   .help('Restore your Tessel by installing the factory version of OpenWrt.');
 
