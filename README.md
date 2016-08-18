@@ -11,7 +11,7 @@ Join the [conversation on Slack](https://tessel-slack.herokuapp.com/), our proje
 [![Travis-CI Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/9a6l5gwswuhqgk99?svg=true)](https://ci.appveyor.com/project/rwaldron/t2-cli)
 
-See docs on T2 CLI usage [on the t2-docs repo](https://github.com/tessel/t2-docs/blob/master/cli.md).
+Documentation: [Tessel 2 Command Line Interface](https://tessel.gitbooks.io/t2-docs/content/API/CLI.html)
 
 ## Contents
 
