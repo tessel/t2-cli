@@ -139,7 +139,9 @@ For all releases, a maintainer will complete the following steps:
 
 2. `git push --tags`  (or `git push remote-name --tags`, where `remote-name` is the name of your remote that points to `git@github.com:tessel/t2-cli.git`)
 
-3. `grunt changelog` will produce a pre-formatted changelog that looks something like this: 
+3. `git push remote-name master`
+
+4. `grunt changelog` will produce a pre-formatted changelog that looks something like this: 
 
   ```
   | Commit | Message/Description |
@@ -149,7 +151,7 @@ For all releases, a maintainer will complete the following steps:
 
   Copy the table to clipboard
 
-4. Open https://github.com/tessel/t2-cli/releases and click `Edit` on the right hand side of the "Latest Release": 
+5. Open https://github.com/tessel/t2-cli/releases and click `Edit` on the right hand side of the "Latest Release": 
   
   ![](https://i.gyazo.com/4099829ecb663257c643e28ce1ef51ec.png)
 
@@ -165,8 +167,11 @@ For all releases, a maintainer will complete the following steps:
 
   ![](https://i.gyazo.com/f86ea740e358a46949394d5a7a3906e1.png)
 
+6. Publish updated module to npm:
+  
+  If not logged in to npm through the cli, do so: `npm login`
+  
+  Then: `npm publish`
 
-
-
-
+  Check the [npm page](https://www.npmjs.com/package/t2-cli) to see the latest release!
 
