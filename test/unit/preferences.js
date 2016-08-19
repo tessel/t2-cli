@@ -134,6 +134,9 @@ exports['Preferences.write'] = {
     this.exists = this.sandbox.stub(fs, 'exists', (file, handler) => {
       handler(true);
     });
+    this.ensureFile = this.sandbox.stub(fs, 'ensureFile', (file, handler) => {
+      handler(null);
+    });
     this.readFile = this.sandbox.stub(fs, 'readFile', (file, handler) => {
       handler(null, JSON.stringify(this.state));
     });
@@ -158,6 +161,22 @@ exports['Preferences.write'] = {
     Preferences.write(key, value).then(() => {
       test.equal(true, this.state.hasOwnProperty(key));
       test.equal(value, this.state[key]);
+      test.done();
+    });
+  },
+
+  writeEnsureFileFalse: function(test) {
+    test.expect(1);
+
+    var key = 'key';
+    var value = 'value';
+    var error = 'error';
+
+    this.ensureFile.restore();
+    this.ensureFile = this.sandbox.stub(fs, 'ensureFile', (file, handler) => handler(error));
+
+    Preferences.write(key, value).catch(rejection => {
+      test.equal(rejection, error);
       test.done();
     });
   }
