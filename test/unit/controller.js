@@ -1102,18 +1102,18 @@ exports['controller.createAccessPoint'] = {
     test.expect(1);
 
     controller.createAccessPoint({
-      ssid: 'test',
-      password: '01234ABCDE',
-      security: 'wep'
-    })
-    .then((settings) => {
-      test.ok(settings);
-      test.done();
-    })
-    .catch(error => {
-      test.fail(error.toString());
-      test.done();
-    });
+        ssid: 'test',
+        password: '01234ABCDE',
+        security: 'wep'
+      })
+      .then((settings) => {
+        test.ok(settings);
+        test.done();
+      })
+      .catch(error => {
+        test.fail(error.toString());
+        test.done();
+      });
   },
 
   invalidAccessPointPSKPasswordCharacters: function(test) {
@@ -1190,18 +1190,18 @@ exports['controller.createAccessPoint'] = {
     test.expect(1);
 
     controller.createAccessPoint({
-      ssid: 'test',
-      password: 'ValidPassword!',
-      security: 'psk'
-    })
-    .then((settings) => {
-      test.ok(settings);
-      test.done();
-    })
-    .catch((error) => {
-      test.fail(error.toString());
-      test.done();
-    });
+        ssid: 'test',
+        password: 'ValidPassword!',
+        security: 'psk'
+      })
+      .then((settings) => {
+        test.ok(settings);
+        test.done();
+      })
+      .catch((error) => {
+        test.fail(error.toString());
+        test.done();
+      });
   },
 };
 
