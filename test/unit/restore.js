@@ -329,6 +329,108 @@ exports['restore.transaction'] = {
   },
 };
 
+exports['restore.bulkEraseFlash'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.usb = new USB.Connection({});
+
+    this.transaction = this.sandbox.stub(restore, 'transaction', () => Promise.resolve());
+    this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete', () => Promise.resolve());
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  callsTransaction(test) {
+    test.expect(3);
+    restore.bulkEraseFlash(this.usb).then(() => {
+      test.equal(this.transaction.callCount, 1);
+      test.equal(this.transaction.lastCall.args[0], this.usb);
+      test.equal(this.transaction.lastCall.args[1], 0x60);
+      test.done();
+    });
+  },
+
+  callsWaitTransactionComplete(test) {
+    test.expect(2);
+    restore.bulkEraseFlash(this.usb).then(() => {
+      test.equal(this.waitTransactionComplete.callCount, 1);
+      test.equal(this.waitTransactionComplete.lastCall.args[0], this.usb);
+      test.done();
+    });
+  }
+};
+
+exports['restore.flash'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.images = {
+      uboot: new Buffer('uboot'),
+      squashfs: new Buffer('squashfs'),
+    };
+    this.partition = this.sandbox.spy(restore, 'partition');
+    this.status = this.sandbox.stub(restore, 'status', () => Promise.resolve(0));
+    this.enableWrite = this.sandbox.stub(restore, 'enableWrite', () => Promise.resolve());
+    this.bulkEraseFlash = this.sandbox.stub(restore, 'bulkEraseFlash', () => Promise.resolve());
+    this.write = this.sandbox.stub(restore, 'write', () => Promise.resolve());
+
+    this.tessel = TesselSimulator();
+    this.usb = new USB.Connection({});
+    this.usb.epOut = new Emitter();
+    this.usb.epOut.transfer = this.sandbox.spy((data, callback) => {
+      callback(null);
+    });
+
+    this.usb.epIn = new Emitter();
+    this.usb.epIn.transfer = this.sandbox.spy((data, callback) => {
+      callback(null, this.usb.epIn._mockbuffer);
+    });
+    this.usb.epIn._mockdata = new Buffer('mockbuffer');
+
+    this.expectedBuffer = new Buffer([0x00, 0x00, 0x00, 0x00, 0xFF]);
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  completeRestoreCallSteps(test) {
+    test.expect(10);
+
+    restore.flash(this.tessel, this.images).then(() => {
+      test.equal(this.partition.callCount, 1);
+      test.equal(this.enableWrite.callCount, 1);
+      test.equal(this.bulkEraseFlash.callCount, 1);
+      test.equal(this.write.callCount, 3);
+
+      test.equal(this.write.getCall(0).args[1], 0);
+      test.equal(this.write.getCall(0).args[2], this.images.uboot);
+
+      test.equal(this.write.getCall(1).args[1], 0x40000);
+      test.equal(this.write.getCall(1).args[2], this.images.partition);
+
+      test.equal(this.write.getCall(2).args[1], 0x50000);
+      test.equal(this.write.getCall(2).args[2], this.images.squashfs);
+
+      test.done();
+    });
+  },
+};
+
 function randUint8() {
   return Math.round(Math.random() * 255);
 }
