@@ -431,6 +431,41 @@ exports['restore.flash'] = {
   },
 };
 
+exports['restore.write'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.images = {
+      uboot: new Buffer('uboot'),
+      squashfs: new Buffer('squashfs'),
+    };
+    this.writePage = this.sandbox.stub(restore, 'writePage', () => Promise.resolve());
+    this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete', () => Promise.resolve());
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  progress(test) {
+    test.expect(3);
+
+    this.tick = this.sandbox.stub(Progress.prototype, 'tick');
+
+    restore.write({}, 0, new Buffer(256)).then(() => {
+      test.equal(this.tick.callCount, 1);
+      test.equal(this.writePage.callCount, 1);
+      test.equal(this.waitTransactionComplete.callCount, 1);
+      test.done();
+    });
+  },
+};
+
 function randUint8() {
   return Math.round(Math.random() * 255);
 }

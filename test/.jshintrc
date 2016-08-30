@@ -73,6 +73,7 @@
     "path": true,
     "Preferences": true,
     "Project": true,
+    "Progress": true,
     "Promise": true,
     "provision": true,
     "restore": true,
