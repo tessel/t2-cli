@@ -206,6 +206,28 @@ exports['CrashReporter.submit'] = {
       test.done();
     });
   },
+
+  forwardsArgv: function(test) {
+    test.expect(2);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    var original = process.argv[2];
+
+    process.argv[2] = 'foo';
+    CrashReporter.submit(new Error('This happened'), {
+      silent: true
+    }).then(() => {
+      test.equal(this.crPost.callCount, 1);
+      test.equal(this.crPost.lastCall.args[2], 'foo');
+      process.argv[2] = original;
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
 };
 
 
