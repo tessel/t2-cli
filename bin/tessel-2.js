@@ -567,17 +567,17 @@ makeCommand('adhoc')
   })
   .option('security', {
     abbr: 's',
-    help: 'Encryption to use on network (i.e. wep, psk, psk2, wpa, wpa2).'
+    help: 'Encryption used on network (i.e. wep, psk, psk2, wpa, wpa2).'
   })
   .option('off', {
     flag: true,
-    help: 'Disable the access point'
+    help: 'Disable the adhoc network'
   })
   .option('on', {
     flag: true,
-    help: 'Enable the access point'
+    help: 'Enable the adhoc network'
   })
-  .help('Configure the Tessel as an access point');
+  .help('Configure the Tessel as an adhoc network');
 
 makeCommand('root')
   .callback(options => {
