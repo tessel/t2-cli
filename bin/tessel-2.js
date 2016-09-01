@@ -503,6 +503,46 @@ makeCommand('version')
 
 makeCommand('ap')
   .callback(options => {
+    options.mode = 'ap';
+    log.level(options.loglevel);
+
+    if (options.on || options.off) {
+      if (options.on) {
+        callControllerWith('enableAccessPoint', options);
+      } else {
+        callControllerWith('disableAccessPoint', options);
+      }
+    } else if (options.ssid) {
+      callControllerWith('createAccessPoint', options);
+    } else {
+      callControllerWith('getAccessPointInfo', options);
+    }
+  })
+  .option('ssid', {
+    abbr: 'n',
+    help: 'Name of the network.'
+  })
+  .option('password', {
+    abbr: 'p',
+    help: 'Password to access network.'
+  })
+  .option('security', {
+    abbr: 's',
+    help: 'Encryption to use on network (i.e. wep, psk, psk2, wpa, wpa2).'
+  })
+  .option('off', {
+    flag: true,
+    help: 'Disable the access point'
+  })
+  .option('on', {
+    flag: true,
+    help: 'Enable the access point'
+  })
+  .help('Configure the Tessel as an access point');
+
+makeCommand('adhoc')
+  .callback(options => {
+    options.mode = 'adhoc';
     log.level(options.loglevel);
 
     if (options.on || options.off) {
