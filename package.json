@@ -60,7 +60,7 @@
     "glob": "^5.0.15",
     "inquirer": "^0.8.5",
     "is-root": "^1.0.0",
-    "mdns-js": "^0.4.0",
+    "mdns-js": "^0.5.0",
     "minimatch": "^3.0.0",
     "node-rsa": "^0.2.26",
     "nomnom": "^1.8.1",
