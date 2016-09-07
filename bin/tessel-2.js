@@ -19,11 +19,6 @@ const CLI_ENTRYPOINT = 'cli.entrypoint';
 // Check for updates
 const pkg = require('../package.json');
 
-if (parseInt(process.versions.node) > 5) {
-  log.error('Tessel 2 CLI (t2-cli) is supported for use with the Node.js 4.x.x LTS Release.');
-  process.exit();
-}
-
 /*
  * If a command has been run with root,
  * do not try to read the update-notifier config file.
