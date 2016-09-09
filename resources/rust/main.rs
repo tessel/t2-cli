@@ -1,9 +1,14 @@
 //! A blinky example for Tessel
 
+// This enables the system allocator in your script.
+// This is required to run Rust binaries on Tessel.
+#![feature(alloc_system)]
+extern crate alloc_system;
+
 // Import the tessel library
-extern crate rust_tessel;
+extern crate tessel;
 // Import the Tessel API
-use rust_tessel::Tessel;
+use tessel::Tessel;
 // Import sleep from the standard lib
 use std::thread::sleep;
 // Import durations from the standard lib
