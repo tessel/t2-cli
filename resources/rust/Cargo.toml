@@ -3,5 +3,5 @@ name = "blinky"
 version = "0.0.1"
 authors = ["Your Name <you@example.com>"]
 
-[dependencies.rust_tessel]
-git="https://github.com/tessel/rust-tessel.git"
+[dependencies]
+tessel = "0.2.0"
