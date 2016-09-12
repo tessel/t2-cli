@@ -191,3 +191,14 @@ global.extract = function(bundle, callback) {
 
   parser.end(bundle);
 };
+
+global.processVersions = {
+  http_parser: '2.5.2',
+  node: '4.4.3',
+  v8: '4.5.103.35',
+  uv: '1.8.0',
+  zlib: '1.2.8',
+  ares: '1.10.1-DEV',
+  modules: '46',
+  openssl: '1.0.2d',
+};

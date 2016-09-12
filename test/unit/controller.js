@@ -378,7 +378,7 @@ exports['controller.tesselEnvVersions'] = {
       return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
     });
 
-    this.fetchCurrentNodeVersion = this.sandbox.stub(Tessel.prototype, 'fetchCurrentNodeVersion', () => {
+    this.fetchNodeProcessVersion = this.sandbox.stub(Tessel.prototype, 'fetchNodeProcessVersion', () => {
       return Promise.resolve('4.2.1');
     });
 
@@ -420,7 +420,7 @@ exports['controller.tesselEnvVersions'] = {
         // Get the firmware version
         test.equal(this.fetchCurrentBuildInfo.callCount, 1);
         // Execute `node --version` command on tessel
-        test.equal(this.fetchCurrentNodeVersion.callCount, 1);
+        test.equal(this.fetchNodeProcessVersion.callCount, 1);
         // Make sure we have some output
         test.equal(this.info.callCount, 3);
 
@@ -450,8 +450,8 @@ exports['controller.tesselEnvVersions'] = {
       return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
     });
 
-    this.fetchCurrentNodeVersion.restore();
-    this.fetchCurrentNodeVersion = this.sandbox.stub(Tessel.prototype, 'fetchCurrentNodeVersion', () => {
+    this.fetchNodeProcessVersion.restore();
+    this.fetchNodeProcessVersion = this.sandbox.stub(Tessel.prototype, 'fetchNodeProcessVersion', () => {
       return Promise.reject();
     });
 
@@ -464,7 +464,7 @@ exports['controller.tesselEnvVersions'] = {
         // Get the firmware version
         test.equal(this.fetchCurrentBuildInfo.callCount, 1);
         // Execute `node --version` command on tessel
-        test.equal(this.fetchCurrentNodeVersion.callCount, 1);
+        test.equal(this.fetchNodeProcessVersion.callCount, 1);
         // Make sure we have some output
         test.equal(this.info.callCount, 3);
 
@@ -494,8 +494,8 @@ exports['controller.tesselEnvVersions'] = {
       return Promise.reject();
     });
 
-    this.fetchCurrentNodeVersion.restore();
-    this.fetchCurrentNodeVersion = this.sandbox.stub(Tessel.prototype, 'fetchCurrentNodeVersion', () => {
+    this.fetchNodeProcessVersion.restore();
+    this.fetchNodeProcessVersion = this.sandbox.stub(Tessel.prototype, 'fetchNodeProcessVersion', () => {
       return Promise.resolve('4.2.1');
     });
 
@@ -508,7 +508,7 @@ exports['controller.tesselEnvVersions'] = {
         // Get the firmware version
         test.equal(this.fetchCurrentBuildInfo.callCount, 1);
         // Execute `node --version` command on tessel
-        test.equal(this.fetchCurrentNodeVersion.callCount, 0);
+        test.equal(this.fetchNodeProcessVersion.callCount, 0);
         // Make sure we have some output
         test.equal(this.info.callCount, 3);
 

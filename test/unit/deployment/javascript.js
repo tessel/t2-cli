@@ -38,6 +38,8 @@ exports['Deployment: JavaScript'] = {
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
 
+    this.fetchNodeProcessVersions = sandbox.stub(this.tessel, 'fetchNodeProcessVersions').returns(Promise.resolve(processVersions));
+
     this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
 
     this.spinnerStart = sandbox.stub(log.spinner, 'start');
@@ -1800,6 +1802,8 @@ exports['deploy.findProject'] = {
 exports['deploy.sendBundle, error handling'] = {
   setUp: function(done) {
     this.tessel = TesselSimulator();
+    this.fetchNodeProcessVersions = sandbox.stub(this.tessel, 'fetchNodeProcessVersions').returns(Promise.resolve(processVersions));
+
     this.pathResolve = sandbox.stub(path, 'resolve');
     this.failure = 'FAIL';
     done();
@@ -1858,6 +1862,75 @@ exports['deploy.sendBundle, error handling'] = {
       lang: deployment.js
     }).catch(error => {
       test.equal(error, this.failure);
+      test.done();
+    });
+  },
+};
+
+
+exports['deployment.js.preBundle'] = {
+  setUp: function(done) {
+    this.tessel = TesselSimulator();
+
+    this.info = sandbox.stub(log, 'info');
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      callback(null, this.tessel._rps);
+    });
+
+    this.receive = sandbox.stub(this.tessel, 'receive', (rps, callback) => {
+      rps.emit('close');
+      callback();
+    });
+
+    this.fetchNodeProcessVersions = sandbox.stub(this.tessel, 'fetchNodeProcessVersions').returns(Promise.resolve(processVersions));
+
+    this.findProject = sandbox.stub(deploy, 'findProject').returns(Promise.resolve({
+      pushdir: '',
+      entryPoint: ''
+    }));
+    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules').returns(Promise.resolve());
+    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle').returns(Promise.resolve(new Buffer([0x00])));
+    this.pathResolve = sandbox.stub(path, 'resolve');
+
+
+    this.preBundle = sandbox.spy(deployment.js, 'preBundle');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    sandbox.restore();
+    done();
+  },
+
+  preBundleReceivesTessel(test) {
+    test.expect(1);
+
+    deploy.sendBundle(this.tessel, {
+      target: '/',
+      entryPoint: 'foo.js',
+      lang: deployment.js
+    }).then(() => {
+      test.equal(this.preBundle.lastCall.args[0].tessel, this.tessel);
+      test.done();
+    });
+  },
+
+  preBundleCallsfetchNodeProcessVersionsAndForwardsResult(test) {
+    test.expect(4);
+
+    deploy.sendBundle(this.tessel, {
+      target: '/',
+      entryPoint: 'foo.js',
+      lang: deployment.js
+    }).then(() => {
+      test.equal(this.fetchNodeProcessVersions.callCount, 1);
+      test.equal(this.resolveBinaryModules.callCount, 1);
+
+      var args = this.resolveBinaryModules.lastCall.args[0];
+
+      test.equal(args.tessel, this.tessel);
+      test.equal(args.tessel.versions, processVersions);
       test.done();
     });
   },
