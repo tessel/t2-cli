@@ -17,8 +17,8 @@ exports['Tessel.prototype.restore'] = {
       return Promise.resolve(this.images);
     });
     this.restore = this.sandbox.spy(Tessel.prototype, 'restore');
+    this.tick = this.sandbox.stub(Progress.prototype, 'tick');
     this.tessel = TesselSimulator();
-
     done();
   },
 
@@ -340,6 +340,8 @@ exports['restore.bulkEraseFlash'] = {
 
     this.transaction = this.sandbox.stub(restore, 'transaction', () => Promise.resolve());
     this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete', () => Promise.resolve());
+
+    this.tick = this.sandbox.stub(Progress.prototype, 'tick');
     done();
   },
 
@@ -398,6 +400,7 @@ exports['restore.flash'] = {
     });
     this.usb.epIn._mockdata = new Buffer('mockbuffer');
 
+    this.tick = this.sandbox.stub(Progress.prototype, 'tick');
     this.expectedBuffer = new Buffer([0x00, 0x00, 0x00, 0x00, 0xFF]);
     done();
   },
