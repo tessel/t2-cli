@@ -119,8 +119,8 @@ exports['Tessel.prototype.deploy'] = {
     this.push = sandbox.spy(deploy, 'push');
     this.createShellScript = sandbox.spy(deploy, 'createShellScript');
 
-    this.injectBinaryModules = sandbox.stub(deployment.js, 'injectBinaryModules', () => Promise.resolve());
-    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.resolve());
+    this.injectBinaryModules = sandbox.stub(deployment.js, 'injectBinaryModules').returns(Promise.resolve());
+    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules').returns(Promise.resolve());
     this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', function() {
       return new Promise(function(resolve) {
         resolve(jsCodeReference);
@@ -132,6 +132,8 @@ exports['Tessel.prototype.deploy'] = {
 
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
+
+    this.fetchNodeProcessVersions = sandbox.stub(this.tessel, 'fetchNodeProcessVersions').returns(Promise.resolve(processVersions));
 
     this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
 
@@ -382,7 +384,7 @@ exports['Tessel.prototype.deploy'] = {
             test.equal(err, undefined, 'We hit a catch statement that we should not have.');
           });
       });
-  }
+  },
 };
 
 exports['Tessel.prototype.restart'] = {

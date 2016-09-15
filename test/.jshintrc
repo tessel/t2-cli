@@ -75,6 +75,7 @@
     "Project": true,
     "Progress": true,
     "Promise": true,
+    "processVersions": true,
     "provision": true,
     "restore": true,
     "reference": true,
