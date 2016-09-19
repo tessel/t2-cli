@@ -2003,20 +2003,25 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
 
       test.equal(this.exists.callCount, 1);
       // test/unit/fixtures/skip-binary/ has the corresponding
       // dependencies for the following binary modules:
       //
-      //    debug-1.1.1-Debug
-      //    release-1.1.1-Release
+      //    debug-1.1.1-Debug-node-v46-linux-mipsel
+      //    release-1.1.1-Release-node-v46-linux-mipsel
       //
       // However, the latter has a "tessel.skipBinary = true" key in its package.json
       //
       //
-      test.equal(this.exists.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/debug-1.1.1-Debug')), true);
+      test.equal(this.exists.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/debug-1.1.1-Debug-node-v46-linux-mipsel')), true);
 
       test.done();
     }).catch(error => {
@@ -2041,7 +2046,12 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
 
       test.deepEqual(
@@ -2080,7 +2090,12 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
       test.equal(this.readGypFileSync.lastCall.returnValue, '');
       test.done();
@@ -2114,7 +2129,12 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
 
       test.deepEqual(
@@ -2157,7 +2177,12 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(binaryModulesUsed => {
       test.equal(binaryModulesUsed.get('missing').resolved, false);
       test.done();
@@ -2173,7 +2198,12 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
       test.equal(this.globFiles.callCount, 1);
       test.equal(this.exists.callCount, 1);
@@ -2200,7 +2230,12 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
 
       test.equal(this.exists.callCount, 2);
@@ -2229,7 +2264,12 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
 
       test.equal(this.exists.callCount, 4);
@@ -2237,10 +2277,10 @@ exports['deployment.js.resolveBinaryModules'] = {
       // test/unit/fixtures/project-binary-modules/ has the corresponding
       // dependencies for the following binary modules:
       var cachedBinaryPaths = [
-        '.tessel/binaries/debug-1.1.1-Debug',
-        '.tessel/binaries/linked-1.1.1-Release',
-        '.tessel/binaries/release-1.1.1-Release',
-        '.tessel/binaries/missing-1.1.1-Release',
+        '.tessel/binaries/debug-1.1.1-Debug-node-v46-linux-mipsel',
+        '.tessel/binaries/linked-1.1.1-Release-node-v46-linux-mipsel',
+        '.tessel/binaries/release-1.1.1-Release-node-v46-linux-mipsel',
+        '.tessel/binaries/missing-1.1.1-Release-node-v46-linux-mipsel',
       ];
 
       cachedBinaryPaths.forEach((cbp, callIndex) => {
@@ -2292,17 +2332,22 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
       test.equal(this.globFiles.callCount, 1);
       test.equal(this.exists.callCount, 1);
       test.equal(this.mkdirp.callCount, 1);
-      test.equal(this.mkdirp.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/release-1.1.1-Release')), true);
+      test.equal(this.mkdirp.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/release-1.1.1-Release-node-v46-linux-mipsel')), true);
 
       test.equal(this.request.callCount, 1);
 
       var requestArgs = this.request.lastCall.args[0];
-      test.equal(requestArgs.url, 'http://packages.tessel.io/npm/release-1.1.1-Release.tgz');
+      test.equal(requestArgs.url, 'http://packages.tessel.io/npm/release-1.1.1-Release-node-v46-linux-mipsel.tgz');
       test.equal(requestArgs.gzip, true);
 
       test.equal(this.pipe.callCount, 2);
@@ -2384,7 +2429,12 @@ exports['deployment.js.injectBinaryModules'] = {
     });
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
       deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
         test.equal(this.copySync.callCount, 8);
@@ -2395,7 +2445,7 @@ exports['deployment.js.injectBinaryModules'] = {
         This is an abbreviated view of what should be copied by this operation:
         [
           [
-            'debug-1.1.1-Release/Debug/debug.node',
+            'debug-1.1.1-Release-node-v46-linux-mipsel/Debug/debug.node',
             'debug/build/Debug/debug.node'
           ],
           [
@@ -2403,7 +2453,7 @@ exports['deployment.js.injectBinaryModules'] = {
             'debug/package.json'
           ],
           [
-            'linked-1.1.1-Release/bindings/linked.node',
+            'linked-1.1.1-Release-node-v46-linux-mipsel/bindings/linked.node',
             'linked/build/bindings/linked.node'
           ],
           [
@@ -2411,7 +2461,7 @@ exports['deployment.js.injectBinaryModules'] = {
             'linked/package.json'
           ],
           [
-            'missing-1.1.1-Release/Release/missing.node',
+            'missing-1.1.1-Release-node-v46-linux-mipsel/Release/missing.node',
             'missing/build/Release/missing.node'
           ],
           [
@@ -2419,7 +2469,7 @@ exports['deployment.js.injectBinaryModules'] = {
             'missing/package.json'
           ],
           [
-            'release-1.1.1-Release/Release/release.node',
+            'release-1.1.1-Release-node-v46-linux-mipsel/Release/release.node',
             'release/build/Release/release.node'
           ],
           [
@@ -2431,7 +2481,7 @@ exports['deployment.js.injectBinaryModules'] = {
 
         // ----- fixtures/project-binary-modules/node_modules/debug
         test.equal(
-          args[0][0].endsWith(path.normalize('debug-1.1.1-Debug/Debug/debug.node')),
+          args[0][0].endsWith(path.normalize('debug-1.1.1-Debug-node-v46-linux-mipsel/Debug/debug.node')),
           true
         );
         test.equal(
@@ -2450,7 +2500,7 @@ exports['deployment.js.injectBinaryModules'] = {
 
         // ----- fixtures/project-binary-modules/node_modules/linked
         test.equal(
-          args[2][0].endsWith(path.normalize('linked-1.1.1-Release/bindings/linked.node')),
+          args[2][0].endsWith(path.normalize('linked-1.1.1-Release-node-v46-linux-mipsel/bindings/linked.node')),
           true
         );
         test.equal(
@@ -2469,7 +2519,7 @@ exports['deployment.js.injectBinaryModules'] = {
 
         // ----- fixtures/project-binary-modules/node_modules/missing
         test.equal(
-          args[4][0].endsWith(path.normalize('missing-1.1.1-Release/Release/missing.node')),
+          args[4][0].endsWith(path.normalize('missing-1.1.1-Release-node-v46-linux-mipsel/Release/missing.node')),
           true
         );
         test.equal(
@@ -2488,7 +2538,7 @@ exports['deployment.js.injectBinaryModules'] = {
 
         // ----- fixtures/project-binary-modules/node_modules/release
         test.equal(
-          args[6][0].endsWith(path.normalize('release-1.1.1-Release/Release/release.node')),
+          args[6][0].endsWith(path.normalize('release-1.1.1-Release-node-v46-linux-mipsel/Release/release.node')),
           true
         );
         test.equal(
@@ -2525,7 +2575,12 @@ exports['deployment.js.injectBinaryModules'] = {
     });
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
       deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
         // Nothing gets copied!
@@ -2552,7 +2607,12 @@ exports['deployment.js.injectBinaryModules'] = {
       ];
     });
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
       deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {
         single: true
@@ -2578,7 +2638,7 @@ exports['deployment.js.injectBinaryModules'] = {
         modulePath: path.normalize('node_modules/serialport'),
         resolved: true,
         version: '2.0.6',
-        extractPath: path.normalize('~/.tessel/binaries/serialport-2.0.6-Release')
+        extractPath: path.normalize('~/.tessel/binaries/serialport-2.0.6-Release-node-v46-linux-mipsel')
       });
     });
 
@@ -2614,7 +2674,12 @@ exports['deployment.js.injectBinaryModules'] = {
     });
 
     deployment.js.resolveBinaryModules({
-      target: this.target
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
     }).then(() => {
       deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
         test.fail('Should not pass');
