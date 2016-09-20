@@ -14,7 +14,6 @@ Documentation: [Tessel 2 Command Line Interface](https://tessel.gitbooks.io/t2-d
 * [Installation for development](#installation-for-development)
 * [Updating Tessel](#updating)
 * [Testing](#testing)
-* [Development milestones](#development-milestones)
 * [Releasing](#releasing)
 
 ## Installation for development
@@ -114,11 +113,6 @@ exports['functionName'] = {
   }
 };
 ```
-
-## Development Milestones
-Help us build Tessel 2's CLI! The [issues section](https://github.com/tessel/t2-cli/issues) of this repo is full of small, fully outlined projects to add functionality.
-
-The table [here](https://github.com/tessel/project/issues/106) outlines the major milestones for the CLI prior to general release. **Feel free to contribute towards milestones that that aren't the highest priority or bugs not on that list! All contributions are welcome.**                                                                                                            
 
 
 ## Releasing
