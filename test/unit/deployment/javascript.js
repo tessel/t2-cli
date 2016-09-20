@@ -2659,37 +2659,84 @@ exports['deployment.js.injectBinaryModules'] = {
     });
   },
 
+  tryTheirPathAndOurPath: function(test) {
+    test.expect(3);
 
-  throwError: function(test) {
-    test.expect(1);
-
-    var errorMessage = 'Test Error';
-    this.copySync.onCall(0).throws(errorMessage);
-
-    this.globSync.restore();
-    this.globSync = sandbox.stub(glob, 'sync', () => {
-      return [
-        path.normalize('node_modules/release/build/Release/release.node'),
-      ];
+    this.copySync.restore();
+    this.copySync = sandbox.stub(fs, 'copySync', () => {
+      // Fail the first try/catch on THEIR PATH
+      if (this.copySync.callCount === 1) {
+        throw new Error('ENOENT: no such file or directory');
+      }
     });
 
-    deployment.js.resolveBinaryModules({
-      target: this.target,
-      tessel: {
-        versions: {
-          modules: 46
-        },
-      },
-    }).then(() => {
-      deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
-        test.fail('Should not pass');
-        test.done();
-      }).catch(error => {
-        test.equal(error, errorMessage);
-        test.done();
+    this.forEach = sandbox.stub(Map.prototype, 'forEach', (handler) => {
+      handler({
+        binName: 'node_sqlite3.node',
+        // This path doesn't match our precompiler's output paths.
+        // Will result in:
+        // ERR! Error: ENOENT: no such file or directory, stat '~/.tessel/binaries/sqlite3-3.1.4-Release/node-v46-something-else/node_sqlite3.node'
+        buildPath: path.normalize('/lib/binding/node-v46-something-else/'),
+        buildType: 'Release',
+        globPath: path.normalize('node_modules/sqlite3/lib/binding/node-v46-something-else/node_sqlite3.node'),
+        ignored: false,
+        name: 'sqlite3',
+        modulePath: path.normalize('node_modules/sqlite3'),
+        resolved: true,
+        version: '3.1.4',
+        extractPath: path.normalize('~/.tessel/binaries/sqlite3-3.1.4-Release'),
       });
-    }).catch(error => {
-      test.ok(false, error.toString());
+    });
+
+    deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
+      // 2 calls: 1 call for each try/catch fs.copySync
+      // 1 call: copy the package.json
+      test.equal(fs.copySync.callCount, 3);
+      // THEIR PATH
+      test.equal(this.copySync.getCall(0).args[0].endsWith(path.normalize('node-v46-something-else/node_sqlite3.node')), true);
+      // OUR PATH
+      test.equal(this.copySync.getCall(1).args[0].endsWith(path.normalize('Release/node_sqlite3.node')), true);
+      test.done();
+    });
+  },
+
+  tryCatchTwiceAndFailGracefullyWithMissingBinaryMessage: function(test) {
+    test.expect(4);
+
+    this.copySync.restore();
+    this.copySync = sandbox.stub(fs, 'copySync', () => {
+      throw new Error('E_THIS_IS_NOT_REAL');
+    });
+
+    this.forEach = sandbox.stub(Map.prototype, 'forEach', (handler) => {
+      handler({
+        binName: 'not-a-thing.node',
+        // This path doesn't match our precompiler's output paths.
+        // Will result in:
+        // ERR! Error: ENOENT: no such file or directory, stat '~/.tessel/binaries/not-a-thing-3.1.4-Release/node-v46-something-else/not-a-thing.node'
+        buildPath: path.normalize('/lib/binding/node-v46-something-else/'),
+        buildType: 'Release',
+        globPath: path.normalize('node_modules/not-a-thing/lib/binding/node-v46-something-else/not-a-thing.node'),
+        ignored: false,
+        name: 'not-a-thing',
+        modulePath: path.normalize('node_modules/not-a-thing'),
+        resolved: true,
+        version: '3.1.4',
+        extractPath: path.normalize('~/.tessel/binaries/not-a-thing-3.1.4-Release'),
+      });
+    });
+
+    this.error = sandbox.stub(log, 'error');
+    this.logMissingBinaryModuleWarning = sandbox.stub(deployment.js, 'logMissingBinaryModuleWarning');
+
+    deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync(), {}).then(() => {
+      // 2 calls: 1 call for each try/catch fs.copySync
+      test.equal(this.copySync.callCount, 2);
+
+      // Result of failing both attempts to copy
+      test.equal(this.logMissingBinaryModuleWarning.callCount, 1);
+      test.equal(this.error.callCount, 1);
+      test.equal(String(this.error.lastCall.args[0]).includes('E_THIS_IS_NOT_REAL'), true);
       test.done();
     });
   }
