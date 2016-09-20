@@ -524,6 +524,7 @@ module.exports['Tessel.setWifiState'] = {
     this.tessel = TesselSimulator();
     this.simpleExec = this.sandbox.spy(this.tessel, 'simpleExec');
     this.turnOnWifi = this.sandbox.spy(commands, 'turnOnWifi');
+    this.turnRadioOn = this.sandbox.spy(commands, 'turnRadioOn');
     this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
     this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
     this.getWifiInfo = this.sandbox.spy(commands, 'getWifiInfo');
@@ -607,6 +608,51 @@ module.exports['Tessel.setWifiState'] = {
         test.equal(this.info.calledOnce, true);
         test.equal(this.info.lastCall.args[1].indexOf('Disabled.') !== -1, true);
         test.equal(this.getWifiInfo.callCount, 0);
+        test.done();
+      })
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
+      });
+  },
+  setWifiStateWhenRadioOff: function(test) {
+    test.expect(9);
+    var state = true;
+
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus call iwinfo info {"device":"wlan0"}' && state) {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
+        });
+      } else if (command.toString() === 'wifi') {
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', new Buffer(`'radio0' is disabled`));
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.setWiFiState(state)
+      .then(() => {
+        test.equal(this.simpleExec.callCount, 6);
+        test.equal(this.turnOnWifi.callCount, 1);
+        test.equal(this.turnRadioOn.callCount, 1);
+        test.deepEqual(this.turnOnWifi.lastCall.returnValue, ['uci', 'set', 'wireless.@wifi-iface[0].disabled=0']);
+        test.equal(this.commitWirelessCredentials.callCount, 2);
+        test.equal(this.reconnectWifi.callCount, 2);
+        test.equal(this.info.calledOnce, true);
+        test.equal(this.info.lastCall.args[1].indexOf('Enabled.') !== -1, true);
+        test.equal(this.getWifiInfo.callCount, 1);
         test.done();
       })
       .catch(error => {
