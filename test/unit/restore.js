@@ -19,6 +19,10 @@ exports['Tessel.prototype.restore'] = {
     this.restore = this.sandbox.spy(Tessel.prototype, 'restore');
     this.tick = this.sandbox.stub(Progress.prototype, 'tick');
     this.tessel = TesselSimulator();
+
+    this.tessel.usbConnection.device = {
+      controlTransfer() {}
+    };
     done();
   },
 
@@ -69,6 +73,7 @@ exports['Tessel.prototype.restore'] = {
 
       return Promise.resolve();
     });
+
 
     this.tessel.restore({})
       .then(() => {
@@ -209,9 +214,11 @@ exports['restore.transaction'] = {
       callback(null, this.usb.epIn._mockbuffer);
     });
     this.usb.epIn._mockdata = new Buffer('mockbuffer');
+    this.usb.device = {
+      controlTransfer() {}
+    };
 
     this.expectedBuffer = new Buffer([0x00, 0x00, 0x00, 0x00, 0xFF]);
-
     done();
   },
 
@@ -337,6 +344,9 @@ exports['restore.bulkEraseFlash'] = {
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.usb = new USB.Connection({});
+    this.usb.device = {
+      controlTransfer() {}
+    };
 
     this.transaction = this.sandbox.stub(restore, 'transaction', () => Promise.resolve());
     this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete', () => Promise.resolve());
@@ -400,6 +410,10 @@ exports['restore.flash'] = {
     });
     this.usb.epIn._mockdata = new Buffer('mockbuffer');
 
+    this.tessel.usbConnection.device = {
+      controlTransfer() {}
+    };
+
     this.tick = this.sandbox.stub(Progress.prototype, 'tick');
     this.expectedBuffer = new Buffer([0x00, 0x00, 0x00, 0x00, 0xFF]);
     done();
@@ -412,7 +426,9 @@ exports['restore.flash'] = {
   },
 
   completeRestoreCallSteps(test) {
-    test.expect(10);
+    test.expect(11);
+
+    this.controlTransfer = this.sandbox.stub(this.tessel.usbConnection.device, 'controlTransfer');
 
     restore.flash(this.tessel, this.images).then(() => {
       test.equal(this.partition.callCount, 1);
@@ -429,6 +445,14 @@ exports['restore.flash'] = {
       test.equal(this.write.getCall(2).args[1], 0x50000);
       test.equal(this.write.getCall(2).args[2], this.images.squashfs);
 
+      test.equal(this.controlTransfer.callCount, 1);
+      /*
+
+        Take a look at other tests in this file
+
+        - What was controlTransfer called with?
+
+       */
       test.done();
     });
   },
