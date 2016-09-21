@@ -110,6 +110,24 @@ exports['controller.closeTesselConnections'] = {
         test.done();
       });
   },
+
+  resolvesForClosedUSBConnections: function(test) {
+    test.expect(1);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: false,
+      type: 'USB'
+    });
+
+    a.usbConnection.closed = true;
+
+    controller.closeTesselConnections([a])
+      .then(() => {
+        test.equal(a.close.callCount, 0);
+        test.done();
+      });
+  },
 };
 
 exports['controller.runHeuristics'] = {
