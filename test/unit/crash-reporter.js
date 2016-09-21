@@ -162,7 +162,7 @@ exports['CrashReporter.submit'] = {
     var error = new Error(`This happened at ${__dirname}. Line 1 in ${__filename}`);
 
     CrashReporter.submit(error).then(() => {
-      test.equal(this.crSanitize.callCount, 1);
+      test.equal(this.crSanitize.callCount, 2);
       // the actual dirname should not appear in the posted report contents
       test.equal(this.crPost.lastCall.args[0].includes(__dirname), false);
       test.equal(this.crPost.lastCall.args[0].includes(__filename), false);
@@ -207,27 +207,129 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  forwardsArgv: function(test) {
+  forwardsRealArgv: function(test) {
     test.expect(2);
 
     this.crPost.restore();
     this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
 
-    var original = process.argv[2];
+    var argv2 = process.argv[2];
+    var argv3 = process.argv[3];
 
     process.argv[2] = 'foo';
+    process.argv[3] = 'bar';
+
     CrashReporter.submit(new Error('This happened'), {
       silent: true
     }).then(() => {
       test.equal(this.crPost.callCount, 1);
-      test.equal(this.crPost.lastCall.args[2], 'foo');
-      process.argv[2] = original;
+      test.equal(this.crPost.lastCall.args[2], 'foo, bar');
+      process.argv[2] = argv2;
+      process.argv[3] = argv3;
       test.done();
     }).catch(error => {
       test.ok(false, error.message);
       test.done();
     });
   },
+
+  sanitizesRealArgv: function(test) {
+    test.expect(1);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    var argv2 = process.argv[2];
+    var argv3 = process.argv[3];
+
+    process.argv[2] = '-password';
+    process.argv[3] = '___abc123!@#$%^&*()+';
+
+    CrashReporter.submit(new Error('This happened'), {
+      silent: true,
+    }).then(() => {
+      test.equal(this.crPost.lastCall.args[2], '-password, ----redacted----');
+      process.argv[2] = argv2;
+      process.argv[3] = argv3;
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
+  sanitizesArgv1: function(test) {
+    test.expect(1);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    CrashReporter.submit(new Error('This happened'), {
+      silent: true,
+      argv: 'wifi, -n, somessid, -password, _abc123!@#$%^&*()+'
+    }).then(() => {
+      test.equal(this.crPost.lastCall.args[2], 'wifi, -n, somessid, -password, ----redacted----');
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
+  sanitizesArgv2: function(test) {
+    test.expect(1);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    CrashReporter.submit(new Error('This happened'), {
+      silent: true,
+      argv: 'wifi, -n, somessid, -p, _abc123!@#$%^&*()+'
+    }).then(() => {
+      test.equal(this.crPost.lastCall.args[2], 'wifi, -n, somessid, -p, ----redacted----');
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
+  sanitizesArgv3: function(test) {
+    test.expect(1);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    CrashReporter.submit(new Error('This happened'), {
+      silent: true,
+      argv: 'ap, -n, somessid, -password, _abc123!@#$%^&*()+'
+    }).then(() => {
+      test.equal(this.crPost.lastCall.args[2], 'ap, -n, somessid, -password, ----redacted----');
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
+  sanitizesArgv4: function(test) {
+    test.expect(1);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    CrashReporter.submit(new Error('This happened'), {
+      silent: true,
+      argv: 'ap, -n, somessid, -p, _abc123!@#$%^&*()+'
+    }).then(() => {
+      test.equal(this.crPost.lastCall.args[2], 'ap, -n, somessid, -p, ----redacted----');
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
 };
 
 
