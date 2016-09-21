@@ -189,6 +189,14 @@ makeCommand('restart')
   })
   .help('Restart a previously deployed script in RAM or Flash memory (does not rebundle)');
 
+makeCommand('reboot')
+  .callback(options => {
+    log.level(options.loglevel);
+
+    callControllerWith('reboot', options);
+  })
+  .help('Reboots Tessel');
+
 makeCommand('run')
   .callback(options => {
     log.level(options.loglevel);
