@@ -426,7 +426,7 @@ exports['restore.flash'] = {
   },
 
   completeRestoreCallSteps(test) {
-    test.expect(11);
+    test.expect(17);
 
     this.controlTransfer = this.sandbox.stub(this.tessel.usbConnection.device, 'controlTransfer');
 
@@ -446,13 +446,23 @@ exports['restore.flash'] = {
       test.equal(this.write.getCall(2).args[2], this.images.squashfs);
 
       test.equal(this.controlTransfer.callCount, 1);
-      /*
 
-        Take a look at other tests in this file
+      // LIBUSB_REQUEST_TYPE_VENDOR = 0x40
+      // LIBUSB_RECIPIENT_DEVICE = 0x00
+      // LIBUSB_ENDPOINT_OUT = 0x00
+      // VENDOR_REQ_OUT = (LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_OUT)
+      test.equal(this.controlTransfer.lastCall.args[0], 0x40);
 
-        - What was controlTransfer called with?
+      // NON-LIBUSB
+      // REQ_RESET = 0xBD
+      test.equal(this.controlTransfer.lastCall.args[1], 0xBD);
 
-       */
+      // Remaining args...
+      test.equal(this.controlTransfer.lastCall.args[2], 0);
+      test.equal(this.controlTransfer.lastCall.args[3], 0);
+      test.equal(Buffer.isBuffer(this.controlTransfer.lastCall.args[4]), true);
+      test.equal(this.controlTransfer.lastCall.args[4].length, 0);
+
       test.done();
     });
   },
