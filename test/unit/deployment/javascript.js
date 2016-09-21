@@ -2905,3 +2905,44 @@ exports['deployment.js.postRun'] = {
     });
   },
 };
+
+exports['deployment.js.logMissingBinaryModuleWarning'] = {
+  setUp: function(done) {
+    this.warn = sandbox.stub(log, 'warn');
+    this.details = {
+      binName: 'compiled-binary.node',
+      buildPath: path.normalize('/build/Release/node-v46-FAKE_PLATFORM-FAKE_ARCH/'),
+      buildType: 'Release',
+      globPath: path.normalize('node_modules/compiled-binary/build/Release/node-v46-FAKE_PLATFORM-FAKE_ARCH/compiled-binary.node'),
+      ignored: false,
+      name: 'compiled-binary',
+      modulePath: path.normalize('node_modules/compiled-binary'),
+      resolved: true,
+      version: '2.0.6',
+      extractPath: path.normalize('~/.tessel/binaries/compiled-binary-2.0.6-Release-node-v46-linux-mipsel')
+    };
+    done();
+  },
+  tearDown: function(done) {
+    sandbox.restore();
+    done();
+  },
+
+  callsThroughToLogWarn: function(test) {
+    test.expect(1);
+    deployment.js.logMissingBinaryModuleWarning(this.details);
+    test.equal(this.warn.callCount, 1);
+    test.done();
+  },
+
+  includesModuleNameAndVersion: function(test) {
+    test.expect(1);
+
+    deployment.js.logMissingBinaryModuleWarning(this.details);
+
+    var output = this.warn.lastCall.args[0];
+
+    test.equal(output.includes('Pre-compiled module is missing: compiled-binary@2.0.6'), true);
+    test.done();
+  },
+};
