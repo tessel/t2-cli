@@ -214,9 +214,6 @@ exports['restore.transaction'] = {
       callback(null, this.usb.epIn._mockbuffer);
     });
     this.usb.epIn._mockdata = new Buffer('mockbuffer');
-    this.usb.device = {
-      controlTransfer() {}
-    };
 
     this.expectedBuffer = new Buffer([0x00, 0x00, 0x00, 0x00, 0xFF]);
     done();
@@ -344,9 +341,6 @@ exports['restore.bulkEraseFlash'] = {
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.usb = new USB.Connection({});
-    this.usb.device = {
-      controlTransfer() {}
-    };
 
     this.transaction = this.sandbox.stub(restore, 'transaction', () => Promise.resolve());
     this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete', () => Promise.resolve());
