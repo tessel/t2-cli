@@ -195,7 +195,7 @@ makeCommand('reboot')
 
     callControllerWith('reboot', options);
   })
-  .help('Reboots Tessel');
+  .help('Reboot your Tessel');
 
 makeCommand('run')
   .callback(options => {
