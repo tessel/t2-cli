@@ -559,6 +559,22 @@ makeCommand('root')
   })
   .help('Gain SSH root access to one of your authorized tessels');
 
+parser.command('sdk')
+  .callback(options => {
+    log.level(options.loglevel);
+
+    if (options.subcommand == 'install') {
+      callControllerWith('installSdk', options);
+    } else if (options.subcommand == 'remove') {
+      callControllerWith('removeSdk', options);
+    }
+  })
+  .option('subcommand', {
+    position: 1,
+    required: true,
+    choices: ['install', 'remove']
+  })
+  .help('SDK management');
 
 module.exports = function(args) {
   var sIndexOfSA = -1;
