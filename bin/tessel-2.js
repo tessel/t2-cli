@@ -565,6 +565,8 @@ module.exports = function(args) {
       args[i] = arg.slice(0, arg.length - 1);
       eIndexOfSA = i;
     }
+
+    args[i] = args[i].trim();
   }
 
   // If there are, remove them from the `args`
@@ -577,6 +579,33 @@ module.exports = function(args) {
     // Splice the subargs from the args that will be passed to nomnom,
     // store on parser so we can get to them later.
     parser.subargs = args.splice(sIndexOfSA, eIndexOfSA);
+
+    // When there is only one subarg, make sure that:
+    //
+    // 1. There is no leading `[`
+    // 2. It is not an empty string
+    //
+    // t2 run index.js [0] =>
+    // [ '0' ]
+    //
+    // t2 run index.js [] =>
+    // []
+    //
+    // t2 run index.js [ 0] =>
+    // [ '0' ]
+    //
+    // t2 run index.js [1   0] =>
+    // [ '1', '0' ]
+    //
+    if (parser.subargs.length === 1) {
+      // Removes errant leading `[`
+      if (parser.subargs[0].startsWith('[')) {
+        parser.subargs[0] = parser.subargs[0].slice(1);
+      }
+    }
+
+    // Clean out empty strings
+    parser.subargs = parser.subargs.filter(subarg => subarg);
   }
 
   // Clear the spec from one call to the next. This is
@@ -618,4 +647,5 @@ if (require.main === module) {
 
 if (global.IS_TEST_ENV) {
   module.exports.makeCommand = makeCommand;
+  module.exports.nomnom = parser;
 }
