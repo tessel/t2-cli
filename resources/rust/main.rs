@@ -1,10 +1,5 @@
 //! A blinky example for Tessel
 
-// This enables the system allocator in your script.
-// This is required to run Rust binaries on Tessel.
-#![feature(alloc_system)]
-extern crate alloc_system;
-
 // Import the tessel library
 extern crate tessel;
 // Import the Tessel API
