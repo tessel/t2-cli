@@ -1021,6 +1021,7 @@ exports['Tessel (cli: installer-*)'] = {
 
     this.drivers = this.sandbox.stub(installer, 'drivers').returns(Promise.resolve());
     this.homedir = this.sandbox.stub(installer, 'homedir').returns(Promise.resolve());
+    this.rustsdk = this.sandbox.stub(installer, 'rust-sdk').returns(Promise.resolve());
     done();
   },
 
@@ -1034,10 +1035,50 @@ exports['Tessel (cli: installer-*)'] = {
 
     test.equal(
       cliPackageJson.scripts.postinstall,
-      't2 install-drivers --loglevel=error || true; t2 install-homedir --loglevel=error || true;'
+      't2 install drivers --loglevel=error || true; t2 install homedir --loglevel=error || true;'
     );
 
     test.done();
+  },
+
+  installRustSDK: function(test) {
+    test.expect(3);
+
+    var rustsdk = Promise.resolve();
+
+    this.rustsdk.restore();
+    this.rustsdk = this.sandbox.stub(installer, 'rust-sdk').returns(rustsdk);
+
+    cli(['install', 'rust-sdk']);
+
+    rustsdk.then(() => {
+      var options = this.rustsdk.lastCall.args[0];
+
+      test.equal(this.rustsdk.callCount, 1);
+      test.equal(options.operation, 'rust-sdk');
+      test.equal(options.action, 'install');
+      test.done();
+    });
+  },
+
+  removeRustSDK: function(test) {
+    test.expect(3);
+
+    var rustsdk = Promise.resolve();
+
+    this.rustsdk.restore();
+    this.rustsdk = this.sandbox.stub(installer, 'rust-sdk').returns(rustsdk);
+
+    cli(['remove', 'rust-sdk']);
+
+    rustsdk.then(() => {
+      var options = this.rustsdk.lastCall.args[0];
+
+      test.equal(this.rustsdk.callCount, 1);
+      test.equal(options.operation, 'rust-sdk');
+      test.equal(options.action, 'remove');
+      test.done();
+    });
   },
 
   callThroughNoOptions: function(test) {
@@ -1052,8 +1093,8 @@ exports['Tessel (cli: installer-*)'] = {
     this.drivers = this.sandbox.stub(installer, 'drivers').returns(dresolve);
     this.homedir = this.sandbox.stub(installer, 'homedir').returns(hresolve);
 
-    cli(['install-drivers']);
-    cli(['install-homedir']);
+    cli(['install', 'drivers']);
+    cli(['install', 'homedir']);
 
     test.equal(this.drivers.callCount, 1);
     test.equal(this.homedir.callCount, 1);
@@ -1062,8 +1103,8 @@ exports['Tessel (cli: installer-*)'] = {
       test.equal(this.drivers.callCount, 1);
       test.equal(this.homedir.callCount, 1);
 
-      test.equal(this.drivers.lastCall.args[0][0], 'install-drivers');
-      test.equal(this.homedir.lastCall.args[0][0], 'install-homedir');
+      test.equal(this.drivers.lastCall.args[0][0], 'install');
+      test.equal(this.homedir.lastCall.args[0][0], 'install');
 
       test.equal(this.drivers.lastCall.args[0].operation, 'drivers');
       test.equal(this.homedir.lastCall.args[0].operation, 'homedir');

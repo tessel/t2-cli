@@ -90,3 +90,43 @@ exports['installer.homedir'] = {
     });
   },
 };
+
+exports['installer.rust-sdk'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.error = this.sandbox.stub(log, 'error');
+    this.info = this.sandbox.stub(log, 'info');
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  // For now we only care that this is defined, not that it does
+  // anything particularly useful. That will be filled in later.
+  //
+  install: function(test) {
+    test.expect(1);
+
+    installer['rust-sdk']({
+      action: 'install'
+    }).then(() => {
+      test.ok(true);
+      test.done();
+    });
+  },
+
+  remove: function(test) {
+    test.expect(1);
+
+    installer['rust-sdk']({
+      action: 'remove'
+    }).then(() => {
+      test.ok(true);
+      test.done();
+    });
+  },
+};

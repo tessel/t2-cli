@@ -89,23 +89,42 @@ function callControllerWith(methodName, options) {
     .then(module.exports.closeSuccessfulCommand, module.exports.closeFailedCommand);
 }
 
-parser.command('install-drivers')
+parser.command('install')
   .callback(options => {
     log.level(options.loglevel);
 
-    options.operation = 'drivers';
     callControllerWith('installer', options);
   })
-  .help('Install drivers');
+  .option('operation', {
+    position: 1,
+    require: true,
+    choices: ['drivers', 'homedir', 'rust-sdk']
+  })
+  .help(`
+    Install additional system dependencies
 
-parser.command('install-homedir')
+    drivers    Installs USB drivers on Linux hosts
+    homedir    Creates a '.tessel' sub directory in host HOME directory
+    rust-sdk   Installs the Rust SDK
+  `);
+
+parser.command('remove')
   .callback(options => {
     log.level(options.loglevel);
 
-    options.operation = 'homedir';
-    callControllerWith('installer', options);
+    callControllerWith('remover', options);
   })
-  .help('Install homedir: ~/.tessel');
+  .option('operation', {
+    position: 1,
+    require: true,
+    choices: ['rust-sdk']
+  })
+  .help(`
+    Remove additional system dependencies added by t2-cli
+
+    rust-sdk   Removes the Rust SDK
+  `);
+
 
 parser.command('crash-reporter')
   .callback(options => {
