@@ -569,6 +569,9 @@ parser.command('sdk')
     } else if (options.subcommand === 'remove') {
       options.operation = 'removeSdk';
       callControllerWith('installer', options);
+    } else {
+      // Unreachable: this case should not be allowed by nomnom.
+      throw new Error('Expected subcommand "t2 sdk install" or "t2 sdk remove".');
     }
   })
   .option('subcommand', {
@@ -576,7 +579,7 @@ parser.command('sdk')
     required: true,
     choices: ['install', 'remove']
   })
-  .help('SDK management');
+  .help('Installs the Tessel SDK for binary cross-compilation.');
 
 module.exports = function(args) {
   var sIndexOfSA = -1;
