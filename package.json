@@ -53,7 +53,6 @@
     "colors": "^1.1.0",
     "common-tags": "0.0.1",
     "fs-extra": "^0.26.2",
-    "fs-extra-promise": "^0.4.1",
     "fs-temp": "^1.0.0",
     "fstream": "^1.0.8",
     "fstream-ignore": "1.0.5",
