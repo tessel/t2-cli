@@ -463,11 +463,10 @@ exports['Tessel (cli: run)'] = {
 
     // These represent the minimum required properties
     // and default values for `t2 run index.js`
-    test.ok(args.lanPrefer);
-    test.ok(args.slim);
-
-    test.ok(!args.full);
-    test.ok(!args.push);
+    test.equal(args.slim, true);
+    test.equal(args.lanPrefer, false);
+    test.equal(args.full, false);
+    test.equal(args.push, false);
 
     setImmediate(test.done);
   },
@@ -483,9 +482,9 @@ exports['Tessel (cli: run)'] = {
 
     // opts.full will override opts.slim in `tarBundle`
     // (See test/unit/deploy.js)
-    test.ok(args.full);
-    test.ok(args.lanPrefer);
-    test.ok(args.slim);
+    test.equal(args.full, true);
+    test.equal(args.slim, true);
+    test.equal(args.lanPrefer, false);
 
     test.ok(!args.push);
 

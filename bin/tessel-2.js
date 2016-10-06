@@ -220,7 +220,6 @@ makeCommand('run')
   .callback(options => {
     log.level(options.loglevel);
 
-    options.lanPrefer = true;
     options.push = false;
     // Overridden in tarBundle if options.full is `true`
     options.slim = true;
