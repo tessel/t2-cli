@@ -1061,7 +1061,7 @@ exports['Tessel (cli: installer-*)'] = {
     });
   },
 
-  removeRustSDK: function(test) {
+  uninstallRustSDK: function(test) {
     test.expect(3);
 
     var rustsdk = Promise.resolve();
@@ -1069,14 +1069,14 @@ exports['Tessel (cli: installer-*)'] = {
     this.rustsdk.restore();
     this.rustsdk = this.sandbox.stub(installer, 'rust-sdk').returns(rustsdk);
 
-    cli(['remove', 'rust-sdk']);
+    cli(['uninstall', 'rust-sdk']);
 
     rustsdk.then(() => {
       var options = this.rustsdk.lastCall.args[0];
 
       test.equal(this.rustsdk.callCount, 1);
       test.equal(options.operation, 'rust-sdk');
-      test.equal(options.action, 'remove');
+      test.equal(options.action, 'uninstall');
       test.done();
     });
   },

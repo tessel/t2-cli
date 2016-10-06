@@ -119,11 +119,11 @@ exports['installer.rust-sdk'] = {
     });
   },
 
-  remove: function(test) {
+  uninstall: function(test) {
     test.expect(1);
 
     installer['rust-sdk']({
-      action: 'remove'
+      action: 'uninstall'
     }).then(() => {
       test.ok(true);
       test.done();

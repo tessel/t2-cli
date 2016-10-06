@@ -108,11 +108,11 @@ parser.command('install')
     rust-sdk   Installs the Rust SDK
   `);
 
-parser.command('remove')
+parser.command('uninstall')
   .callback(options => {
     log.level(options.loglevel);
 
-    callControllerWith('remover', options);
+    callControllerWith('uninstaller', options);
   })
   .option('operation', {
     position: 1,
@@ -120,9 +120,9 @@ parser.command('remove')
     choices: ['rust-sdk']
   })
   .help(`
-    Remove additional system dependencies added by t2-cli
+    Uninstall additional system dependencies added by t2-cli
 
-    rust-sdk   Removes the Rust SDK
+    rust-sdk   Uninstall the Rust SDK
   `);
 
 
