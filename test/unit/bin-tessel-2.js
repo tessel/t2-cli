@@ -1072,3 +1072,92 @@ exports['Tessel (cli: installer-*)'] = {
     });
   },
 };
+
+exports['Tessel (cli: [subargs])'] = {
+
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.parse = this.sandbox.stub(cli.nomnom, 'parse');
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    cli.nomnom.subargs = undefined;
+    done();
+  },
+
+  emptyNoWhitespace: function(test) {
+    test.expect(3);
+
+    // t2 run foo.js []
+    cli(['run', 'foo.js', '[]']);
+
+    test.equal(this.parse.callCount, 1);
+    test.deepEqual(this.parse.lastCall.args[0], ['run', 'foo.js']);
+    test.deepEqual(cli.nomnom.subargs, []);
+    test.done();
+  },
+
+  emptyWithWhitespace: function(test) {
+    test.expect(3);
+
+    // t2 run foo.js [ ]
+    cli(['run', 'foo.js', '[ ]']);
+
+    test.equal(this.parse.callCount, 1);
+    test.deepEqual(this.parse.lastCall.args[0], ['run', 'foo.js']);
+    test.deepEqual(cli.nomnom.subargs, []);
+    test.done();
+  },
+
+  emptySingleNoWhitespace: function(test) {
+    test.expect(3);
+
+    // t2 run foo.js [0]
+    cli(['run', 'foo.js', '[0]']);
+
+    test.equal(this.parse.callCount, 1);
+    test.deepEqual(this.parse.lastCall.args[0], ['run', 'foo.js']);
+    test.deepEqual(cli.nomnom.subargs, ['0']);
+    test.done();
+  },
+
+  emptySingleWithWhitespace: function(test) {
+    test.expect(3);
+
+    // t2 run foo.js [0 ]
+    cli(['run', 'foo.js', '[0', ']']);
+
+    test.equal(this.parse.callCount, 1);
+    test.deepEqual(this.parse.lastCall.args[0], ['run', 'foo.js']);
+    test.deepEqual(cli.nomnom.subargs, ['0']);
+    test.done();
+  },
+
+  emptyMultipleWithWhitespace: function(test) {
+    test.expect(3);
+
+    // t2 run foo.js [0 0  0    0]
+    cli(['run', 'foo.js', '[0', '0', '0', '0]']);
+
+    test.equal(this.parse.callCount, 1);
+    test.deepEqual(this.parse.lastCall.args[0], ['run', 'foo.js']);
+    test.deepEqual(cli.nomnom.subargs, ['0', '0', '0', '0']);
+    test.done();
+  },
+
+  emptyMultipleMixed: function(test) {
+    test.expect(3);
+
+    // t2 run foo.js [--foo=bar   0 x y z   --a true 1  2 3 ]
+    cli(['run', 'foo.js', '[--foo=bar', '0', 'x', 'y', 'z', '--a', 'true', '1', '2', '3', ']']);
+
+    test.equal(this.parse.callCount, 1);
+    test.deepEqual(this.parse.lastCall.args[0], ['run', 'foo.js']);
+    test.deepEqual(
+      cli.nomnom.subargs, ['--foo=bar', '0', 'x', 'y', 'z', '--a', 'true', '1', '2', '3']
+    );
+    test.done();
+  },
+};
