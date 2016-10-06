@@ -563,10 +563,12 @@ parser.command('sdk')
   .callback(options => {
     log.level(options.loglevel);
 
-    if (options.subcommand == 'install') {
-      callControllerWith('installSdk', options);
-    } else if (options.subcommand == 'remove') {
-      callControllerWith('removeSdk', options);
+    if (options.subcommand === 'install') {
+      options.operation = 'installSdk';
+      callControllerWith('installer', options);
+    } else if (options.subcommand === 'remove') {
+      options.operation = 'removeSdk';
+      callControllerWith('installer', options);
     }
   })
   .option('subcommand', {
