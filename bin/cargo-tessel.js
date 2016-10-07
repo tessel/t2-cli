@@ -2,68 +2,60 @@
 
 // Helper tool for creating cross-compiled bundles for Tessel deployment.
 
-var rust = require('../../lib/install/rust');
+// System Objects
+// ...
 
-var fs = require('fs');
-var path = require('path');
-var spawn = require('child_process').spawn;
-var tar = require('tar-fs');
-var zlib = require('zlib');
+// Third Party Dependencies
+var parser = require('nomnom');
 
-var config = null;
+// Internal
+var log = require('../lib/log');
+var rust = require('../lib/install/rust');
 
-rust.getBuildConfig()
-.catch(e => {
-  console.error('Could not find all the components for cross-compiling Rust.')
-  console.error(e.message);
-  console.error('Please run "t2 sdk install" and try again.')
-  console.error('NOTE: Cross-compilation is only supported on Rust stable builds.')
+function die(err) {
+  log.error(err.stack);
   process.exit(1);
-})
-.then(_config => config = _config)
-.then(() => rust.cargoMetadata())
-.then(metadata => {
-  // Get first package.
-  var pkg = metadata.packages.pop();
-  var bins = pkg.targets.filter(target => target.kind.indexOf('bin') > -1);
+}
 
-  // Filter by --bin argument.
-  var idx = process.argv.indexOf('--bin');
-  var name = idx > -1 ? process.argv[idx + 1] : null;
-  var validbins = bins;
-  if (name != null) {
-    validbins = validbins.filter(bin => bin.name == process.argv[idx + 1]);
-  }
-
-  // Throw if multiple bins exist.
-  if (validbins.length == 0) {
-    if (name) {
-      console.error(`No binary target "${name}" exists for this Rust crate.\nMake sure you specify a valid binary using --bin. e.g.:`)
-      bins.forEach(bin => {
-        console.error('    t2 run Cargo.toml --bin', bin.name);
+parser.command('build')
+  .callback(function(opts) {
+    rust.runBuild(opts.bin)
+      .then(tarball => {
+        log.info('Tessel bundle written out to:');
+        console.log(tarball);
       })
-    } else {
-      console.error('No binary targets exist for this Rust crate.\nPlease add a binary and try again.')
+      .catch(die);
+  })
+  .option('bin', {
+    help: 'Name of the binary to cross-compile.'
+  })
+  .help('Cross-compile binary for target.');
+
+parser.command('sdk')
+  .option('subcommand', {
+    position: 1,
+    required: true,
+    options: ['install', 'uninstall'],
+    help: '"install" or "uninstall" the SDK.',
+  })
+  .callback(function(opts) {
+    switch (opts.subcommand) {
+      case 'install':
+        rust.installSdk(opts).catch(die);
+        break;
+      case 'uninstall':
+        rust.uninstallSdk(opts).catch(die);
+        break;
     }
-    process.exit(1);
-  }
-  if (validbins.length > 1) {
-    console.error('Multiple binary targets exist for this Rust crate.\nPlease specify one by name with --bin. e.g.:')
-    bins.forEach(bin => {
-      console.error('    t2 run Cargo.toml --bin', bin.name);
-    })
-    process.exit(1);
-  }
+  })
+  .help('Manage the SDK for cross-compiling Rust binaries.');
 
-  var out = validbins[0];
-  var dest = path.join(path.dirname(pkg.manifest_path), 'target/tessel2/release', out.name);
-
-  config.name = out.name;
-  config.path = dest;
-})
-.then(() => rust.buildTessel(config))
-.then(() => rust.bundleTessel(config))
-.then(tarball => {
-  console.error('Tessel bundle written out to:');
-  console.log(tarball);
-})
+if (require.main === module) {
+  if (process.argv[2] === 'tessel') {
+    // 'cargo tessel' invocation
+    parser.parse(process.argv.slice(3));
+  } else {
+    // 'cargo-tessel' invocation
+    parser.parse(process.argv.slice(2));
+  }
+}

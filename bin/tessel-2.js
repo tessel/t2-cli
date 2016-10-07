@@ -98,33 +98,14 @@ parser.command('install')
   .option('operation', {
     position: 1,
     required: true,
-    choices: ['drivers', 'homedir', 'rust-sdk']
+    choices: ['drivers', 'homedir']
   })
   .help(`
     Install additional system dependencies
 
     drivers    Installs USB drivers on Linux hosts
     homedir    Creates a '.tessel' sub directory in host HOME directory
-    rust-sdk   Installs the Rust SDK
   `);
-
-parser.command('uninstall')
-  .callback(options => {
-    log.level(options.loglevel);
-
-    callControllerWith('uninstaller', options);
-  })
-  .option('operation', {
-    position: 1,
-    required: true,
-    choices: ['rust-sdk']
-  })
-  .help(`
-    Uninstall additional system dependencies added by t2-cli
-
-    rust-sdk   Uninstall the Rust SDK
-  `);
-
 
 parser.command('crash-reporter')
   .callback(options => {

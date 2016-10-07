@@ -1020,7 +1020,6 @@ exports['Tessel (cli: installer-*)'] = {
 
     this.drivers = this.sandbox.stub(installer, 'drivers').returns(Promise.resolve());
     this.homedir = this.sandbox.stub(installer, 'homedir').returns(Promise.resolve());
-    this.rustsdk = this.sandbox.stub(installer, 'rust-sdk').returns(Promise.resolve());
     done();
   },
 
@@ -1038,46 +1037,6 @@ exports['Tessel (cli: installer-*)'] = {
     );
 
     test.done();
-  },
-
-  installRustSDK: function(test) {
-    test.expect(3);
-
-    var rustsdk = Promise.resolve();
-
-    this.rustsdk.restore();
-    this.rustsdk = this.sandbox.stub(installer, 'rust-sdk').returns(rustsdk);
-
-    cli(['install', 'rust-sdk']);
-
-    rustsdk.then(() => {
-      var options = this.rustsdk.lastCall.args[0];
-
-      test.equal(this.rustsdk.callCount, 1);
-      test.equal(options.operation, 'rust-sdk');
-      test.equal(options.action, 'install');
-      test.done();
-    });
-  },
-
-  uninstallRustSDK: function(test) {
-    test.expect(3);
-
-    var rustsdk = Promise.resolve();
-
-    this.rustsdk.restore();
-    this.rustsdk = this.sandbox.stub(installer, 'rust-sdk').returns(rustsdk);
-
-    cli(['uninstall', 'rust-sdk']);
-
-    rustsdk.then(() => {
-      var options = this.rustsdk.lastCall.args[0];
-
-      test.equal(this.rustsdk.callCount, 1);
-      test.equal(options.operation, 'rust-sdk');
-      test.equal(options.action, 'uninstall');
-      test.done();
-    });
   },
 
   callThroughNoOptions: function(test) {
