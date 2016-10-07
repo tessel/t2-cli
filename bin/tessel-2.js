@@ -559,28 +559,6 @@ makeCommand('root')
   })
   .help('Gain SSH root access to one of your authorized tessels');
 
-parser.command('sdk')
-  .callback(options => {
-    log.level(options.loglevel);
-
-    if (options.subcommand === 'install') {
-      options.operation = 'installSdk';
-      callControllerWith('installer', options);
-    } else if (options.subcommand === 'remove') {
-      options.operation = 'removeSdk';
-      callControllerWith('installer', options);
-    } else {
-      // Unreachable: this case should not be allowed by nomnom.
-      throw new Error('Expected subcommand "t2 sdk install" or "t2 sdk remove".');
-    }
-  })
-  .option('subcommand', {
-    position: 1,
-    required: true,
-    choices: ['install', 'remove']
-  })
-  .help('Installs the Tessel SDK for binary cross-compilation.');
-
 module.exports = function(args) {
   var sIndexOfSA = -1;
   var eIndexOfSA = -1;
