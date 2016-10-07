@@ -13,12 +13,14 @@ var log = require('../lib/log');
 var rust = require('../lib/install/rust');
 
 function die(err) {
+  // TODO: refactor into closeSuccessfulCommand and closeFailedCommand,
+  // similar to tessel-2.js
   log.error(err.stack);
   process.exit(1);
 }
 
 parser.command('build')
-  .callback(function(opts) {
+  .callback((opts) => {
     rust.runBuild(opts.bin)
       .then(tarball => {
         log.info('Tessel bundle written out to:');
@@ -38,15 +40,8 @@ parser.command('sdk')
     options: ['install', 'uninstall'],
     help: '"install" or "uninstall" the SDK.',
   })
-  .callback(function(opts) {
-    switch (opts.subcommand) {
-      case 'install':
-        rust.installSdk(opts).catch(die);
-        break;
-      case 'uninstall':
-        rust.uninstallSdk(opts).catch(die);
-        break;
-    }
+  .callback((opts) => {
+    rust.cli[opts.subcommand](opts).catch(die);
   })
   .help('Manage the SDK for cross-compiling Rust binaries.');
 
