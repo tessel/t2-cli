@@ -213,20 +213,17 @@ exports['deploy.rust'] = {
   // name of the binary instead any of the code files of the project
   rustPreBundle: function(test) {
 
-    test.expect(0);
-
-    // Gather the project info for the project we'll target
-    // var cargoToml = toml.parse(fs.readFileSync(path.join(DEPLOY_DIR_RS, 'Cargo.toml'), 'utf8'));
+    test.expect(1);
 
     var opts = {
       target: DEPLOY_DIR_RS,
-      resolvedEntryPoint: 'src/main.rs',
+      resolvedEntryPoint: 'hello',
     };
 
     deployment.rs.preBundle(opts)
       .then(() => {
-        // Ensure the resolved entry point was udpated to the package name
-        //TODO test.equal(opts.resolvedEntryPoint, cargoToml.package.name);
+        // Ensure the resolved entry point is resolved to the binary name.
+        test.equal(opts.resolvedEntryPoint, 'hello');
 
         test.done();
       });
