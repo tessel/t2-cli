@@ -259,7 +259,6 @@ makeCommand('run')
   })
   .option('rustcc', {
     flag: true,
-    default: 'http://rustcc.tessel.io:49160',
     help: 'Specify the location and port of the Rust cross-compilation server.'
   })
   .help(`
