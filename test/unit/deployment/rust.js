@@ -227,13 +227,12 @@ exports['deploy.rust'] = {
       }, () => {
         // TODO this should shim checkSdk and checkRust on the prebundle step
         // so it doesn't fail.
-        var rust = require('../../../lib/install/rust');
         rust.checkSdk()
-        .then(() => {
-          test.fail();
-        }, () => {
-          test.done();
-        });
+          .then(() => {
+            test.fail();
+          }, () => {
+            test.done();
+          });
       });
   }
 };

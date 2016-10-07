@@ -20,8 +20,8 @@ function die(err) {
 }
 
 parser.command('build')
-  .callback((opts) => {
-    rust.runBuild(opts.bin)
+  .callback(options => {
+    rust.runBuild(options.bin)
       .then(tarball => {
         log.info('Tessel bundle written out to:');
         console.log(tarball);
@@ -40,8 +40,8 @@ parser.command('sdk')
     options: ['install', 'uninstall'],
     help: '"install" or "uninstall" the SDK.',
   })
-  .callback((opts) => {
-    rust.cli[opts.subcommand](opts).catch(die);
+  .callback(options => {
+    rust.cli[options.subcommand](options).catch(die);
   })
   .help('Manage the SDK for cross-compiling Rust binaries.');
 
