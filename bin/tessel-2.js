@@ -258,7 +258,8 @@ makeCommand('run')
     help: 'Compression steps during deployment. To skip compression, use --compress=false.'
   })
   .option('rustcc', {
-    default: 'http://192.241.138.79:49160',
+    flag: true,
+    default: 'http://rustcc.tessel.io:49160',
     help: 'Specify the location and port of the Rust cross-compilation server.'
   })
   .help(`
