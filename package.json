@@ -8,7 +8,8 @@
     "postinstall": "t2 install drivers --loglevel=error || true; t2 install homedir --loglevel=error || true;"
   },
   "bin": {
-    "t2": "./bin/tessel-2.js"
+    "t2": "./bin/tessel-2.js",
+    "cargo-tessel": "./bin/cargo-tessel.js"
   },
   "repository": {
     "type": "git",
