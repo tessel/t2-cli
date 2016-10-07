@@ -97,7 +97,7 @@ parser.command('install')
   })
   .option('operation', {
     position: 1,
-    require: true,
+    required: true,
     choices: ['drivers', 'homedir', 'rust-sdk']
   })
   .help(`
@@ -116,7 +116,7 @@ parser.command('uninstall')
   })
   .option('operation', {
     position: 1,
-    require: true,
+    required: true,
     choices: ['rust-sdk']
   })
   .help(`
