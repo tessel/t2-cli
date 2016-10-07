@@ -40,7 +40,6 @@ global.sshpk = require('sshpk');
 global.ssh = require('ssh2');
 global.tags = require('common-tags');
 global.tar = require('tar');
-global.toml = require('toml');
 global.uglify = require('uglify-js');
 
 
@@ -67,6 +66,9 @@ global.log = require('../../lib/log');
 global.updates = require('../../lib/update-fetch');
 global.lan = require('../../lib/lan-connection');
 global.usb = require('../../lib/usb-connection');
+
+// ./lib/install/*
+global.rust = require('../../lib/install/rust');
 
 // ./lib/usb/*
 global.Daemon = require('../../lib/usb/usb-daemon');
