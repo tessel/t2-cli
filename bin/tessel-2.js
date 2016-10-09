@@ -530,6 +530,9 @@ makeCommand('ap')
     abbr: 's',
     help: 'Encryption to use on network (i.e. wep, psk, psk2, wpa, wpa2).'
   })
+  .option('ip', {
+    help: 'Set the IP address of the network, i.e. "192.168.1.101"'
+  })
   .option('off', {
     flag: true,
     help: 'Disable the access point'
@@ -568,6 +571,9 @@ makeCommand('adhoc')
   .option('security', {
     abbr: 's',
     help: 'Encryption used on network (i.e. wep, psk, psk2, wpa, wpa2).'
+  })
+  .option('ip', {
+    help: 'Set the IP address of the network, i.e. "192.168.1.101"'
   })
   .option('off', {
     flag: true,
