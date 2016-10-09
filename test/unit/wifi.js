@@ -232,6 +232,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     this.commitWirelessCredentials = this.sandbox.spy(commands, 'commitWirelessCredentials');
     this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
     this.getWifiInfo = this.sandbox.spy(commands, 'getWifiInfo');
+    this.getAccessPointConfig = this.sandbox.spy(commands, 'getAccessPointConfig');
     this.tessel = TesselSimulator();
 
     done();
@@ -242,7 +243,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
     done();
   },
   noPassword: function(test) {
-    test.expect(8);
+    test.expect(9);
     var creds = {
       ssid: 'tank',
       password: undefined
@@ -255,6 +256,15 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
           this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
+        });
+      } else if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
+        var info = new Buffer(tags.stripIndent `
+          wireless.cfg053579.mode='ap'
+          wireless.cfg053579.disabled='1'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
           this.tessel._rps.emit('close');
         });
       } else {
@@ -273,9 +283,10 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.equal(this.setNetworkEncryption.callCount, 1);
         test.equal(this.commitWirelessCredentials.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.getWifiInfo.callCount, 1);
+        test.equal(this.getAccessPointConfig.callCount, 1);
         test.ok(this.setNetworkSSID.lastCall.calledWith(creds.ssid));
         test.ok(this.setNetworkEncryption.lastCall.calledWith('none'));
-        test.ok(this.getWifiInfo.callCount, 1);
         test.done();
       })
       .catch(error => {
@@ -297,6 +308,15 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
           this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
+        });
+      } else if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
+        var info = new Buffer(tags.stripIndent `
+          wireless.cfg053579.mode='ap'
+          wireless.cfg053579.disabled='1'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
           this.tessel._rps.emit('close');
         });
       } else {
@@ -344,6 +364,15 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
           this.tessel._rps.stdout.emit('data', new Buffer('signal'));
           this.tessel._rps.emit('close');
         });
+      } else if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
+        var info = new Buffer(tags.stripIndent `
+          wireless.cfg053579.mode='ap'
+          wireless.cfg053579.disabled='1'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
+          this.tessel._rps.emit('close');
+        });
       } else {
         setImmediate(() => {
           // Remove any listeners on stdout so we don't break anything when we write to it
@@ -386,6 +415,15 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         setImmediate(() => {
           // Is missing the "signal" status key
           this.tessel._rps.stderr.emit('data', new Buffer('Unable to connect to the network.'));
+          this.tessel._rps.emit('close');
+        });
+      } else if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
+        var info = new Buffer(tags.stripIndent `
+          wireless.cfg053579.mode='ap'
+          wireless.cfg053579.disabled='1'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
           this.tessel._rps.emit('close');
         });
       } else {
@@ -435,6 +473,15 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
           this.tessel._rps.stderr.removeAllListeners();
           this.tessel._rps.emit('close');
         });
+      } else if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
+        var info = new Buffer(tags.stripIndent `
+          wireless.cfg053579.mode='ap'
+          wireless.cfg053579.disabled='1'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
+          this.tessel._rps.emit('close');
+        });
       } else {
         setImmediate(() => {
           // Remove any listeners on stderr so we don't break anything when we write to it
@@ -464,6 +511,51 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         test.done();
       });
   },
+  connectFailsWhileAdhocEnabled: function(test) {
+    test.expect(2);
+    var creds = {
+      ssid: 'tank',
+      password: 'not_gonna_work'
+    };
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus call iwinfo info {"device":"wlan0"}') {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
+        });
+      } else if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
+        var info = new Buffer(tags.stripIndent `
+          wireless.cfg053579.mode='adhoc'
+          wireless.cfg053579.disabled='0'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stderr so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.stderr.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.connectToNetwork(creds)
+      .then(function() {
+        test.ok(false, 'Test should have rejected with an error.');
+        test.done();
+      })
+      .catch((error) => {
+        test.equal(error.message.includes('Tessel must have adhoc disabled'), true);
+        test.equal(this.getAccessPointConfig.callCount, 1);
+        test.done();
+      });
+  },
   // Sometimes the keyword for success (signal) is not in the first batch
   // of stdout data
   batchedResponse: function(test) {
@@ -482,6 +574,15 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
           this.tessel._rps.stdout.emit('data', new Buffer('do not have success yet'));
           // then write the keyword we're looking for for success
           this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.emit('close');
+        });
+      } else if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
+        var info = new Buffer(tags.stripIndent `
+          wireless.cfg053579.mode='ap'
+          wireless.cfg053579.disabled='1'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
           this.tessel._rps.emit('close');
         });
       } else {
