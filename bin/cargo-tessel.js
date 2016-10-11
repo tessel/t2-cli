@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-// Helper tool for creating cross-compiled bundles for Tessel deployment.
+// cargo-tessel: helper tool for creating cross-compiled bundles for Tessel.
+// See https://github.com/rust-lang/cargo/wiki/Third-party-cargo-subcommands
 
 // System Objects
 // ...
@@ -23,7 +24,7 @@ parser.command('build')
   .callback(options => {
     rust.runBuild(false, options.bin)
       .then(tarball => {
-        // This is the direct invocation of `cargo tessel build ...` (not
+        // This is the direct invocation of "cargo tessel build ..." (not
         // through t2 run). As a command line tool, it only writes to stdout
         // the path of the cross-compiled tarball it generates. This allows This
         // to be integrated into CLI toolchains by mapping its stdout.
@@ -51,14 +52,14 @@ parser.command('sdk')
 
 if (require.main === module) {
   if (process.argv[2] === 'tessel') {
-    // The 'cargo' CLI tool will match `cargo SUBCOMMAND` with any tool on the
-    // path matching `cargo-SUBCOMMAND`. When invoking this script via a
-    // command like 'cargo tessel', we have an extra "tessel" argument in the
+    // The 'cargo' CLI tool will match "cargo SUBCOMMAND" with any tool on the
+    // path matching "cargo-SUBCOMMAND". When invoking this script via a
+    // command like "cargo tessel", we have an extra "tessel" argument in the
     // process.argv array. We slice it out here explicitly.
     parser.parse(process.argv.slice(3));
   } else {
-    // When we directly invoke 'cargo-tessel', we don't have an erroneous
-    // 'tessel' argument and can parse arguments as `node cargo-tessel.js ...`
+    // When we directly invoke "cargo-tessel", we don't have an erroneous
+    // "tessel" argument and can parse arguments as "node cargo-tessel.js ..."
     parser.parse(process.argv.slice(2));
   }
 }
