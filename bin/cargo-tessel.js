@@ -15,7 +15,7 @@ var rust = require('../lib/install/rust');
 function closeCommand(error) {
   // TODO: refactor into closeSuccessfulCommand and closeFailedCommand,
   // similar to tessel-2.js
-  log.error(error.stack);
+  log.error(typeof error === 'string' ? error : error.stack);
   process.exit(1);
 }
 
