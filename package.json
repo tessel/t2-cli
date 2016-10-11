@@ -24,7 +24,7 @@
     "technical",
     "machine"
   ],
-  "author": "Technical Machine",
+  "author": "Tessel Project",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/tessel/t2-cli/issues"
@@ -85,7 +85,7 @@
   },
   "preferGlobal": true,
   "engines": {
-    "node": ">=4.2.0 <5.0"
+    "node": ">=4.2.0"
   },
   "contributors": [
     "Jon McKay <johnnyman727@gmail.com>",
