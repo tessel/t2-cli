@@ -12,8 +12,6 @@ exports['deploy.rust'] = {
     this.outgoingResponse = new stream.Readable();
     this.incomingRequest = new stream.Writable();
 
-    this.checkSdk = sandbox.spy(rust, 'checkSdk');
-
     this.outgoingResponse._read = () => {};
 
     this.httpRequest = sandbox.stub(http, 'request', (options, cb) => {
@@ -217,8 +215,9 @@ exports['deploy.rust'] = {
 
     test.expect(1);
 
-    this.checkSdk.restore();
     this.checkSdk = sandbox.stub(rust, 'checkSdk', () => Promise.resolve());
+    this.checkRust = sandbox.stub(rust, 'checkRust', () => Promise.resolve());
+    this.checkBinaryName = sandbox.stub(rust, 'checkBinaryName', () => Promise.resolve());
 
     var opts = {
       target: DEPLOY_DIR_RS,
