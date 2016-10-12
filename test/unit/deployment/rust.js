@@ -12,6 +12,8 @@ exports['deploy.rust'] = {
     this.outgoingResponse = new stream.Readable();
     this.incomingRequest = new stream.Writable();
 
+    this.checkSdk = sandbox.spy(rust, 'checkSdk');
+
     this.outgoingResponse._read = () => {};
 
     this.httpRequest = sandbox.stub(http, 'request', (options, cb) => {
@@ -213,26 +215,118 @@ exports['deploy.rust'] = {
   // name of the binary instead any of the code files of the project
   rustPreBundle: function(test) {
 
-    test.expect(0);
+    test.expect(1);
+
+    this.checkSdk.restore();
+    this.checkSdk = sandbox.stub(rust, 'checkSdk', () => Promise.resolve());
 
     var opts = {
       target: DEPLOY_DIR_RS,
       resolvedEntryPoint: 'hello',
     };
 
+    // Ensure the resolved entry point is resolved to the binary name.
     deployment.rs.preBundle(opts)
       .then(() => {
-        // Ensure the resolved entry point is resolved to the binary name.
-        test.done();
-      }, () => {
-        // TODO this should shim checkSdk and checkRust on the prebundle step
-        // so it doesn't fail.
-        rust.checkSdk()
-          .then(() => {
-            test.fail();
-          }, () => {
-            test.done();
-          });
-      });
-  }
+        test.equal(opts.resolvedEntryPoint, 'hello');
+      }, error => {
+        test.ok(false, error.toString());
+      })
+      .then(() => test.done());
+  },
+
+  rustTarBundleLocal: function(test) {
+    test.expect(1);
+
+    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(null));
+
+    this.runBuild = sandbox.stub(rust, 'runBuild', () => Promise.resolve(__filename));
+
+    var opts = {
+      rustcc: false,
+    };
+
+    // Ensure the resolved entry point is resolved to the binary name.
+    deployment.rs.tarBundle(opts)
+      .then((tarball) => {
+        test.ok(Buffer.isBuffer(tarball), 'tarball should be buffer');
+      }, error => {
+        test.ok(false, error.toString());
+      })
+      .then(() => test.done());
+  },
+
+  rustTarBundleRemote: function(test) {
+    test.expect(1);
+
+    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(Buffer.from([])));
+
+    this.runBuild = sandbox.stub(rust, 'runBuild', () => Promise.resolve(null));
+
+    var opts = {
+      rustcc: true,
+    };
+
+    // Ensure the resolved entry point is resolved to the binary name.
+    deployment.rs.tarBundle(opts)
+      .then((tarball) => {
+        test.ok(Buffer.isBuffer(tarball), 'tarball should be buffer');
+      }, error => {
+        test.ok(false, error.toString());
+      })
+      .then(() => test.done());
+  },
+
+  checkBinaryNames: function(test) {
+    test.expect(2);
+
+    this.cargoMetadata = sandbox.stub(rust, 'cargoMetadata', () => Promise.resolve({
+      'packages': [{
+        'name': 'blinky',
+        'version': '0.0.1',
+        'id': 'blinky 0.0.1 (path+file:///Users/tim/tcr/test/rust-blinky)',
+        'source': null,
+        'dependencies': [{
+          'name': 'tessel',
+          'source': 'registry+https://github.com/rust-lang/crates.io-index',
+          'req': '^0.2.0',
+          'kind': null,
+          'optional': false,
+          'uses_default_features': true,
+          'features': [
+
+          ],
+          'target': null
+        }],
+        'targets': [{
+          'kind': [
+            'bin'
+          ],
+          'name': 'blinky',
+          'src_path': '/Users/tim/tcr/test/rust-blinky/src/main.rs'
+        }],
+        'features': {
+
+        },
+        'manifest_path': '/Users/tim/tcr/test/rust-blinky/Cargo.toml'
+      }],
+      'resolve': null,
+      'version': 1
+    }));
+
+    // Ensure the resolved entry point is resolved to the binary name.
+    rust.checkBinaryName(false, 'blinky', __filename)
+      .then(dest => {
+        test.equals(dest.name, 'blinky');
+      }, error => {
+        test.ok(false, error.toString());
+      })
+      .then(() => rust.checkBinaryName(false, 'dummy', __filename))
+      .then(() => {
+        test.ok(false, 'Name should not have matched.');
+      }, error => {
+        test.ok(true, error.toString());
+      })
+      .then(() => test.done());
+  },
 };
