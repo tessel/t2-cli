@@ -315,13 +315,21 @@ exports['deploy.rust'] = {
     }));
 
     // Ensure the resolved entry point is resolved to the binary name.
-    rust.checkBinaryName(false, 'blinky', __filename)
+    rust.checkBinaryName({
+        isCli: false,
+        binary: 'blinky',
+        path: __filename
+      })
       .then(dest => {
         test.equals(dest.name, 'blinky');
       }, error => {
         test.ok(false, error.toString());
       })
-      .then(() => rust.checkBinaryName(false, 'dummy', __filename))
+      .then(() => rust.checkBinaryName({
+        isCli: false,
+        binary: 'dummy',
+        path: __filename
+      }))
       .then(() => {
         test.ok(false, 'Name should not have matched.');
       }, error => {
