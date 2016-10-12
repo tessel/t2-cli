@@ -22,7 +22,10 @@ function closeCommand(error) {
 
 parser.command('build')
   .callback(options => {
-    rust.runBuild(false, options.bin)
+    rust.runBuild({
+        isCli: false,
+        binary: options.bin
+      })
       .then(tarball => {
         // This is the direct invocation of "cargo tessel build ..." (not
         // through t2 run). As a command line tool, it only writes to stdout
