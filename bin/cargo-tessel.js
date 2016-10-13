@@ -42,14 +42,14 @@ parser.command('build')
   .help('Cross-compile a binary for Tessel.');
 
 parser.command('sdk')
+  .callback(options => {
+    rust.cargo[options.subcommand](options).catch(closeCommand);
+  })
   .option('subcommand', {
     position: 1,
     required: true,
-    options: ['install', 'uninstall'],
+    choices: ['install', 'uninstall'],
     help: '"install" or "uninstall" the SDK.',
-  })
-  .callback(options => {
-    rust.cargo[options.subcommand](options).catch(closeCommand);
   })
   .help('Manage the SDK for cross-compiling Rust binaries.');
 
