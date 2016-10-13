@@ -1,8 +1,6 @@
 // Test dependencies are required and exposed in common/bootstrap.js
 require('../common/bootstrap');
 
-/*global CrashReporter */
-
 exports['Cargo Subcommand (cargo tessel ...)'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
