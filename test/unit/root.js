@@ -44,7 +44,7 @@ exports['tessel.root'] = {
     test.expect(2);
 
     // Root should call closeFailed Command if no Tessels were found
-    this.finishWithError = this.sandbox.stub(cli, 'closeFailedCommand', () => {
+    this.finishWithError = this.sandbox.stub(t2, 'closeFailedCommand', () => {
       // We called standardTesselCommand to fetch the Tessel
       test.equal(this.standardTesselCommand.callCount, 1);
       // We did not spawn a root process because we did not have a Tessel
@@ -53,14 +53,14 @@ exports['tessel.root'] = {
     });
 
     // Tell the CLI to start a root connection
-    cli(['root', '-t', '0.001']);
+    t2(['root', '-t', '0.001']);
   },
 
   spawnCalledWithLANTessel: function(test) {
     test.expect(3);
 
     // Root should call closeFailed Command if no Tessels were found
-    this.finishWithSuccess = this.sandbox.stub(cli, 'closeSuccessfulCommand', () => {
+    this.finishWithSuccess = this.sandbox.stub(t2, 'closeSuccessfulCommand', () => {
       // We called standardTesselCommand to fetch the Tessel
       test.ok(this.standardTesselCommand.calledOnce);
       // We did not spawn a root process because we did not have a Tessel
@@ -80,7 +80,7 @@ exports['tessel.root'] = {
     });
 
     // Tell the CLI to start a root connection
-    cli(['root', '-t', '0.001']);
+    t2(['root', '-t', '0.001']);
 
     // Create a new Tessel
     var tessel = new Tessel({

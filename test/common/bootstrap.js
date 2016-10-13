@@ -79,7 +79,8 @@ global.TesselSimulator = require('../common/tessel-simulator');
 global.RemoteProcessSimulator = require('../common/remote-process-simulator');
 
 // ./bin/*
-global.cli = require('../../bin/tessel-2');
+global.t2 = require('../../bin/tessel-2');
+global.cargo = require('../../bin/cargo-tessel');
 
 // ./package.json
 global.cliPackageJson = require('../../package.json');
