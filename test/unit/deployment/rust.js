@@ -258,7 +258,7 @@ exports['deploy.rust'] = {
   rustTarBundleRemote: function(test) {
     test.expect(1);
 
-    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(Buffer.from([])));
+    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(new Buffer([])));
 
     this.runBuild = sandbox.stub(rust, 'runBuild', () => Promise.resolve(null));
 
