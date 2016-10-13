@@ -97,34 +97,15 @@ parser.command('install')
   })
   .option('operation', {
     position: 1,
-    require: true,
-    choices: ['drivers', 'homedir', 'rust-sdk']
+    required: true,
+    choices: ['drivers', 'homedir']
   })
   .help(`
     Install additional system dependencies
 
     drivers    Installs USB drivers on Linux hosts
     homedir    Creates a '.tessel' sub directory in host HOME directory
-    rust-sdk   Installs the Rust SDK
   `);
-
-parser.command('uninstall')
-  .callback(options => {
-    log.level(options.loglevel);
-
-    callControllerWith('uninstaller', options);
-  })
-  .option('operation', {
-    position: 1,
-    require: true,
-    choices: ['rust-sdk']
-  })
-  .help(`
-    Uninstall additional system dependencies added by t2-cli
-
-    rust-sdk   Uninstall the Rust SDK
-  `);
-
 
 parser.command('crash-reporter')
   .callback(options => {
@@ -258,7 +239,7 @@ makeCommand('run')
     help: 'Compression steps during deployment. To skip compression, use --compress=false.'
   })
   .option('rustcc', {
-    default: 'http://192.241.138.79:49160',
+    flag: true,
     help: 'Specify the location and port of the Rust cross-compilation server.'
   })
   .help(`
@@ -558,7 +539,6 @@ makeCommand('root')
     hidden: true
   })
   .help('Gain SSH root access to one of your authorized tessels');
-
 
 module.exports = function(args) {
   var sIndexOfSA = -1;

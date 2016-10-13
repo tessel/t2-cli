@@ -40,7 +40,6 @@ global.sshpk = require('sshpk');
 global.ssh = require('ssh2');
 global.tags = require('common-tags');
 global.tar = require('tar');
-global.toml = require('toml');
 global.uglify = require('uglify-js');
 
 
@@ -68,6 +67,9 @@ global.updates = require('../../lib/update-fetch');
 global.lan = require('../../lib/lan-connection');
 global.usb = require('../../lib/usb-connection');
 
+// ./lib/install/*
+global.rust = require('../../lib/install/rust');
+
 // ./lib/usb/*
 global.Daemon = require('../../lib/usb/usb-daemon');
 global.USBProcess = require('../../lib/usb/usb-process');
@@ -77,7 +79,8 @@ global.TesselSimulator = require('../common/tessel-simulator');
 global.RemoteProcessSimulator = require('../common/remote-process-simulator');
 
 // ./bin/*
-global.cli = require('../../bin/tessel-2');
+global.t2 = require('../../bin/tessel-2');
+global.cargo = require('../../bin/cargo-tessel');
 
 // ./package.json
 global.cliPackageJson = require('../../package.json');

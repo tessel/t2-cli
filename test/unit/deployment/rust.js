@@ -215,20 +215,125 @@ exports['deploy.rust'] = {
 
     test.expect(1);
 
-    // Gather the project info for the project we'll target
-    var cargoToml = toml.parse(fs.readFileSync(path.join(DEPLOY_DIR_RS, 'Cargo.toml'), 'utf8'));
+    this.checkSdk = sandbox.stub(rust, 'checkSdk', () => Promise.resolve());
+    this.checkRust = sandbox.stub(rust, 'checkRust', () => Promise.resolve());
+    this.checkBinaryName = sandbox.stub(rust, 'checkBinaryName', () => Promise.resolve());
 
     var opts = {
       target: DEPLOY_DIR_RS,
-      resolvedEntryPoint: 'src/main.rs',
+      resolvedEntryPoint: 'hello',
     };
 
+    // Ensure the resolved entry point is resolved to the binary name.
     deployment.rs.preBundle(opts)
       .then(() => {
-        // Ensure the resolved entry point was udpated to the package name
-        test.equal(opts.resolvedEntryPoint, cargoToml.package.name);
+        test.equal(opts.resolvedEntryPoint, 'hello');
+      }, error => {
+        test.ok(false, error.toString());
+      })
+      .then(() => test.done());
+  },
 
-        test.done();
-      });
-  }
+  rustTarBundleLocal: function(test) {
+    test.expect(1);
+
+    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(null));
+
+    this.runBuild = sandbox.stub(rust, 'runBuild', () => Promise.resolve(__filename));
+
+    var opts = {
+      rustcc: false,
+    };
+
+    // Ensure the resolved entry point is resolved to the binary name.
+    deployment.rs.tarBundle(opts)
+      .then((tarball) => {
+        test.ok(Buffer.isBuffer(tarball), 'tarball should be buffer');
+      }, error => {
+        test.ok(false, error.toString());
+      })
+      .then(() => test.done());
+  },
+
+  rustTarBundleRemote: function(test) {
+    test.expect(1);
+
+    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(Buffer.from([])));
+
+    this.runBuild = sandbox.stub(rust, 'runBuild', () => Promise.resolve(null));
+
+    var opts = {
+      rustcc: true,
+    };
+
+    // Ensure the resolved entry point is resolved to the binary name.
+    deployment.rs.tarBundle(opts)
+      .then((tarball) => {
+        test.ok(Buffer.isBuffer(tarball), 'tarball should be buffer');
+      }, error => {
+        test.ok(false, error.toString());
+      })
+      .then(() => test.done());
+  },
+
+  checkBinaryNames: function(test) {
+    test.expect(2);
+
+    this.cargoMetadata = sandbox.stub(rust, 'cargoMetadata', () => Promise.resolve({
+      'packages': [{
+        'name': 'blinky',
+        'version': '0.0.1',
+        'id': 'blinky 0.0.1 (path+file:///Users/tim/tcr/test/rust-blinky)',
+        'source': null,
+        'dependencies': [{
+          'name': 'tessel',
+          'source': 'registry+https://github.com/rust-lang/crates.io-index',
+          'req': '^0.2.0',
+          'kind': null,
+          'optional': false,
+          'uses_default_features': true,
+          'features': [
+
+          ],
+          'target': null
+        }],
+        'targets': [{
+          'kind': [
+            'bin'
+          ],
+          'name': 'blinky',
+          'src_path': '/Users/tim/tcr/test/rust-blinky/src/main.rs'
+        }],
+        'features': {
+
+        },
+        'manifest_path': '/Users/tim/tcr/test/rust-blinky/Cargo.toml'
+      }],
+      'resolve': null,
+      'version': 1
+    }));
+
+    // Ensure the resolved entry point is resolved to the binary name.
+    rust.checkBinaryName({
+        isCli: false,
+        binary: 'blinky',
+        path: __filename
+      })
+      .then(dest => {
+        test.equals(dest.name, 'blinky');
+      }, error => {
+        test.ok(false, error.toString());
+      })
+      .then(() => rust.checkBinaryName({
+        isCli: false,
+        binary: 'dummy',
+        path: __filename
+      }))
+      .then(() => {
+        test.ok(false, 'Name should not have matched.');
+      }, error => {
+        test.ok(true, error.toString());
+      })
+      .then(() => test.done());
+  },
 };
