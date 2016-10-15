@@ -62,14 +62,15 @@ exports['deploy.rust'] = {
           hostname: hostname,
           port: port
         }),
-        target: DEPLOY_DIR_RS
+        target: DEPLOY_DIR_RS,
+        resolvedEntryPoint: 'charmander',
       })
       .then(() => {
         // Check the options of the call to http
         test.equal(this.httpRequest.callCount, 1);
         test.equal(this.httpRequest.lastCall.args[0].host, hostname);
         test.equal(this.httpRequest.lastCall.args[0].port, port);
-        test.equal(this.httpRequest.lastCall.args[0].path, '/rust-compile');
+        test.equal(this.httpRequest.lastCall.args[0].path, '/rust-compile?target=charmander');
         test.equal(this.httpRequest.lastCall.args[0].method, 'POST');
 
         // Make sure tar pack was called with the correct target
