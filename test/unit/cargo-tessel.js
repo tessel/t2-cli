@@ -33,8 +33,13 @@ exports['Cargo Subcommand (cargo tessel ...)'] = {
     bresolve.then(() => {
       test.equal(console.log.callCount, 1);
       test.equal(console.log.lastCall.args[0], tarball);
-      test.deepEqual(this.parse.lastCall.args, [['build']]);
-      test.deepEqual(this.runBuild.lastCall.args, [ { isCli: false, binary: undefined } ]);
+      test.deepEqual(this.parse.lastCall.args, [
+        ['build']
+      ]);
+      test.deepEqual(this.runBuild.lastCall.args, [{
+        isCli: false,
+        binary: undefined
+      }]);
       test.done();
     });
   },
@@ -46,12 +51,18 @@ exports['Cargo Subcommand (cargo tessel ...)'] = {
 
     this.install = this.sandbox.stub(rust.cargo, 'install').returns(iresolve);
 
-    cargo.nomnom.globalOpts({subcommand: 'install'});
+    cargo.nomnom.globalOpts({
+      subcommand: 'install'
+    });
     cargo(['sdk', 'install']);
 
     iresolve.then(() => {
       test.equal(this.install.callCount, 1);
-      test.deepEqual(this.install.lastCall.args[0], { '0': 'sdk', subcommand: 'install', _: [ 'sdk', 'install' ] });
+      test.deepEqual(this.install.lastCall.args[0], {
+        '0': 'sdk',
+        subcommand: 'install',
+        _: ['sdk', 'install']
+      });
       test.done();
     });
   },
@@ -62,12 +73,18 @@ exports['Cargo Subcommand (cargo tessel ...)'] = {
 
     this.uninstall = this.sandbox.stub(rust.cargo, 'uninstall').returns(iresolve);
 
-    cargo.nomnom.globalOpts({subcommand: 'uninstall'});
+    cargo.nomnom.globalOpts({
+      subcommand: 'uninstall'
+    });
     cargo(['sdk', 'uninstall']);
 
     iresolve.then(() => {
       test.equal(this.uninstall.callCount, 1);
-      test.deepEqual(this.uninstall.lastCall.args[0], { '0': 'sdk', subcommand: 'uninstall', _: [ 'sdk', 'uninstall' ] });
+      test.deepEqual(this.uninstall.lastCall.args[0], {
+        '0': 'sdk',
+        subcommand: 'uninstall',
+        _: ['sdk', 'uninstall']
+      });
       test.done();
     });
   },
