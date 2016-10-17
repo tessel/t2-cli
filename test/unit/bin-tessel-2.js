@@ -1,14 +1,19 @@
 // Test dependencies are required and exposed in common/bootstrap.js
 require('../common/bootstrap');
 
+/*global CrashReporter */
+
+// This was removed from bootstrap due to issues that surface
+// when running the test suite on appveyor.
+global.t2 = require('../../bin/tessel-2');
+
 // If the defaults are intentionally changed in bin-tessel-2,
 // then they must be changed here as well. This ensures that the
 // expected default command options are protected from regressions.
 // This should be used as a guide for reviewing new tessel-centric
 // additions to the cli command set.
 
-/*global CrashReporter */
-// var parser = require('nomnom').script('t2');
+
 var defaults = {
   timeout: {
     abbr: 't',

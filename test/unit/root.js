@@ -1,6 +1,10 @@
 // Test dependencies are required and exposed in common/bootstrap.js
 require('../common/bootstrap');
 
+// This was removed from bootstrap due to issues that surface
+// when running the test suite on appveyor.
+global.t2 = require('../../bin/tessel-2');
+
 exports['tessel.root'] = {
   setUp: function(done) {
     var testContext = this;
