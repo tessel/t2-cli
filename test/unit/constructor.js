@@ -66,7 +66,7 @@ exports['Tessel.prototype.receive'] = {
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.rps = new RemoteProcessSimulator();
-    this.tessel = new Tessel({
+    this.tessel = TesselSimulator({
       connectionType: 'USB'
     });
 
@@ -74,6 +74,7 @@ exports['Tessel.prototype.receive'] = {
   },
 
   tearDown: function(done) {
+    this.tessel.mockClose();
     this.sandbox.restore();
     done();
   },
@@ -119,6 +120,7 @@ exports['Tessel.prototype.simpleExec'] = {
   },
 
   tearDown: function(done) {
+    this.tessel.mockClose();
     this.sandbox.restore();
     done();
   },
