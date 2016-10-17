@@ -2870,7 +2870,9 @@ exports['deployment.js.postRun'] = {
     done();
   },
   tearDown: function(done) {
-    this.tessel.mockClose();
+    if (this.tessel) {
+      this.tessel.mockClose();
+    }
 
     sandbox.restore();
     done();
