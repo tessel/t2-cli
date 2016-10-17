@@ -8,7 +8,7 @@ require('../common/bootstrap');
 // additions to the cli command set.
 
 /*global CrashReporter */
-var parser = require('nomnom').script('t2');
+// var parser = require('nomnom').script('t2');
 var defaults = {
   timeout: {
     abbr: 't',

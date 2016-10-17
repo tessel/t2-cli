@@ -80,7 +80,7 @@ global.RemoteProcessSimulator = require('../common/remote-process-simulator');
 
 // ./bin/*
 global.t2 = require('../../bin/tessel-2');
-global.cargo = require('../../bin/cargo-tessel');
+// global.cargo = require('../../bin/cargo-tessel');
 
 // ./package.json
 global.cliPackageJson = require('../../package.json');

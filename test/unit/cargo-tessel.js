@@ -1,76 +1,76 @@
-// Test dependencies are required and exposed in common/bootstrap.js
-require('../common/bootstrap');
+// // Test dependencies are required and exposed in common/bootstrap.js
+// require('../common/bootstrap');
 
-var parser = require('nomnom');
+// var parser = require('nomnom');
 
-exports['Cargo Subcommand (cargo tessel ...)'] = {
-  setUp(done) {
-    this.sandbox = sinon.sandbox.create();
-    this.info = this.sandbox.stub(log, 'info');
-    this.warn = this.sandbox.stub(log, 'warn');
-    this.error = this.sandbox.stub(log, 'error');
-    this.parse = this.sandbox.spy(cargo.nomnom, 'parse');
-    this.runBuild = this.sandbox.stub(rust, 'runBuild').returns(Promise.resolve());
+// exports['Cargo Subcommand (cargo tessel ...)'] = {
+//   setUp(done) {
+//     this.sandbox = sinon.sandbox.create();
+//     this.info = this.sandbox.stub(log, 'info');
+//     this.warn = this.sandbox.stub(log, 'warn');
+//     this.error = this.sandbox.stub(log, 'error');
+//     this.parse = this.sandbox.spy(cargo.nomnom, 'parse');
+//     this.runBuild = this.sandbox.stub(rust, 'runBuild').returns(Promise.resolve());
 
-    done();
-  },
-  tearDown(done) {
-    this.sandbox.restore();
-    done();
-  },
+//     done();
+//   },
+//   tearDown(done) {
+//     this.sandbox.restore();
+//     done();
+//   },
 
-  build(test) {
-    test.expect(4);
+//   build(test) {
+//     test.expect(4);
 
-    var tarball = new Buffer([0x00]);
-    var bresolve = Promise.resolve(tarball);
+//     var tarball = new Buffer([0x00]);
+//     var bresolve = Promise.resolve(tarball);
 
-    // Prevent the tarball from being logged
-    this.sandbox.stub(console, 'log');
+//     // Prevent the tarball from being logged
+//     this.sandbox.stub(console, 'log');
 
-    this.runBuild.returns(bresolve);
+//     this.runBuild.returns(bresolve);
 
-    cargo(['build']);
+//     cargo(['build']);
 
-    bresolve.then(() => {
-      test.equal(console.log.callCount, 1);
-      test.equal(console.log.lastCall.args[0], tarball);
-      test.deepEqual(this.parse.lastCall.args, [['build']]);
-      test.deepEqual(this.runBuild.lastCall.args, [ { isCli: false, binary: undefined } ]);
-      test.done();
-    });
-  },
+//     bresolve.then(() => {
+//       test.equal(console.log.callCount, 1);
+//       test.equal(console.log.lastCall.args[0], tarball);
+//       test.deepEqual(this.parse.lastCall.args, [['build']]);
+//       test.deepEqual(this.runBuild.lastCall.args, [ { isCli: false, binary: undefined } ]);
+//       test.done();
+//     });
+//   },
 
-  sdkInstall(test) {
-    test.expect(2);
+//   sdkInstall(test) {
+//     test.expect(2);
 
-    var iresolve = Promise.resolve();
+//     var iresolve = Promise.resolve();
 
-    this.install = this.sandbox.stub(rust.cargo, 'install').returns(iresolve);
+//     this.install = this.sandbox.stub(rust.cargo, 'install').returns(iresolve);
 
-    cargo.nomnom.globalOpts({subcommand: 'install'});
-    cargo(['sdk', 'install']);
+//     cargo.nomnom.globalOpts({subcommand: 'install'});
+//     cargo(['sdk', 'install']);
 
-    iresolve.then(() => {
-      test.equal(this.install.callCount, 1);
-      test.deepEqual(this.install.lastCall.args[0], { '0': 'sdk', subcommand: 'install', _: [ 'sdk', 'install' ] });
-      test.done();
-    });
-  },
-  sdkUninstall(test) {
-    test.expect(2);
+//     iresolve.then(() => {
+//       test.equal(this.install.callCount, 1);
+//       test.deepEqual(this.install.lastCall.args[0], { '0': 'sdk', subcommand: 'install', _: [ 'sdk', 'install' ] });
+//       test.done();
+//     });
+//   },
+//   sdkUninstall(test) {
+//     test.expect(2);
 
-    var iresolve = Promise.resolve();
+//     var iresolve = Promise.resolve();
 
-    this.uninstall = this.sandbox.stub(rust.cargo, 'uninstall').returns(iresolve);
+//     this.uninstall = this.sandbox.stub(rust.cargo, 'uninstall').returns(iresolve);
 
-    cargo.nomnom.globalOpts({subcommand: 'uninstall'});
-    cargo(['sdk', 'uninstall']);
+//     cargo.nomnom.globalOpts({subcommand: 'uninstall'});
+//     cargo(['sdk', 'uninstall']);
 
-    iresolve.then(() => {
-      test.equal(this.uninstall.callCount, 1);
-      test.deepEqual(this.uninstall.lastCall.args[0], { '0': 'sdk', subcommand: 'uninstall', _: [ 'sdk', 'uninstall' ] });
-      test.done();
-    });
-  },
-};
+//     iresolve.then(() => {
+//       test.equal(this.uninstall.callCount, 1);
+//       test.deepEqual(this.uninstall.lastCall.args[0], { '0': 'sdk', subcommand: 'uninstall', _: [ 'sdk', 'uninstall' ] });
+//       test.done();
+//     });
+//   },
+// };
