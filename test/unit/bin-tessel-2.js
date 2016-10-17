@@ -42,7 +42,15 @@ var defaults = {
 };
 
 exports['Tessel (t2: makeCommand)'] = {
-  any: function(test) {
+  setUp(done) {
+    console.log(t2.nomnom.command);
+    done();
+  },
+  tearDown(done) {
+
+    done();
+  },
+  any(test) {
     test.expect(16);
 
     t2.makeCommand('any')
