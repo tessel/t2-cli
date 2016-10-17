@@ -16,8 +16,8 @@ exports['reboot *'] = {
   },
 
   tearDown: function(done) {
-    this.sandbox.restore();
     this.tessel.mockClose();
+    this.sandbox.restore();
 
     done();
   },

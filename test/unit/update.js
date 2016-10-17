@@ -836,6 +836,7 @@ exports['Tessel.update'] = {
     done();
   },
   tearDown: function(done) {
+    this.tessel.mockClose();
     this.sandbox.restore();
     done();
   },
