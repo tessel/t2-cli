@@ -1,6 +1,8 @@
 // Test dependencies are required and exposed in common/bootstrap.js
 require('../common/bootstrap');
 
+var parser = require('nomnom');
+
 exports['Cargo Subcommand (cargo tessel ...)'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
