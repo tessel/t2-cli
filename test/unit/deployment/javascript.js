@@ -2865,12 +2865,19 @@ exports['deployment.js.postRun'] = {
   setUp: function(done) {
     this.info = sandbox.stub(log, 'info');
     this.stdinPipe = sandbox.stub(process.stdin, 'pipe');
-    this.stdinSetRawMode = sandbox.stub(process.stdin, 'setRawMode');
+
+    if (process.stdin.setRawMode) {
+      this.stdinSetRawMode = sandbox.stub(process.stdin, 'setRawMode');
+    }
+
     this.tessel = TesselSimulator();
     done();
   },
   tearDown: function(done) {
-    this.tessel.mockClose();
+    if (this.tessel) {
+      this.tessel.mockClose();
+    }
+
     sandbox.restore();
     done();
   },
