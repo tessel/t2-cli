@@ -43,10 +43,12 @@ var defaults = {
 
 exports['Tessel (t2: makeCommand)'] = {
   setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.sandbox.spy(t2.nomnom, 'command');
     done();
   },
   tearDown(done) {
-
+    this.sandbox.restore();
     done();
   },
   any(test) {
@@ -54,6 +56,10 @@ exports['Tessel (t2: makeCommand)'] = {
 
     t2.makeCommand('any')
       .callback(function() {
+
+        console.log(t2.nomnom.command.callCount);
+
+        // "this" is the nomnom parser object
         test.equal(this.specs.timeout.abbr, defaults.timeout.abbr);
         test.equal(this.specs.timeout.default, defaults.timeout.default);
         test.equal(this.specs.timeout.help, defaults.timeout.help);
