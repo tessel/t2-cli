@@ -2866,11 +2866,15 @@ exports['deployment.js.postRun'] = {
     this.info = sandbox.stub(log, 'info');
     this.stdinPipe = sandbox.stub(process.stdin, 'pipe');
     this.stdinSetRawMode = sandbox.stub(process.stdin, 'setRawMode');
-    this.tessel = TesselSimulator();
+    this.notRealTessel = {
+      connection: {
+        connectionType: 'LAN',
+      },
+    };
+
     done();
   },
   tearDown: function(done) {
-    this.tessel.mockClose();
     sandbox.restore();
     done();
   },
@@ -2878,8 +2882,7 @@ exports['deployment.js.postRun'] = {
   postRunLAN: function(test) {
     test.expect(2);
 
-    this.tessel.connection.connectionType = 'LAN';
-    deployment.js.postRun(this.tessel, {
+    deployment.js.postRun(this.notRealTessel, {
       remoteProcess: {
         stdin: null
       }
@@ -2893,8 +2896,8 @@ exports['deployment.js.postRun'] = {
   postRunUSB: function(test) {
     test.expect(2);
 
-    this.tessel.connection.connectionType = 'USB';
-    deployment.js.postRun(this.tessel, {
+    this.notRealTessel.connection.connectionType = 'USB';
+    deployment.js.postRun(this.notRealTessel, {
       remoteProcess: {
         stdin: null
       }
