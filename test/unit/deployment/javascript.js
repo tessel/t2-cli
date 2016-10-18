@@ -2864,8 +2864,18 @@ exports['deployment.js.lists'] = {
 exports['deployment.js.postRun'] = {
   setUp: function(done) {
     this.info = sandbox.stub(log, 'info');
-    this.stdinPipe = sandbox.stub(process.stdin, 'pipe');
-    this.stdinSetRawMode = sandbox.stub(process.stdin, 'setRawMode');
+
+    this.originalProcessStdinProperties = {
+      pipe: process.stdin.pipe,
+      setRawMode: process.stdin.setRawMode,
+    };
+
+    this.stdinPipe = sandbox.spy();
+    this.setRawMode = sandbox.spy();
+
+    process.stdin.pipe = this.stdinPipe;
+    process.stdin.setRawMode = this.setRawMode;
+
     this.notRealTessel = {
       connection: {
         connectionType: 'LAN',
@@ -2874,7 +2884,12 @@ exports['deployment.js.postRun'] = {
 
     done();
   },
+
   tearDown: function(done) {
+
+    process.stdin.pipe = this.originalProcessStdinProperties.pipe;
+    process.stdin.setRawMode = this.originalProcessStdinProperties.setRawMode;
+
     sandbox.restore();
     done();
   },
@@ -2887,8 +2902,8 @@ exports['deployment.js.postRun'] = {
         stdin: null
       }
     }).then(() => {
-      test.equal(this.stdinPipe.callCount, 1);
-      test.equal(this.stdinSetRawMode.callCount, 1);
+      test.equal(process.stdin.pipe.callCount, 1);
+      test.equal(process.stdin.setRawMode.callCount, 1);
       test.done();
     });
   },
@@ -2902,8 +2917,8 @@ exports['deployment.js.postRun'] = {
         stdin: null
       }
     }).then(() => {
-      test.equal(this.stdinPipe.callCount, 0);
-      test.equal(this.stdinSetRawMode.callCount, 0);
+      test.equal(process.stdin.pipe.callCount, 0);
+      test.equal(process.stdin.setRawMode.callCount, 0);
       test.done();
     });
   },
