@@ -12,6 +12,7 @@ module.exports = (grunt) => {
     nodeunit: {
       tests: [
         'test/unit/*.js',
+        '!test/unit/cargo-tessel.js',
         'test/unit/deployment/*.js',
       ]
     },
@@ -94,8 +95,8 @@ module.exports = (grunt) => {
   grunt.loadNpmTasks('grunt-jsbeautifier');
 
 
-  grunt.registerTask('test', ['jshint', 'jscs', 'nodeunit']);
-  grunt.registerTask('all', ['jsbeautifier', 'jshint', 'jscs', 'nodeunit']);
+  grunt.registerTask('test', ['jshint', 'jscs', 'nodeunit', 'nodeunit:files:cargo-tessel']);
+  grunt.registerTask('all', ['jsbeautifier', 'jshint', 'jscs', 'nodeunit', 'nodeunit:files:cargo-tessel']);
 
   // Default task.
   grunt.registerTask('default', ['all']);
