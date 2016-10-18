@@ -2870,6 +2870,10 @@ exports['deployment.js.postRun'] = {
     done();
   },
   tearDown: function(done) {
+    console.log('HEY', this);
+    console.log('HEY', Object.keys(this));
+    console.log(this.tessel);
+    console.log((new Error()).stack);
     this.tessel.mockClose();
     sandbox.restore();
     done();

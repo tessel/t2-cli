@@ -21,7 +21,7 @@ addons:
 
 before_install:
   - npm install -g npm@3
-  - npm install -g grunt-cli
+  - npm install -g grunt-cli nodeunit
 
 install: npm install
-script: grunt test
+script: nodeunit test/unit/deployment/*.js
