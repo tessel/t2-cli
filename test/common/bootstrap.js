@@ -2,6 +2,7 @@ global.IS_TEST_ENV = true;
 
 // System Objects
 global.cp = require('child_process');
+global.dns = require('dns');
 global.events = require('events');
 global.http = require('http');
 global.os = require('os');
@@ -63,8 +64,9 @@ global.discover = require('../../lib/discover');
 global.init = require('../../lib/init');
 global.installer = require('../../lib/installer');
 global.log = require('../../lib/log');
-global.updates = require('../../lib/update-fetch');
 global.lan = require('../../lib/lan-connection');
+global.remote = require('../../lib/remote');
+global.updates = require('../../lib/update-fetch');
 global.usb = require('../../lib/usb-connection');
 
 // ./lib/install/*

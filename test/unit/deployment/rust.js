@@ -14,6 +14,7 @@ exports['deploy.rust'] = {
 
     this.outgoingResponse._read = () => {};
 
+    this.ifReachable = sandbox.stub(remote, 'ifReachable').returns(Promise.resolve());
     this.httpRequest = sandbox.stub(http, 'request', (options, cb) => {
       setImmediate(() => cb(this.outgoingResponse));
       return this.incomingRequest;

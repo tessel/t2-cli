@@ -1976,6 +1976,8 @@ exports['deployment.js.resolveBinaryModules'] = {
       return path.normalize(`node_modules/${pathPart}/`);
     });
 
+    this.ifReachable = sandbox.stub(remote, 'ifReachable', () => Promise.resolve());
+
     done();
   },
 

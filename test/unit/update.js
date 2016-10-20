@@ -38,7 +38,6 @@ exports['controller.update'] = {
     this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
 
-
     done();
   },
 
@@ -784,6 +783,8 @@ exports['update-fetch'] = {
         statusCode: 200
       }, JSON.stringify(mixedBuilds));
     });
+
+    this.ifReachable = this.sandbox.stub(remote, 'ifReachable', () => Promise.resolve());
     done();
   },
   tearDown: function(done) {
