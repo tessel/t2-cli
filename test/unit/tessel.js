@@ -120,14 +120,17 @@ exports['Tessel (get)'] = {
     test.expect(2);
     // Try to get Tessels
     Tessel.get(this.standardOpts)
-      // It should return the first USB device it finds
-      .then(function(tessel) {
-        test.equal(tessel.name, a.name);
-        test.equal(tessel.connection.connectionType, a.connection.connectionType);
+      // It should return the menu prompt to choose a Tessel
+      .then(function() {
+        test.fail('Message promt not shown with mutiple USB connections');
         test.done();
       })
       .catch((reason) => {
-        test.equal(reason, undefined, 'Neither USB device was found');
+        test.equal(reason, 'No Tessel selected, mission aborted!');
+        test.equal(this.menu.calledOnce, 1);
+        a.close();
+        b.close();
+        test.done();
       });
 
     var a = new Tessel({
