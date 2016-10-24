@@ -236,7 +236,7 @@ exports['deploy.rust'] = {
   },
 
   rustTarBundleLocal: function(test) {
-    test.expect(1);
+    test.expect(4);
 
     this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(null));
 
@@ -250,6 +250,13 @@ exports['deploy.rust'] = {
     deployment.rs.tarBundle(opts)
       .then((tarball) => {
         test.ok(Buffer.isBuffer(tarball), 'tarball should be buffer');
+        test.equal(this.remoteRustCompilation.callCount, 0);
+        test.equal(this.runBuild.callCount, 1);
+        test.deepEqual(this.runBuild.lastCall.args[0], {
+          isCli: true,
+          binary: undefined,
+          path: undefined
+        });
       }, error => {
         test.ok(false, error.toString());
       })
@@ -257,7 +264,7 @@ exports['deploy.rust'] = {
   },
 
   rustTarBundleRemote: function(test) {
-    test.expect(1);
+    test.expect(4);
 
     this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(new Buffer([])));
 
@@ -271,6 +278,9 @@ exports['deploy.rust'] = {
     deployment.rs.tarBundle(opts)
       .then((tarball) => {
         test.ok(Buffer.isBuffer(tarball), 'tarball should be buffer');
+        test.equal(this.runBuild.callCount, 0);
+        test.equal(this.remoteRustCompilation.callCount, 1);
+        test.deepEqual(this.remoteRustCompilation.lastCall.args[0], opts);
       }, error => {
         test.ok(false, error.toString());
       })
