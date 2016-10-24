@@ -288,3 +288,26 @@ exports['LAN.Scanner.prototype.start'] = {
     });
   },
 };
+
+
+exports['LAN.Scanner.prototype.stop'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.scanner = new LAN.Scanner();
+    done();
+  },
+
+  tearDown: function(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  callStopSafely: function(test) {
+    test.expect(1);
+    this.scanner.browser = undefined;
+    test.doesNotThrow(() => {
+      this.scanner.stop();
+    });
+    test.done();
+  },
+};
