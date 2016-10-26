@@ -5,7 +5,9 @@
   "main": "./index.js",
   "scripts": {
     "test": "grunt test",
-    "postinstall": "t2 install drivers --loglevel=error || true; t2 install homedir --loglevel=error || true;"
+    "postinstall": "t2 install drivers --loglevel=error || true; t2 install homedir --loglevel=error || true;",
+    "test-cover": "nyc grunt nodeunit",
+    "coveralls": "nyc grunt nodeunit && cat ./coverage/lcov.info | coveralls"
   },
   "bin": {
     "t2": "./bin/tessel-2.js",
@@ -32,8 +34,8 @@
   },
   "homepage": "https://github.com/tessel/t2-cli",
   "devDependencies": {
-    "coveralls": "^2.11.9",
     "concat-stream": "^1.5.1",
+    "coveralls": "^2.11.9",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-jshint": "^1.0.0",
@@ -43,6 +45,7 @@
     "grunt-jsbeautifier": "^0.2.13",
     "grunt-jscs": "^3.0.1",
     "mkdirp": "^0.5.1",
+    "nyc": "^8.3.2",
     "sinon": "^1.14.1"
   },
   "dependencies": {

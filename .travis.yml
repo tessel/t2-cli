@@ -25,3 +25,6 @@ before_install:
 
 install: npm install
 script: grunt test
+
+after_success:
+  - npm run coveralls

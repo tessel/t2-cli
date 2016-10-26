@@ -2,6 +2,7 @@
 .jscsrc
 .jshintrc
 .mailmap
+.nycrc
 .travis.yml
 /coverage/
 /node_modules/

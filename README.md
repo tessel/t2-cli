@@ -4,6 +4,7 @@
 [![Slack](http://tessel-slack.herokuapp.com/badge.svg)](https://tessel-slack.herokuapp.com/)
 [![Travis-CI Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/9a6l5gwswuhqgk99?svg=true)](https://ci.appveyor.com/project/rwaldron/t2-cli)
+[![Coverage Status](https://coveralls.io/repos/github/tessel/t2-cli/badge.svg?branch=master)](https://coveralls.io/github/tessel/t2-cli?branch=master)
 
 The starting point for the Tessel 2 command line interface.
 
