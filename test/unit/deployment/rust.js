@@ -4,7 +4,7 @@ require('../../common/bootstrap');
 var sandbox = sinon.sandbox.create();
 
 exports['deploy.rust'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.info = sandbox.stub(log, 'info');
     this.warn = sandbox.stub(log, 'warn');
     this.error = sandbox.stub(log, 'error');
@@ -24,12 +24,12 @@ exports['deploy.rust'] = {
 
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     sandbox.restore();
     done();
   },
 
-  remoteRustCompilationSuccess: function(test) {
+  remoteRustCompilationSuccess(test) {
 
     test.expect(8);
 
@@ -119,7 +119,141 @@ exports['deploy.rust'] = {
     });
   },
 
-  remoteRustCompilationError: function(test) {
+  remoteRustCompilationMissingBinary(test) {
+    test.expect(1);
+
+    // Elements of cross compilation server address
+    var protocol = 'http';
+    var hostname = 'localhost';
+    var port = '8080';
+
+    // Cross compilation result returned
+    var result = JSON.stringify({
+      error: undefined,
+      stderr: '',
+      stdout: 'Compilation was wildly successful',
+      binary: null,
+    });
+
+    // Buffer to store incoming chunks of the tarred project directory
+    var receivedBuffers = [];
+    // When we get a write to the post request
+    this.incomingRequest._write = (chunk, enc, callback) => {
+      // Save the incoming chunk
+      receivedBuffers.push(chunk);
+      // And continue the flow
+      callback();
+    };
+
+    // Star the remote rust compilation process to our mock server
+    deployment.rs.remoteRustCompilation({
+        rustcc: url.format({
+          protocol: protocol,
+          hostname: hostname,
+          port: port
+        }),
+        target: DEPLOY_DIR_RS,
+        resolvedEntryPoint: 'charmander',
+      })
+      .catch(error => {
+        test.equal(error.toString(), 'Error: Neither binary nor error returned by cross compilation server.');
+        test.done();
+      });
+
+    // When the incoming project folder finishes being sent
+    this.incomingRequest.once('finish', () => {
+      // Write the result to the stream
+      this.outgoingResponse.push(result);
+      // End the stream
+      this.outgoingResponse.push(null);
+    });
+  },
+
+  remoteRustCompilationRespondsWithInvalidJSON(test) {
+    test.expect(1);
+
+    this.httpRequest.restore();
+    this.httpRequest = sandbox.stub(http, 'request', (options, handler) => {
+      var emitter = new Emitter();
+
+      handler(emitter);
+
+      emitter.emit('data', new Buffer('{'));
+      emitter.emit('end');
+
+      var duplex = stream.Duplex();
+
+      duplex._write = x => x;
+
+      return duplex;
+    });
+
+
+    var protocol = 'http';
+    var hostname = 'localhost';
+    var port = '8080';
+
+    deployment.rs.remoteRustCompilation({
+        rustcc: url.format({
+          protocol: protocol,
+          hostname: hostname,
+          port: port
+        }),
+        target: DEPLOY_DIR_RS,
+        resolvedEntryPoint: 'charmander',
+      })
+      .catch(error => {
+        test.equal(
+          error,
+          tags.stripIndent `
+          Please file an issue on https://github.com/tessel/t2-cli with the following:
+          You received an invalid JSON response from the cross-compilation server.
+              {` // <-- totally intentional. DO NOT CHANGE
+        );
+        test.done();
+      });
+  },
+
+  remoteRustCompilationRespondsWithError(test) {
+    test.expect(1);
+
+    this.httpRequest.restore();
+    this.httpRequest = sandbox.stub(http, 'request', (options, handler) => {
+      var emitter = new Emitter();
+
+      handler(emitter);
+
+      emitter.emit('data', new Buffer('{}'));
+      emitter.emit('error', 'DEAD!');
+
+      var duplex = stream.Duplex();
+
+      duplex._write = x => x;
+
+      return duplex;
+    });
+
+
+    var protocol = 'http';
+    var hostname = 'localhost';
+    var port = '8080';
+
+    deployment.rs.remoteRustCompilation({
+        rustcc: url.format({
+          protocol: protocol,
+          hostname: hostname,
+          port: port
+        }),
+        target: DEPLOY_DIR_RS,
+        resolvedEntryPoint: 'charmander',
+      })
+      .catch(error => {
+        test.equal(error, 'DEAD!');
+        test.done();
+      });
+  },
+
+  remoteRustCompilationError(test) {
 
     test.expect(3);
 
@@ -167,7 +301,7 @@ exports['deploy.rust'] = {
     });
   },
 
-  remoteRustCompilationStderr: function(test) {
+  remoteRustCompilationStderr(test) {
 
     test.expect(2);
 
@@ -213,7 +347,7 @@ exports['deploy.rust'] = {
 
   // The pre bundle step ensures that the Rust entrypoint is set to the
   // name of the binary instead any of the code files of the project
-  rustPreBundle: function(test) {
+  rustPreBundle(test) {
 
     test.expect(1);
 
@@ -236,7 +370,7 @@ exports['deploy.rust'] = {
       .then(() => test.done());
   },
 
-  rustTarBundleLocal: function(test) {
+  rustTarBundleLocal(test) {
     test.expect(4);
 
     this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(null));
@@ -264,7 +398,7 @@ exports['deploy.rust'] = {
       .then(() => test.done());
   },
 
-  rustTarBundleRemote: function(test) {
+  rustTarBundleRemote(test) {
     test.expect(4);
 
     this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(new Buffer([])));
@@ -288,7 +422,7 @@ exports['deploy.rust'] = {
       .then(() => test.done());
   },
 
-  checkBinaryNames: function(test) {
+  checkBinaryNames(test) {
     test.expect(2);
 
     this.cargoMetadata = sandbox.stub(rust, 'cargoMetadata', () => Promise.resolve({
@@ -347,5 +481,57 @@ exports['deploy.rust'] = {
         test.ok(true, error.toString());
       })
       .then(() => test.done());
+  },
+};
+
+exports['deployment.rs.preBundle'] = {
+  setUp(done) {
+    done();
+  },
+
+  tearDown(done) {
+    done();
+  },
+
+  rustcc(test) {
+    deployment.rs.preBundle({
+      rustcc: true
+    }).then(() => {
+      test.done();
+    });
+  },
+};
+
+exports['deployment.rs.meta'] = {
+  setUp(done) {
+    done();
+  },
+
+  tearDown(done) {
+    done();
+  },
+
+  checkConfiguration(test) {
+    test.expect(1);
+    var config = deployment.rs.meta.checkConfiguration('a', 'b', 'c');
+    test.deepEqual(config, {
+      basename: 'a',
+      program: 'c'
+    });
+    test.done();
+  },
+
+  shell(test) {
+    test.expect(1);
+    var shell = deployment.rs.meta.shell({
+      resolvedEntryPoint: 'foo',
+      subargs: ['-a', '-b', '--thing=whatever'],
+    });
+    var expect = tags.stripIndent `
+    #!/bin/sh
+    exec /app/remote-script/foo -a -b --thing=whatever
+    `;
+    test.equal(shell, expect);
+    test.done();
   },
 };
