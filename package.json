@@ -7,7 +7,7 @@
     "test": "grunt test",
     "postinstall": "t2 install drivers --loglevel=error || true; t2 install homedir --loglevel=error || true;",
     "test-cover": "nyc grunt nodeunit",
-    "coveralls": "nyc grunt nodeunit && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "nyc --reporter=lcov grunt nodeunit && cat ./coverage/lcov.info | coveralls"
   },
   "bin": {
     "t2": "./bin/tessel-2.js",
