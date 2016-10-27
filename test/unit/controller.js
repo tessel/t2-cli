@@ -19,25 +19,53 @@ function newTessel(options) {
   return tessel;
 }
 
-exports['controller.closeTesselConnections'] = {
+exports['controller.setupLocal'] = {
 
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
-    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
-    this.basic = this.sandbox.stub(log, 'basic', function() {});
-
+    this.provisionsetupLocal = this.sandbox.stub(provision, 'setupLocal');
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  callsCloseOnAllAuthorizedLANConnections: function(test) {
+  passthroughCall(test) {
+    test.expect(2);
+
+    var options = {};
+
+    controller.setupLocal(options);
+
+    test.equal(this.provisionsetupLocal.callCount, 1);
+    test.equal(this.provisionsetupLocal.lastCall.args[0], options);
+    test.done();
+  },
+
+};
+
+
+exports['controller.closeTesselConnections'] = {
+
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  callsCloseOnAllAuthorizedLANConnections(test) {
     test.expect(3);
 
     var a = newTessel({
@@ -67,7 +95,7 @@ exports['controller.closeTesselConnections'] = {
       });
   },
 
-  callsCloseOnAllUSBConnections: function(test) {
+  callsCloseOnAllUSBConnections(test) {
     test.expect(3);
 
     var a = newTessel({
@@ -95,7 +123,7 @@ exports['controller.closeTesselConnections'] = {
       });
   },
 
-  resolvesForUnauthorizedLANConnections: function(test) {
+  resolvesForUnauthorizedLANConnections(test) {
     test.expect(1);
 
     var a = newTessel({
@@ -111,7 +139,7 @@ exports['controller.closeTesselConnections'] = {
       });
   },
 
-  resolvesForClosedUSBConnections: function(test) {
+  resolvesForClosedUSBConnections(test) {
     test.expect(1);
 
     var a = newTessel({
@@ -131,7 +159,7 @@ exports['controller.closeTesselConnections'] = {
 };
 
 exports['controller.runHeuristics'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -139,12 +167,12 @@ exports['controller.runHeuristics'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  oneUSBDevice: function(test) {
+  oneUSBDevice(test) {
     test.expect(1);
 
     var a = newTessel({
@@ -160,7 +188,7 @@ exports['controller.runHeuristics'] = {
       });
   },
 
-  oneLANDevice: function(test) {
+  oneLANDevice(test) {
     test.expect(1);
 
     var a = newTessel({
@@ -176,7 +204,7 @@ exports['controller.runHeuristics'] = {
       });
   },
 
-  USBAndLANDevices: function(test) {
+  USBAndLANDevices(test) {
     test.expect(1);
 
     var a = newTessel({
@@ -198,7 +226,7 @@ exports['controller.runHeuristics'] = {
       });
   },
 
-  bothConnectionsAndLAN: function(test) {
+  bothConnectionsAndLAN(test) {
     test.expect(1);
 
     var a = newTessel({
@@ -225,7 +253,7 @@ exports['controller.runHeuristics'] = {
       });
   },
 
-  bothConnectionsAndMultipleLAN: function(test) {
+  bothConnectionsAndMultipleLAN(test) {
     test.expect(1);
 
     var a = newTessel({
@@ -258,7 +286,7 @@ exports['controller.runHeuristics'] = {
       });
   },
 
-  USBAndLANDevicesWithNameOption: function(test) {
+  USBAndLANDevicesWithNameOption(test) {
     test.expect(1);
 
     var a = newTessel({
@@ -286,7 +314,7 @@ exports['controller.runHeuristics'] = {
       });
   },
 
-  USBAndLANDevicesWithEnvVariable: function(test) {
+  USBAndLANDevicesWithEnvVariable(test) {
     test.expect(1);
 
     var winningName = 'Me!';
@@ -318,7 +346,7 @@ exports['controller.runHeuristics'] = {
       });
   },
 
-  catchAmbiguityTwoLAN: function(test) {
+  catchAmbiguityTwoLAN(test) {
 
     test.expect(1);
 
@@ -345,7 +373,7 @@ exports['controller.runHeuristics'] = {
       });
   },
 
-  catchAmbiguityTwoUSB: function(test) {
+  catchAmbiguityTwoUSB(test) {
 
     test.expect(1);
 
@@ -374,13 +402,13 @@ exports['controller.runHeuristics'] = {
 };
 
 exports['controller.tesselEnvVersions'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
-    this.basic = this.sandbox.stub(log, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
 
     this.tessel = TesselSimulator({
       name: 'TestTessel'
@@ -421,13 +449,13 @@ exports['controller.tesselEnvVersions'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
     done();
   },
 
-  properVersionsReturned: function(test) {
+  properVersionsReturned(test) {
     test.expect(8);
 
     var opts = {};
@@ -454,7 +482,7 @@ exports['controller.tesselEnvVersions'] = {
       });
   },
 
-  requestVersionsFailure: function(test) {
+  requestVersionsFailure(test) {
     test.expect(1);
 
     this.fetchCurrentBuildInfo.restore();
@@ -478,7 +506,7 @@ exports['controller.tesselEnvVersions'] = {
 
 exports['Tessel.list'] = {
 
-  setUp: function(done) {
+  setUp(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
@@ -500,9 +528,9 @@ exports['Tessel.list'] = {
     });
     util.inherits(this.seeker, Emitter);
 
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
-    this.basic = this.sandbox.stub(log, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
 
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
     this.runHeuristics = this.sandbox.spy(controller, 'runHeuristics');
@@ -514,12 +542,12 @@ exports['Tessel.list'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  oneUSBTessel: function(test) {
+  oneUSBTessel(test) {
     test.expect(4);
 
     var a = newTessel({
@@ -544,7 +572,7 @@ exports['Tessel.list'] = {
     });
   },
 
-  oneLANTessel: function(test) {
+  oneLANTessel(test) {
     test.expect(4);
 
     var a = newTessel({
@@ -569,7 +597,54 @@ exports['Tessel.list'] = {
     });
   },
 
-  oneTesselTwoConnections: function(test) {
+  explicitlyOnlyReportAuthorizedTessel(test) {
+    test.expect(4);
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: false,
+      type: 'LAN'
+    });
+
+    var customOpts = Object.assign({}, this.standardOpts, { authorized: true });
+
+    Tessel.list(customOpts)
+      .then(() => {
+        test.equal(this.runHeuristics.callCount, 0);
+        test.equal(this.closeTesselConnections.callCount, 1);
+
+        // "a" will not be closed, because it will never be opened.
+        test.equal(a.close.callCount, 0);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.done();
+      }).catch(error => {
+
+        console.log(error);
+      });
+
+    this.activeSeeker.emit('tessel', a);
+    this.activeSeeker.emit('end');
+
+  },
+
+  explicitlyOnlyReportAuthorizedTesselNoneFound(test) {
+    test.expect(1);
+
+    this.standardOpts.authorized = true;
+
+    Tessel.list(this.standardOpts)
+      .then(() => {
+        test.ok(false, 'This should not be successful');
+        test.done();
+      }).catch(error => {
+        test.equal(error.toString(), 'No Authorized Tessels Found.');
+        test.done();
+      });
+
+    this.activeSeeker.emit('end');
+  },
+
+  oneTesselTwoConnections(test) {
     test.expect(5);
 
     var usb = newTessel({
@@ -603,7 +678,7 @@ exports['Tessel.list'] = {
     });
   },
 
-  multipleDifferentTessels: function(test) {
+  multipleDifferentTessels(test) {
     test.expect(5);
 
     var usb = newTessel({
@@ -636,11 +711,48 @@ exports['Tessel.list'] = {
       this.activeSeeker.emit('tessel', lan);
     });
   },
+
+  runHeuristicsRejection(test) {
+    test.expect(1);
+
+    this.runHeuristics.restore();
+    this.closeTesselConnections.restore();
+
+    this.runHeuristics = this.sandbox.stub(controller, 'runHeuristics').returns(Promise.reject(new Error('Bogus error')));
+    this.closeTesselConnections = this.sandbox.stub(controller, 'closeTesselConnections').returns(Promise.resolve());
+
+    var usb = newTessel({
+      sandbox: this.sandbox,
+      type: 'USB',
+      name: 'foo'
+    });
+
+    var lan = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN',
+      name: 'bar'
+    });
+
+    Tessel.list(this.standardOpts)
+      .catch(error => {
+        test.equal(error.toString(), 'Error: Bogus error');
+      }).then(() => {
+        usb.mockClose();
+        lan.mockClose();
+        test.done();
+      });
+
+    // Make sure the multiple tessel path is taken
+    this.activeSeeker.emit('tessel', usb);
+    this.activeSeeker.emit('tessel', lan);
+    this.activeSeeker.emit('end');
+  },
 };
 
 exports['Tessel.get'] = {
 
-  setUp: function(done) {
+  setUp(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
@@ -665,9 +777,9 @@ exports['Tessel.get'] = {
       };
     });
     util.inherits(this.seeker, Emitter);
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
-    this.basic = this.sandbox.stub(log, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
     this.closeTesselConnections = this.sandbox.stub(controller, 'closeTesselConnections');
     this.reconcileTessels = this.sandbox.spy(controller, 'reconcileTessels');
     this.runHeuristics = this.sandbox.spy(controller, 'runHeuristics');
@@ -679,12 +791,49 @@ exports['Tessel.get'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  oneNamedTessel: function(test) {
+  fallbackTimeout(test) {
+    test.expect(6);
+
+    controller.closeTesselConnections.returns(Promise.resolve());
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN',
+      name: 'the_name'
+    });
+
+    var customOpts = {
+      timeout: this.standardOpts.timeout,
+      key: this.standardOpts.key,
+      name: 'the_name',
+      timeout: 0,
+    };
+
+    Tessel.get(customOpts)
+      .then(() => {
+        test.equal(this.reconcileTessels.callCount, 0);
+        test.equal(this.runHeuristics.callCount, 0);
+        test.equal(this.closeTesselConnections.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.equal(this.info.callCount, 2);
+        test.equal(this.info.lastCall.args[0].includes('the_name'), true);
+        test.done();
+      });
+
+    // We must emit the Tessel sometime after list is called
+    // but before the seeker stops searching
+    setImmediate(() => {
+      this.activeSeeker.emit('tessel', a);
+    });
+  },
+
+  oneNamedTessel(test) {
     test.expect(6);
 
     controller.closeTesselConnections.returns(Promise.resolve());
@@ -720,7 +869,7 @@ exports['Tessel.get'] = {
     });
   },
 
-  oneUnNamedTessel: function(test) {
+  oneUnNamedTessel(test) {
     test.expect(6);
 
     controller.closeTesselConnections.returns(Promise.resolve());
@@ -750,7 +899,49 @@ exports['Tessel.get'] = {
     });
   },
 
-  oneUnamedTesselTwoConnections: function(test) {
+  logAndFinishSpecificTessel(test) {
+    // test.expect(6);
+
+    controller.closeTesselConnections.returns(Promise.resolve());
+
+    this.menuPrompt = this.sandbox.stub(Menu, 'prompt', (prompt) => {
+
+      var value = prompt.translate('\tUSB\ta\t');
+      return Promise.resolve(value);
+    });
+
+    var a = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN',
+      name: 'a'
+    });
+
+    var b = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN',
+      name: 'b'
+    });
+
+    var customOpts = Object.assign({}, this.standardOpts, { name: 'a' });
+
+    Tessel.get(customOpts)
+      .then(() => {
+        a.mockClose();
+        b.mockClose();
+        test.equal(this.info.callCount, 2);
+        test.done();
+      });
+
+    // We must emit the Tessel sometime after list is called
+    // but before the seeker stops searching
+    this.activeSeeker.emit('tessel', a);
+    this.activeSeeker.emit('tessel', b);
+    this.activeSeeker.emit('end');
+  },
+
+  oneUnamedTesselTwoConnections(test) {
     test.expect(6);
 
     controller.closeTesselConnections.returns(Promise.resolve());
@@ -791,7 +982,50 @@ exports['Tessel.get'] = {
 
   },
 
-  standardCommandNoTessels: function(test) {
+  twoDifferentTesselsPickOne(test) {
+    test.expect(5);
+
+    controller.closeTesselConnections.returns(Promise.resolve());
+
+    this.runHeuristics.restore();
+    this.runHeuristics = this.sandbox.stub(controller, 'runHeuristics').returns(Promise.reject(new controller.HeuristicAmbiguityError('Bogus error')));
+    this.menuPrompt = this.sandbox.stub(Menu, 'prompt', (prompt) => {
+
+      var value = prompt.translate('\tUSB\ta\t');
+      return Promise.resolve(value);
+    });
+
+    var usb = newTessel({
+      sandbox: this.sandbox,
+      type: 'USB',
+      name: 'a'
+    });
+
+    var lan = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN',
+      name: 'a'
+    });
+
+    var customOpts = this.standardOpts;
+
+    Tessel.get(customOpts)
+      .catch(() => {
+        test.equal(this.reconcileTessels.callCount, 1);
+        test.equal(this.runHeuristics.callCount, 1);
+        test.equal(this.closeTesselConnections.callCount, 1);
+        test.equal(Array.isArray(this.closeTesselConnections.args[0]), true);
+        test.equal(this.info.callCount, 1);
+        test.done();
+      });
+
+    this.activeSeeker.emit('tessel', usb);
+    this.activeSeeker.emit('tessel', lan);
+    this.activeSeeker.emit('end');
+  },
+
+  standardCommandNoTessels(test) {
     test.expect(2);
 
     controller.standardTesselCommand(this.standardOpts, function() {
@@ -806,7 +1040,7 @@ exports['Tessel.get'] = {
       });
   },
 
-  standardCommandSuccess: function(test) {
+  standardCommandSuccess(test) {
     test.expect(4);
 
     controller.closeTesselConnections.returns(Promise.resolve());
@@ -845,7 +1079,7 @@ exports['Tessel.get'] = {
     });
   },
 
-  standardCommandFailed: function(test) {
+  standardCommandFailed(test) {
     test.expect(4);
 
     controller.closeTesselConnections.returns(Promise.resolve());
@@ -886,7 +1120,7 @@ exports['Tessel.get'] = {
     });
   },
 
-  standardCommandSigInt: function(test) {
+  standardCommandSigInt(test) {
     test.expect(2);
 
     controller.closeTesselConnections.returns(Promise.resolve());
@@ -924,13 +1158,13 @@ exports['Tessel.get'] = {
 };
 
 exports['controller.createAccessPoint'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
-    this.basic = this.sandbox.stub(log, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
 
     // stub this command to avoid authoized Tessel validation
     this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').returns(Promise.resolve(true));
@@ -938,12 +1172,12 @@ exports['controller.createAccessPoint'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  noNetworkSSID: function(test) {
+  noNetworkSSID(test) {
     test.expect(1);
 
     controller.connectToNetwork({
@@ -955,7 +1189,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  noNetworkPasswordWithSecurity: function(test) {
+  noNetworkPasswordWithSecurity(test) {
     test.expect(1);
 
     controller.connectToNetwork({
@@ -969,7 +1203,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  invalidNetworkSecurityOption: function(test) {
+  invalidNetworkSecurityOption(test) {
     test.expect(1);
 
     controller.connectToNetwork({
@@ -983,7 +1217,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  noAccessPointSSID: function(test) {
+  noAccessPointSSID(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -995,7 +1229,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  noAccessPointPasswordWithSecurity: function(test) {
+  noAccessPointPasswordWithSecurity(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1009,7 +1243,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  invalidAccessPointSecurityOption: function(test) {
+  invalidAccessPointSecurityOption(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1023,7 +1257,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  invalidAccessPointWEPPasswordCharacters: function(test) {
+  invalidAccessPointWEPPasswordCharacters(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1037,7 +1271,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  invalidAccessPointWEPPasswordLength: function(test) {
+  invalidAccessPointWEPPasswordLength(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1051,7 +1285,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  validAccessPointWEPPassword: function(test) {
+  validAccessPointWEPPassword(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1069,7 +1303,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  invalidAccessPointPSKPasswordCharacters: function(test) {
+  invalidAccessPointPSKPasswordCharacters(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1083,7 +1317,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  invalidAccessPointPSKASCIIPasswordTooShort: function(test) {
+  invalidAccessPointPSKASCIIPasswordTooShort(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1097,7 +1331,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  invalidAccessPointPSKASCIIPasswordTooLong: function(test) {
+  invalidAccessPointPSKASCIIPasswordTooLong(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1111,7 +1345,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  invalidAccessPointPSKHexPasswordTooShort: function(test) {
+  invalidAccessPointPSKHexPasswordTooShort(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1125,7 +1359,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  invalidAccessPointPSKHexPasswordTooLong: function(test) {
+  invalidAccessPointPSKHexPasswordTooLong(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1139,7 +1373,7 @@ exports['controller.createAccessPoint'] = {
       });
   },
 
-  validAccessPointPSKPassword: function(test) {
+  validAccessPointPSKPassword(test) {
     test.expect(1);
 
     controller.createAccessPoint({
@@ -1159,13 +1393,13 @@ exports['controller.createAccessPoint'] = {
 };
 
 exports['controller.root'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
-    this.basic = this.sandbox.stub(log, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
 
     this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').returns(Promise.resolve());
 
@@ -1180,12 +1414,12 @@ exports['controller.root'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  setsOptsLanTrue: function(test) {
+  setsOptsLanTrue(test) {
     test.expect(3);
 
     var opts = {};
@@ -1201,7 +1435,7 @@ exports['controller.root'] = {
       });
   },
 
-  setsOptsUsbFalseAndWarns: function(test) {
+  setsOptsUsbFalseAndWarns(test) {
     test.expect(4);
 
     var opts = {
@@ -1209,7 +1443,7 @@ exports['controller.root'] = {
     };
 
     this.warn.restore();
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
 
     controller.root(opts)
       .then(() => {
@@ -1223,7 +1457,7 @@ exports['controller.root'] = {
       });
   },
 
-  setsAuthorizedTrue: function(test) {
+  setsAuthorizedTrue(test) {
     test.expect(3);
 
     var opts = {};
@@ -1239,7 +1473,7 @@ exports['controller.root'] = {
       });
   },
 
-  openShell: function(test) {
+  openShell(test) {
     test.expect(6);
 
     var sandbox = this.sandbox;
@@ -1286,7 +1520,7 @@ exports['controller.root'] = {
     });
   },
 
-  shellOpenError: function(test) {
+  shellOpenError(test) {
     test.expect(1);
 
     var sandbox = this.sandbox;
@@ -1321,7 +1555,7 @@ exports['controller.root'] = {
 };
 
 exports['controller.printAvailableNetworks'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -1340,13 +1574,13 @@ exports['controller.printAvailableNetworks'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
     done();
   },
 
-  listCountOfVisibleToTesselSingle: function(test) {
+  listCountOfVisibleToTesselSingle(test) {
     test.expect(5);
 
     this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks', () => {
@@ -1373,7 +1607,7 @@ exports['controller.printAvailableNetworks'] = {
       });
   },
 
-  listCountOfVisibleToTesselPlural: function(test) {
+  listCountOfVisibleToTesselPlural(test) {
     test.expect(6);
 
     this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks', () => {
@@ -1404,7 +1638,7 @@ exports['controller.printAvailableNetworks'] = {
       });
   },
 
-  listCountOfVisibleToTesselPluralZero: function(test) {
+  listCountOfVisibleToTesselPluralZero(test) {
     test.expect(4);
 
     this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks', () => {
@@ -1428,3 +1662,82 @@ exports['controller.printAvailableNetworks'] = {
   },
 
 };
+
+exports['controller.uninstaller'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.homedir = this.sandbox.stub(installer, 'homedir').returns(Promise.resolve());
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  optionsOperationCallThrough(test) {
+    test.expect(1);
+
+    controller.uninstaller({ operation: 'homedir' })
+      .then(() => {
+        test.equal(this.homedir.callCount, 1);
+        test.done();
+      });
+  },
+};
+
+exports['controller.reboot'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.reboot = this.sandbox.stub(this.tessel, 'reboot');
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+      return callback(this.tessel);
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  success(test) {
+    test.expect(2);
+
+    this.reboot.returns(Promise.resolve());
+    controller.reboot({})
+      .then(() => {
+        test.equal(this.reboot.callCount, 1);
+        test.equal(this.info.callCount, 1);
+        test.done();
+      });
+  },
+
+  failure(test) {
+    test.expect(1);
+
+    this.reboot.returns(Promise.reject());
+
+    controller.reboot({})
+      .catch(() => {
+        test.equal(this.reboot.callCount, 1);
+        test.done();
+      });
+  },
+}
