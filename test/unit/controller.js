@@ -606,7 +606,9 @@ exports['Tessel.list'] = {
       type: 'LAN'
     });
 
-    var customOpts = Object.assign({}, this.standardOpts, { authorized: true });
+    var customOpts = Object.assign({}, this.standardOpts, {
+      authorized: true
+    });
 
     Tessel.list(customOpts)
       .then(() => {
@@ -809,7 +811,6 @@ exports['Tessel.get'] = {
     });
 
     var customOpts = {
-      timeout: this.standardOpts.timeout,
       key: this.standardOpts.key,
       name: 'the_name',
       timeout: 0,
@@ -924,7 +925,9 @@ exports['Tessel.get'] = {
       name: 'b'
     });
 
-    var customOpts = Object.assign({}, this.standardOpts, { name: 'a' });
+    var customOpts = Object.assign({}, this.standardOpts, {
+      name: 'a'
+    });
 
     Tessel.get(customOpts)
       .then(() => {
@@ -1680,7 +1683,9 @@ exports['controller.uninstaller'] = {
   optionsOperationCallThrough(test) {
     test.expect(1);
 
-    controller.uninstaller({ operation: 'homedir' })
+    controller.uninstaller({
+        operation: 'homedir'
+      })
       .then(() => {
         test.equal(this.homedir.callCount, 1);
         test.done();
@@ -1740,4 +1745,78 @@ exports['controller.reboot'] = {
         test.done();
       });
   },
-}
+};
+
+exports['controller.updateWithRemoteBuilds'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = newTessel({
+      sandbox: this.sandbox,
+      authorized: true,
+      type: 'LAN'
+    });
+
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', () => {
+      return Promise.resolve(
+        [{
+          'released': '2015-08-20T16:20:08.704Z',
+          'sha': '78f2bd20af9eaf76796657186f3010f03a979dc8',
+          'version': '0.0.3',
+        }, {
+          'released': '2015-08-18T15:12:13.070Z',
+          'sha': 'bf327359b4a13b4da07bc5776fe8a22ae88d54f9',
+          'version': '0.0.2',
+        }, {
+          'released': '2015-08-12T03:01:57.856Z',
+          'sha': '9a85c84f5a03c715908921baaaa9e7397985bc7f',
+          'version': '0.0.1',
+        }]
+      );
+    });
+
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  noUsbRejection(test) {
+    test.expect(1);
+
+    controller.updateWithRemoteBuilds({}, this.tessel)
+      .catch(error => {
+        test.equal(error.toString(), 'Must have Tessel connected over USB to complete update. Aborting update.');
+
+        test.done();
+      });
+  },
+
+  noForceRejection(test) {
+    test.expect(3);
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.fetchCurrentBuildInfo = this.sandbox.stub(this.tessel, 'fetchCurrentBuildInfo').returns(Promise.reject(new Error('No such file or directory')));
+
+    controller.updateWithRemoteBuilds({
+        force: false
+      }, this.tessel)
+      .catch(error => {
+        test.equal(error.toString(), 'Error: No such file or directory');
+        test.equal(this.warn.callCount, 1);
+        test.equal(this.warn.lastCall.args[0], 'Could not find firmware version on TestTessel');
+        test.done();
+      });
+  },
+};

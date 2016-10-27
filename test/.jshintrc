@@ -66,6 +66,7 @@
     "lan": true,
     "LAN": true,
     "log": true,
+    "Menu": true,
     "mdns": true,
     "mkdirp": true,
     "NodeRSA": true,
