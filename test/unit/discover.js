@@ -110,6 +110,27 @@ exports['TesselSeeker.prototype.start'] = {
       this.seeker.usbScan.emit('connection', usb.connection);
     }
   },
+
+  noUSBController: function(test) {
+    test.expect(2);
+
+    var seekerOpts = {
+      timeout: 1,
+      usb: true,
+      lan: false,
+    };
+
+    this.usbStartScan.restore();
+    this.usbStartScan = this.sandbox.stub(usb, 'startScan').returns(null);
+
+    this.seeker.on('end', () => {
+      test.equal(this.usbStartScan.callCount, 1);
+      test.equal(this.seeker.usbScan, null);
+      test.done();
+    });
+
+    this.seeker.start(seekerOpts);
+  },
 };
 
 

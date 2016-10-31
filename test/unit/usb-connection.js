@@ -416,3 +416,50 @@ exports['USB.Connection.prototype._receiveMessages'] = {
       });
   }
 };
+
+exports['usb.startScan'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.error = this.sandbox.stub(log, 'error');
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
+    this.USBScanner = this.sandbox.stub(USB, 'Scanner', () => {
+      return {
+        start: this.sandbox.stub()
+      };
+    });
+
+    this.haveusb = overridehaveusb();
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    overridehaveusb(this.haveusb);
+    done();
+  },
+
+  haveusbIsTrue(test) {
+    test.expect(1);
+
+    overridehaveusb(true);
+
+    usb.startScan();
+
+    test.equal(this.USBScanner.callCount, 1);
+    test.done();
+  },
+
+  haveusbIsFalse(test) {
+    test.expect(1);
+
+    overridehaveusb(false);
+
+    usb.startScan();
+
+    test.equal(this.USBScanner.callCount, 0);
+    test.done();
+  },
+};

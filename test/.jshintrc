@@ -73,6 +73,7 @@
     "NodeRSA": true,
     "osenv": true,
     "os": true,
+    "overridehaveusb": true,
     "path": true,
     "Preferences": true,
     "Project": true,

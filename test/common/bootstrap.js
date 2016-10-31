@@ -91,6 +91,7 @@ global.cliPackageJson = require('../../package.json');
 global.LAN = lan.LAN;
 global.TesselSeeker = discover.TesselSeeker;
 global.USB = usb.USB;
+global.overridehaveusb = usb.overridehaveusb;
 
 global.Request = function Request() {};
 util.inherits(global.Request, global.Stream);
