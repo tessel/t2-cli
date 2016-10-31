@@ -1820,3 +1820,119 @@ exports['controller.updateWithRemoteBuilds'] = {
       });
   },
 };
+
+exports['controller.doesNotMeetUSBRequirement'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  usbIsUndefined(test) {
+    test.expect(1);
+
+    test.equal(controller.doesNotMeetUSBRequirement({}), false);
+    test.done();
+  },
+
+  usbIsDefinedTrue(test) {
+    test.expect(1);
+
+    test.equal(controller.doesNotMeetUSBRequirement({ usb: true }), false);
+    test.done();
+  },
+
+  usbIsDefinedFalse(test) {
+    test.expect(1);
+
+    test.equal(controller.doesNotMeetUSBRequirement({ usb: false }), true);
+    test.done();
+  },
+
+  lanIsDefinedTrue(test) {
+    test.expect(1);
+
+    test.equal(controller.doesNotMeetUSBRequirement({ lan: true }), true);
+    test.done();
+  },
+
+  bothDefinedTrue(test) {
+    test.expect(1);
+
+    test.equal(controller.doesNotMeetUSBRequirement({ usb: true, lan: true }), false);
+    test.done();
+  },
+
+};
+
+exports['controller.provisionTessel'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  errorExplicit(test) {
+    test.expect(1);
+
+    controller.provisionTessel({
+      usb: false,
+    }).catch(error => {
+      test.equal(error, 't2 provision requires a usb connection.');
+      test.done();
+    });
+  },
+
+  errorImplicit(test) {
+    test.expect(1);
+
+    controller.provisionTessel({
+      lan: true
+    }).catch(error => {
+      test.equal(error, 't2 provision requires a usb connection.');
+      test.done();
+    });
+  },
+};
+
+exports['controller.restoreTessel'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  errorExplicit(test) {
+    test.expect(1);
+
+    controller.restoreTessel({
+      usb: false,
+    }).catch(error => {
+      test.equal(error, 't2 restore requires a usb connection.');
+      test.done();
+    });
+  },
+
+  errorImplicit(test) {
+    test.expect(1);
+
+    controller.restoreTessel({
+      lan: true
+    }).catch(error => {
+      test.equal(error, 't2 restore requires a usb connection.');
+      test.done();
+    });
+  },
+};
