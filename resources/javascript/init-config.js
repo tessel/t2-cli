@@ -25,7 +25,7 @@ module.exports = {
         // Wouldn't it be nice if that file mattered?
         var d = fs.readFileSync('.git/description', 'utf8');
       } catch (e) {}
-      if (d.trim() && !value) value = d;
+      if (d && d.trim() && !value) value = d;
     }
     return prompt('description', value);
   })(),
