@@ -1,6 +1,162 @@
 // Test dependencies are required and exposed in common/bootstrap.js
 require('../common/bootstrap');
 
+exports['init.createNewProject()'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+
+    this.lang = {
+      generateProject: this.sandbox.spy()
+    };
+
+    this.lang = {
+      js: {
+        generateProject: this.sandbox.stub(init.js, 'generateProject').returns(Promise.resolve()),
+      },
+      py: {
+        generateProject: this.sandbox.stub(init.py, 'generateProject').returns(Promise.resolve()),
+      },
+      rs: {
+        generateProject: this.sandbox.stub(init.rs, 'generateProject').returns(Promise.resolve()),
+      },
+    };
+
+    this.resolveLanguage = this.sandbox.spy(init, 'resolveLanguage');
+    this.pathResolve = this.sandbox.spy(path, 'resolve');
+
+    done();
+  },
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  // TODO: Add test that asserts this.spinnerStop is called
+
+  directory(test) {
+    test.expect(1);
+
+    init.createNewProject({
+      directory: './',
+      lang: 'javascript',
+    }).then(() => {
+      test.equal(this.pathResolve.callCount, 0);
+      test.done();
+    });
+  },
+
+  noDirectory(test) {
+    test.expect(2);
+
+    init.createNewProject({
+      lang: 'javascript',
+    }).then(() => {
+      test.equal(this.pathResolve.callCount, 1);
+      test.equal(this.pathResolve.lastCall.args[0], '.');
+      test.done();
+    });
+  },
+
+  resolveLanguage: {
+    js(test) {
+      test.expect(3);
+
+      init.createNewProject({
+        directory: './',
+        lang: 'js',
+      }).then(() => {
+        test.equal(this.resolveLanguage.callCount, 1);
+        test.equal(this.resolveLanguage.lastCall.args[0], 'js');
+        test.equal(this.lang.js.generateProject.callCount, 1);
+        test.done();
+      });
+    },
+    javascript(test) {
+      test.expect(3);
+
+      init.createNewProject({
+        directory: './',
+        lang: 'javascript',
+      }).then(() => {
+        test.equal(this.resolveLanguage.callCount, 1);
+        test.equal(this.resolveLanguage.lastCall.args[0], 'javascript');
+        test.equal(this.lang.js.generateProject.callCount, 1);
+        test.done();
+      });
+    },
+    py(test) {
+      test.expect(3);
+
+      init.createNewProject({
+        directory: './',
+        lang: 'py',
+      }).then(() => {
+        test.equal(this.resolveLanguage.callCount, 1);
+        test.equal(this.resolveLanguage.lastCall.args[0], 'py');
+        test.equal(this.lang.py.generateProject.callCount, 1);
+        test.done();
+      });
+    },
+    python(test) {
+      test.expect(3);
+
+      init.createNewProject({
+        directory: './',
+        lang: 'python',
+      }).then(() => {
+        test.equal(this.resolveLanguage.callCount, 1);
+        test.equal(this.resolveLanguage.lastCall.args[0], 'python');
+        test.equal(this.lang.py.generateProject.callCount, 1);
+        test.done();
+      });
+    },
+    rs(test) {
+      test.expect(3);
+
+      init.createNewProject({
+        directory: './',
+        lang: 'rs',
+      }).then(() => {
+        test.equal(this.resolveLanguage.callCount, 1);
+        test.equal(this.resolveLanguage.lastCall.args[0], 'rs');
+        test.equal(this.lang.rs.generateProject.callCount, 1);
+        test.done();
+      });
+    },
+    rust(test) {
+      test.expect(3);
+
+      init.createNewProject({
+        directory: './',
+        lang: 'rust',
+      }).then(() => {
+        test.equal(this.resolveLanguage.callCount, 1);
+        test.equal(this.resolveLanguage.lastCall.args[0], 'rust');
+        test.equal(this.lang.rs.generateProject.callCount, 1);
+        test.done();
+      });
+    },
+
+    unrecognized(test) {
+      test.expect(2);
+
+      this.resolveLanguage.restore();
+      this.resolveLanguage = this.sandbox.stub(init, 'resolveLanguage').returns(null);
+
+      init.createNewProject({
+        directory: './',
+        lang: 'rust',
+      }).catch(error => {
+        test.equal(error.toString(), 'Error: Unrecognized language selection.');
+        test.equal(this.resolveLanguage.callCount, 1);
+        test.done();
+      });
+    }
+  },
+};
+
 exports['init.resolveLanguage()'] = {
   setUp: function(done) {
     done();
