@@ -307,7 +307,7 @@ exports['init --lang=rust'] = {
 };
 
 exports['init --lang=javascript'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
@@ -331,13 +331,13 @@ exports['init --lang=javascript'] = {
 
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
 
-  allOperations: function(test) {
+  allOperations(test) {
     test.expect(11);
 
     // THIS TEST ONLY ASSERTS THAT ALL EXPECTED
@@ -392,7 +392,222 @@ exports['init --lang=javascript'] = {
       });
   },
 
-  resolveNpmConfig: function(test) {
+  loadNpmSuccess(test) {
+    test.expect(1);
+
+    this.npmLoad = this.sandbox.stub(npm, 'load', (callback) => {
+      callback(null, {});
+    });
+
+    init.js.loadNpm().then(() => {
+      test.equal(this.npmLoad.callCount, 1);
+      test.done();
+    });
+  },
+
+  loadNpmFailure(test) {
+    test.expect(2);
+
+    this.npmLoad = this.sandbox.stub(npm, 'load', (callback) => {
+      callback(new Error('npm.load failed?'), {});
+    });
+
+    init.js.loadNpm().catch((error) => {
+      test.equal(this.npmLoad.callCount, 1);
+      test.equal(error.toString(), 'Error: npm.load failed?');
+      test.done();
+    });
+  },
+
+  readPackageJsonSuccess(test) {
+    test.expect(1);
+
+    this.readFile.restore();
+    this.readFile = this.sandbox.stub(fs, 'readFile', (file, encoding, callback) => {
+      callback(null, '{}');
+    });
+
+    init.js.readPackageJson().then(() => {
+      test.equal(this.readFile.callCount, 1);
+      test.done();
+    });
+  },
+
+  readPackageJsonFailure(test) {
+    test.expect(2);
+
+    this.readFile.restore();
+    this.readFile = this.sandbox.stub(fs, 'readFile', (file, encoding, callback) => {
+      callback(new Error('fs.readFile failed?'), {});
+    });
+
+    init.js.readPackageJson().catch((error) => {
+      test.equal(this.readFile.callCount, 1);
+      test.equal(error.toString(), 'Error: fs.readFile failed?');
+      test.done();
+    });
+  },
+
+  writePackageJsonSuccess(test) {
+    test.expect(1);
+
+    this.writeFile.restore();
+    this.writeFile = this.sandbox.stub(fs, 'writeFile', (file, data, callback) => {
+      callback(null, '{}');
+    });
+
+    init.js.writePackageJson().then(() => {
+      test.equal(this.writeFile.callCount, 1);
+      test.done();
+    });
+  },
+
+  writePackageJsonFailure(test) {
+    test.expect(2);
+
+    this.writeFile.restore();
+    this.writeFile = this.sandbox.stub(fs, 'writeFile', (file, data, callback) => {
+      callback(new Error('fs.writeFile failed?'), {});
+    });
+
+    init.js.writePackageJson().catch((error) => {
+      test.equal(this.writeFile.callCount, 1);
+      test.equal(error.toString(), 'Error: fs.writeFile failed?');
+      test.done();
+    });
+  },
+
+  prettyPrintJson(test) {
+    test.expect(4);
+
+    this.stringify = this.sandbox.stub(JSON, 'stringify');
+
+    var data = {
+      a: 1
+    };
+
+    init.js.prettyPrintJson(data);
+
+    test.equal(this.stringify.callCount, 1);
+    test.equal(this.stringify.lastCall.args[0], data);
+    test.equal(this.stringify.lastCall.args[1], null);
+    test.equal(this.stringify.lastCall.args[2], 2);
+
+
+    test.done();
+  },
+
+  npmInstallNoDeps(test) {
+    test.expect(1);
+
+    this.loadNpm = this.sandbox.stub(init.js, 'loadNpm');
+
+    init.js.npmInstall([])
+      .then(() => {
+        test.equal(this.loadNpm.callCount, 0);
+        test.done();
+      });
+  },
+
+  npmInstallWithDepsSuccess(test) {
+    test.expect(2);
+
+    var dependencies = [
+      'debug@1.1.1',
+      'linked@1.1.1',
+      'missing@1.1.1',
+      'release@1.1.1',
+    ];
+
+    var npm = {
+      commands: {
+        install(dependencies, callback) {
+          test.ok(true);
+          callback();
+        }
+      }
+    };
+
+    this.loadNpm = this.sandbox.stub(init.js, 'loadNpm').returns(Promise.resolve(npm));
+
+    init.js.npmInstall(dependencies)
+      .then(() => {
+        test.equal(this.loadNpm.callCount, 1);
+        test.done();
+      });
+  },
+  npmInstallWithDepsFailure(test) {
+    test.expect(2);
+
+    var dependencies = [
+      'debug@1.1.1',
+      'linked@1.1.1',
+      'missing@1.1.1',
+      'release@1.1.1',
+    ];
+
+    var npm = {
+      commands: {
+        install(dependencies, callback) {
+          test.ok(true);
+          callback(new Error('npm.commands.install failed?'));
+        }
+      }
+    };
+
+    this.loadNpm = this.sandbox.stub(init.js, 'loadNpm').returns(Promise.resolve(npm));
+
+    init.js.npmInstall(dependencies)
+      .catch(error => {
+        test.equal(error.toString(), 'Error: npm.commands.install failed?');
+        test.done();
+      });
+  },
+
+  getDependencies(test) {
+    test.expect(1);
+
+    var parsedPackageJson = {
+      name: 'project-binary-modules',
+      version: '0.0.1',
+      description: 'project-binary-modules',
+      main: 'index.js',
+      dependencies: {
+        debug: '1.1.1',
+        linked: '1.1.1',
+        missing: '1.1.1',
+        release: '1.1.1'
+      }
+    };
+
+    var dependencies = init.js.getDependencies(parsedPackageJson);
+
+    test.deepEqual(dependencies, [
+      'debug@1.1.1',
+      'linked@1.1.1',
+      'missing@1.1.1',
+      'release@1.1.1',
+    ]);
+    test.done();
+  },
+
+  getDependenciesEmpty(test) {
+    test.expect(1);
+
+    var parsedPackageJson = {
+      name: 'project-binary-modules',
+      version: '0.0.1',
+      description: 'project-binary-modules',
+      main: 'index.js'
+    };
+
+    var dependencies = init.js.getDependencies(parsedPackageJson);
+
+    test.deepEqual(dependencies, []);
+    test.done();
+  },
+
+  resolveNpmConfig(test) {
     test.expect(1);
 
     init.js.resolveNpmConfig({
@@ -414,7 +629,7 @@ exports['init --lang=javascript'] = {
       });
   },
 
-  createSampleProgram: function(test) {
+  createSampleProgram(test) {
     test.expect(3);
 
     this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
@@ -431,7 +646,7 @@ exports['init --lang=javascript'] = {
       });
   },
 
-  createSampleProgramExists: function(test) {
+  createSampleProgramExists(test) {
     test.expect(1);
 
     this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
@@ -445,7 +660,7 @@ exports['init --lang=javascript'] = {
       });
   },
 
-  createTesselinclude: function(test) {
+  createTesselinclude(test) {
     test.expect(3);
 
     this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
@@ -461,7 +676,7 @@ exports['init --lang=javascript'] = {
       });
   },
 
-  createTesselincludeExists: function(test) {
+  createTesselincludeExists(test) {
     test.expect(1);
 
     this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {

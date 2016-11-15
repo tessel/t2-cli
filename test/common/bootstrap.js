@@ -31,6 +31,7 @@ global.Ignore = require('fstream-ignore');
 global.inquirer = require('inquirer');
 global.mdns = require('mdns-js');
 global.mkdirp = require('mkdirp');
+global.npm = require('npm');
 global.npmlog = require('npmlog');
 global.osenv = require('osenv');
 global.Project = require('t2-project');

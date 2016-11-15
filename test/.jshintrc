@@ -70,6 +70,7 @@
     "Menu": true,
     "mdns": true,
     "mkdirp": true,
+    "npm": true,
     "NodeRSA": true,
     "osenv": true,
     "os": true,
