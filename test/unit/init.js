@@ -33,7 +33,17 @@ exports['init.createNewProject()'] = {
     done();
   },
 
-  // TODO: Add test that asserts this.spinnerStop is called
+  spinnerStop(test) {
+    test.expect(1);
+
+    init.createNewProject({
+      directory: './',
+      lang: 'javascript',
+    }).then(() => {
+      test.equal(this.spinnerStop.callCount, 1);
+      test.done();
+    });
+  },
 
   directory(test) {
     test.expect(1);
