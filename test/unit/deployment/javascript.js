@@ -2818,6 +2818,7 @@ exports['deployment.js.lists'] = {
       'node_modules/**/mime/types/*.types',
       'node_modules/**/negotiator/**/*.js',
       'node_modules/**/socket.io-client/socket.io.js',
+      'node_modules/**/socket.io-client/dist/socket.io.min.js',
     ];
 
     test.deepEqual(lists.includes, includes);
