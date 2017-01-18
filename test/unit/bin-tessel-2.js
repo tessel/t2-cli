@@ -453,7 +453,7 @@ exports['Tessel (t2: run)'] = {
   },
 
   defaultOptions: function(test) {
-    test.expect(5);
+    test.expect(6);
 
     t2(['run', 'index.js']);
 
@@ -467,6 +467,8 @@ exports['Tessel (t2: run)'] = {
     test.equal(args.lanPrefer, false);
     test.equal(args.full, false);
     test.equal(args.push, false);
+    test.ok(!args.rustcc);
+
 
     setImmediate(test.done);
   },
@@ -510,7 +512,7 @@ exports['Tessel (t2: push)'] = {
   },
 
   defaultOptions: function(test) {
-    test.expect(5);
+    test.expect(6);
 
     t2(['push', 'index.js']);
 
@@ -525,6 +527,7 @@ exports['Tessel (t2: push)'] = {
     test.ok(args.push);
 
     test.ok(!args.full);
+    test.ok(!args.rustcc);
 
     setImmediate(test.done);
   },
