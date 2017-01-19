@@ -1393,6 +1393,36 @@ exports['controller.createAccessPoint'] = {
         test.done();
       });
   },
+
+  invalidAccessPointIPAddress: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+        ssid: 'test',
+        ip: '999.9999.9'
+      })
+      .catch(error => {
+        test.ok(error);
+        test.done();
+      });
+  },
+
+  validAccessPointIPAddress: function(test) {
+    test.expect(1);
+
+    controller.createAccessPoint({
+        ssid: 'test',
+        ip: '192.168.1.113'
+      })
+      .then((settings) => {
+        test.ok(settings);
+        test.done();
+      })
+      .catch((error) => {
+        test.fail(error.toString());
+        test.done();
+      });
+  },
 };
 
 exports['controller.root'] = {

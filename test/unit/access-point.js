@@ -27,6 +27,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
     this.reconnectWifi = this.sandbox.spy(commands, 'reconnectWifi');
     this.reconnectDnsmasq = this.sandbox.spy(commands, 'reconnectDnsmasq');
     this.reconnectDhcp = this.sandbox.spy(commands, 'reconnectDhcp');
+    this.getWifiSettings = this.sandbox.spy(commands, 'getWifiSettings');
 
     this.tessel = TesselSimulator();
     // These are needed because the sheer number of commands run within
@@ -46,11 +47,12 @@ exports['Tessel.prototype.createAccessPoint'] = {
   },
 
   newAccessPoint: function(test) {
-    test.expect(20);
+    test.expect(23);
     var creds = {
       ssid: 'test',
-      pass: 'test-password',
-      security: 'psk2'
+      password: 'test-password',
+      security: 'psk2',
+      mode: 'ap'
     };
 
     // Immediately close any opened connections
@@ -93,9 +95,76 @@ exports['Tessel.prototype.createAccessPoint'] = {
         test.equal(this.reconnectWifi.callCount, 1);
         test.equal(this.reconnectDnsmasq.callCount, 1);
         test.equal(this.reconnectDhcp.callCount, 1);
+        test.equal(this.getWifiSettings.callCount, 1);
         test.ok(this.setAccessPointSSID.lastCall.calledWith(creds.ssid));
-        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.pass));
+        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.password));
         test.ok(this.setAccessPointSecurity.lastCall.calledWith(creds.security));
+        test.ok(this.setAccessPointMode.lastCall.calledWith(creds.mode));
+        test.ok(this.setLanNetworkIP.lastCall.calledWith('192.168.1.101'));
+
+        test.done();
+      })
+      .catch(error => {
+        test.ok(false, error.toString());
+        test.done();
+      });
+  },
+
+  newAdhoc: function(test) {
+    test.expect(23);
+    var creds = {
+      ssid: 'test',
+      password: 'test-password',
+      security: 'psk2',
+      mode: 'adhoc'
+    };
+
+    // Immediately close any opened connections
+    this.tessel._rps.on('control', () => {
+      setImmediate(() => {
+        this.tessel._rps.emit('close');
+      });
+    });
+
+    // tessel.receive is called twice but needs to be rejected the first time
+    var count = 0;
+    this.sandbox.stub(this.tessel, 'receive', function(remoteProcess, callback) {
+      if (typeof callback !== 'function') {
+        callback = function() {};
+      }
+      if (count === 0) {
+        count++;
+        return callback(new Error('uci: Entry not found'));
+      } else {
+        return callback(null, new Buffer(0));
+      }
+    });
+
+    this.tessel.createAccessPoint(creds)
+      .then(() => {
+        test.equal(this.getAccessPoint.callCount, 1);
+        test.equal(this.setAccessPoint.callCount, 1);
+        test.equal(this.setAccessPointDevice.callCount, 1);
+        test.equal(this.setAccessPointNetwork.callCount, 1);
+        test.equal(this.setAccessPointMode.callCount, 1);
+        test.equal(this.setAccessPointSSID.callCount, 1);
+        test.equal(this.setAccessPointPassword.callCount, 1);
+        test.equal(this.setAccessPointSecurity.callCount, 1);
+        test.equal(this.setLanNetwork.callCount, 1);
+        test.equal(this.setLanNetworkIfname.callCount, 1);
+        test.equal(this.setLanNetworkProto.callCount, 1);
+        test.equal(this.setLanNetworkIP.callCount, 1);
+        test.equal(this.setLanNetworkNetmask.callCount, 1);
+        test.equal(this.commitNetwork.callCount, 1);
+        test.equal(this.reconnectWifi.callCount, 1);
+        test.equal(this.reconnectDnsmasq.callCount, 1);
+        test.equal(this.reconnectDhcp.callCount, 1);
+        test.equal(this.getWifiSettings.callCount, 1);
+        test.ok(this.setAccessPointSSID.lastCall.calledWith(creds.ssid));
+        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.password));
+        test.ok(this.setAccessPointSecurity.lastCall.calledWith(creds.security));
+        test.ok(this.setAccessPointMode.lastCall.calledWith(creds.mode));
+        test.ok(this.setLanNetworkIP.lastCall.calledWith('192.168.1.101'));
 
         test.done();
       })
@@ -106,11 +175,12 @@ exports['Tessel.prototype.createAccessPoint'] = {
   },
 
   noPasswordNoSecurity: function(test) {
-    test.expect(9);
+    test.expect(10);
     var creds = {
       ssid: 'test',
-      pass: undefined,
-      security: undefined
+      password: undefined,
+      security: undefined,
+      mode: 'ap'
     };
 
     // Test is expecting two closes...;
@@ -126,6 +196,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
         test.equal(this.setAccessPointSSID.callCount, 1);
         test.equal(this.setAccessPointPassword.callCount, 0);
         test.equal(this.setAccessPointSecurity.callCount, 1);
+        test.equal(this.setAccessPointMode.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
         test.equal(this.reconnectDnsmasq.callCount, 1);
         test.equal(this.reconnectDhcp.callCount, 1);
@@ -140,11 +211,13 @@ exports['Tessel.prototype.createAccessPoint'] = {
   },
 
   properCredentials: function(test) {
-    test.expect(10);
+    test.expect(13);
     var creds = {
       ssid: 'test',
-      pass: 'test-password',
-      security: 'psk2'
+      password: 'test-password',
+      security: 'psk2',
+      mode: 'ap',
+      ip: '192.168.1.113'
     };
 
     // Test is expecting two closes...;
@@ -160,12 +233,15 @@ exports['Tessel.prototype.createAccessPoint'] = {
         test.equal(this.setAccessPointSSID.callCount, 1);
         test.equal(this.setAccessPointPassword.callCount, 1);
         test.equal(this.setAccessPointSecurity.callCount, 1);
+        test.equal(this.setAccessPointMode.callCount, 1);
+        test.equal(this.setLanNetworkIP.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
         test.equal(this.reconnectDnsmasq.callCount, 1);
         test.equal(this.reconnectDhcp.callCount, 1);
         test.ok(this.setAccessPointSSID.lastCall.calledWith(creds.ssid));
-        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.pass));
+        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.password));
         test.ok(this.setAccessPointSecurity.lastCall.calledWith(creds.security));
+        test.ok(this.setLanNetworkIP.lastCall.calledWith(creds.ip));
         test.done();
       })
       .catch(error => {
@@ -175,11 +251,12 @@ exports['Tessel.prototype.createAccessPoint'] = {
   },
 
   passwordNoSecurity: function(test) {
-    test.expect(10);
+    test.expect(11);
     var creds = {
       ssid: 'test',
-      pass: 'test-password',
-      security: undefined
+      password: 'test-password',
+      security: undefined,
+      mode: 'ap'
     };
 
     // Test is expecting two closes...;
@@ -195,16 +272,53 @@ exports['Tessel.prototype.createAccessPoint'] = {
         test.equal(this.setAccessPointSSID.callCount, 1);
         test.equal(this.setAccessPointPassword.callCount, 1);
         test.equal(this.setAccessPointSecurity.callCount, 1);
+        test.equal(this.setAccessPointMode.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
         test.equal(this.reconnectDnsmasq.callCount, 1);
         test.equal(this.reconnectDhcp.callCount, 1);
         test.ok(this.setAccessPointSSID.lastCall.calledWith(creds.ssid));
-        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.pass));
+        test.ok(this.setAccessPointPassword.lastCall.calledWith(creds.password));
         test.ok(this.setAccessPointSecurity.lastCall.calledWith('psk2'));
         test.done();
       })
       .catch(error => {
         test.ok(false, error.toString());
+        test.done();
+      });
+  },
+
+  createAdhocWhenWifiEnabled: function(test) {
+    test.expect(2);
+    var creds = {
+      ssid: 'test',
+      mode: 'adhoc'
+    };
+
+    // Test is expecting two closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'uci show wireless.@wifi-iface[0]') {
+        var info = new Buffer(tags.stripIndent `
+          wireless.cfg053579.disabled='0'`);
+
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', info);
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.createAccessPoint(creds)
+      .then(() => {
+        test.fail('Creating an adhoc network should fail while wifi is enabled.');
+        test.done();
+      })
+      .catch(error => {
+        test.equal(this.getWifiSettings.callCount, 1);
+        test.ok(error.toString());
         test.done();
       });
   }
@@ -276,7 +390,7 @@ exports['Tessel.prototype.enableAccessPoint'] = {
       }
     });
 
-    this.tessel.enableAccessPoint()
+    this.tessel.enableAccessPoint({mode: 'ap'})
       .then(() => {
         test.equal(this.turnAccessPointOn.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
@@ -328,7 +442,7 @@ exports['Tessel.prototype.enableAccessPoint'] = {
       }
     });
 
-    this.tessel.enableAccessPoint()
+    this.tessel.enableAccessPoint({mode: 'ap'})
       .then(() => {
         test.fail('Should not pass');
         test.done();
@@ -374,7 +488,7 @@ exports['Tessel.prototype.disableAccessPoint'] = {
       });
     });
 
-    this.tessel.disableAccessPoint()
+    this.tessel.disableAccessPoint({mode: 'ap'})
       .then(() => {
         test.equal(this.turnAccessPointOff.callCount, 1);
         test.equal(this.reconnectWifi.callCount, 1);
