@@ -5,7 +5,7 @@ require('../common/bootstrap');
 /*global Preferences */
 
 exports['CrashReporter'] = {
-  surface: function(test) {
+  surface(test) {
     test.expect(6);
     test.equal(typeof CrashReporter.on, 'function');
     test.equal(typeof CrashReporter.off, 'function');
@@ -16,7 +16,7 @@ exports['CrashReporter'] = {
     test.done();
   },
 
-  noProcessExceptionOrRejectionHandlers: function(test) {
+  noProcessExceptionOrRejectionHandlers(test) {
     test.expect(1);
 
     var expect = process.env.CI ? 0 : 2;
@@ -42,19 +42,19 @@ exports['CrashReporter'] = {
 };
 
 exports['CrashReporter.on'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  onSuccess: function(test) {
+  onSuccess(test) {
     test.expect(1);
 
     CrashReporter.on().then(() => {
@@ -63,7 +63,7 @@ exports['CrashReporter.on'] = {
     });
   },
 
-  onFailure: function(test) {
+  onFailure(test) {
     test.expect(2);
     this.pWrite.restore();
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.reject());
@@ -79,19 +79,19 @@ exports['CrashReporter.on'] = {
 };
 
 exports['CrashReporter.off'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  offSuccess: function(test) {
+  offSuccess(test) {
     test.expect(1);
 
     CrashReporter.off().then(() => {
@@ -100,7 +100,7 @@ exports['CrashReporter.off'] = {
     });
   },
 
-  offFailure: function(test) {
+  offFailure(test) {
     test.expect(2);
     this.pWrite.restore();
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.reject());
@@ -116,7 +116,7 @@ exports['CrashReporter.off'] = {
 };
 
 exports['CrashReporter.submit'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
     this.logInfo = this.sandbox.stub(log, 'info');
@@ -131,12 +131,12 @@ exports['CrashReporter.submit'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  submit: function(test) {
+  submit(test) {
     test.expect(8);
 
     var report = 'Error: undefined is not a function';
@@ -154,7 +154,7 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  sanitizes: function(test) {
+  sanitizes(test) {
     test.expect(5);
 
     this.crPost.restore();
@@ -175,7 +175,7 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  optionsSilentDefaultsFalse: function(test) {
+  optionsSilentDefaultsFalse(test) {
     test.expect(1);
 
     this.crPost.restore();
@@ -190,7 +190,7 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  optionsSilent: function(test) {
+  optionsSilent(test) {
     test.expect(1);
 
     this.crPost.restore();
@@ -207,7 +207,7 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  forwardsRealArgv: function(test) {
+  forwardsRealArgv(test) {
     test.expect(2);
 
     this.crPost.restore();
@@ -233,7 +233,7 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  sanitizesRealArgv: function(test) {
+  sanitizesRealArgv(test) {
     test.expect(1);
 
     this.crPost.restore();
@@ -258,7 +258,7 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  sanitizesArgv1: function(test) {
+  sanitizesArgv1(test) {
     test.expect(1);
 
     this.crPost.restore();
@@ -276,7 +276,7 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  sanitizesArgv2: function(test) {
+  sanitizesArgv2(test) {
     test.expect(1);
 
     this.crPost.restore();
@@ -294,7 +294,7 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  sanitizesArgv3: function(test) {
+  sanitizesArgv3(test) {
     test.expect(1);
 
     this.crPost.restore();
@@ -312,7 +312,7 @@ exports['CrashReporter.submit'] = {
     });
   },
 
-  sanitizesArgv4: function(test) {
+  sanitizesArgv4(test) {
     test.expect(1);
 
     this.crPost.restore();
@@ -330,11 +330,69 @@ exports['CrashReporter.submit'] = {
     });
   },
 
+  labelsWithConnectionType(test) {
+    test.expect(7);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    // We don't need an _actual_ tessel object to test this,
+    // just something that *looks like* a tessel object.
+    controller.tessel = {
+      connectionType: 'FOO'
+    };
+
+    CrashReporter.submit(new Error('This happened'), {
+      silent: true,
+      argv: ''
+    }).then(() => {
+      var labels = this.crPost.lastCall.args[0].split(',\n');
+
+      test.equal(labels[0], 't2-cli');
+      test.equal(labels[1].startsWith('CLI version: '), true);
+      test.equal(labels[2].startsWith('Node version: '), true);
+      test.equal(labels[3].startsWith('OS platform: '), true);
+      test.equal(labels[4].startsWith('OS release: '), true);
+      test.equal(labels[5].startsWith('Connection Type: '), true);
+      test.equal(labels[5].endsWith('FOO'), true);
+
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
+
+  labelsWithoutConnectionType(test) {
+    test.expect(6);
+
+    this.crPost.restore();
+    this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
+
+    CrashReporter.submit(new Error('This happened'), {
+      silent: true,
+      argv: ''
+    }).then(() => {
+      var labels = this.crPost.lastCall.args[0].split(',\n');
+
+      test.equal(labels[0], 't2-cli');
+      test.equal(labels[1].startsWith('CLI version: '), true);
+      test.equal(labels[2].startsWith('Node version: '), true);
+      test.equal(labels[3].startsWith('OS platform: '), true);
+      test.equal(labels[4].startsWith('OS release: '), true);
+      test.equal(labels.indexOf('Connection Type: '), -1);
+
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.message);
+      test.done();
+    });
+  },
 };
 
 
 exports['CrashReporter.sanitize'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
     this.logInfo = this.sandbox.stub(log, 'info');
@@ -348,12 +406,12 @@ exports['CrashReporter.sanitize'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  dirname: function(test) {
+  dirname(test) {
     test.expect(2);
 
     this.crPost.restore();
@@ -371,7 +429,7 @@ exports['CrashReporter.sanitize'] = {
     });
   },
 
-  filename: function(test) {
+  filename(test) {
     test.expect(2);
 
     this.crPost.restore();
@@ -389,7 +447,7 @@ exports['CrashReporter.sanitize'] = {
     });
   },
 
-  home: function(test) {
+  home(test) {
     test.expect(2);
 
     this.crPost.restore();
@@ -409,7 +467,7 @@ exports['CrashReporter.sanitize'] = {
 };
 
 exports['CrashReporter.post'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
     this.logInfo = this.sandbox.stub(log, 'info');
@@ -428,12 +486,12 @@ exports['CrashReporter.post'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  post: function(test) {
+  post(test) {
     test.expect(5);
 
     var labels = 'foo';
@@ -450,7 +508,7 @@ exports['CrashReporter.post'] = {
     });
   },
 
-  postWithBadResponse: function(test) {
+  postWithBadResponse(test) {
     test.expect(2);
 
     this.request.restore();
@@ -471,7 +529,7 @@ exports['CrashReporter.post'] = {
 };
 
 exports['CrashReporter.status'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.logInfo = this.sandbox.stub(log, 'info');
     this.prefLoad = this.sandbox.stub(Preferences, 'load', () => {
@@ -482,12 +540,12 @@ exports['CrashReporter.status'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  status: function(test) {
+  status(test) {
     test.expect(1);
 
     CrashReporter.status().then(() => {
