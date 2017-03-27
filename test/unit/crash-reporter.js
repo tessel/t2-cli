@@ -119,7 +119,7 @@ exports['CrashReporter.submit'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
-    this.logInfo = this.sandbox.stub(log, 'info');
+    this.info = this.sandbox.stub(log, 'info');
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     this.crPrompt = this.sandbox.stub(CrashReporter, 'prompt').returns(Promise.resolve(true));
@@ -154,6 +154,20 @@ exports['CrashReporter.submit'] = {
     });
   },
 
+  noSubmit(test) {
+    test.expect(3);
+    this.crPrompt.restore();
+    this.crPrompt = this.sandbox.stub(CrashReporter, 'prompt').returns(Promise.resolve(false));
+
+    var report = 'Error: undefined is not a function';
+    CrashReporter.submit(report).then(() => {
+      test.equal(this.crPrompt.callCount, 1);
+      test.equal(this.pRead.callCount, 0);
+      test.equal(this.info.lastCall.args[0], 'Did not submit crash report.');
+      test.done();
+    });
+  },
+
   sanitizes(test) {
     test.expect(5);
 
@@ -182,7 +196,7 @@ exports['CrashReporter.submit'] = {
     this.crPost = this.sandbox.stub(CrashReporter, 'post').returns(Promise.resolve());
 
     CrashReporter.submit(new Error('This happened')).then(() => {
-      test.equal(this.logInfo.callCount, 1);
+      test.equal(this.info.callCount, 1);
       test.done();
     }).catch(error => {
       test.ok(false, error.message);
@@ -199,7 +213,7 @@ exports['CrashReporter.submit'] = {
     CrashReporter.submit(new Error('This happened'), {
       silent: true
     }).then(() => {
-      test.equal(this.logInfo.callCount, 0);
+      test.equal(this.info.callCount, 0);
       test.done();
     }).catch(error => {
       test.ok(false, error.message);
@@ -395,7 +409,7 @@ exports['CrashReporter.sanitize'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
-    this.logInfo = this.sandbox.stub(log, 'info');
+    this.info = this.sandbox.stub(log, 'info');
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     this.crPrompt = this.sandbox.stub(CrashReporter, 'prompt').returns(Promise.resolve(true));
@@ -470,7 +484,7 @@ exports['CrashReporter.post'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
-    this.logInfo = this.sandbox.stub(log, 'info');
+    this.info = this.sandbox.stub(log, 'info');
     this.pRead = this.sandbox.stub(Preferences, 'read').returns(Promise.resolve('on'));
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     this.crPost = this.sandbox.spy(CrashReporter, 'post');
@@ -508,6 +522,24 @@ exports['CrashReporter.post'] = {
     });
   },
 
+  postError(test) {
+    test.expect(2);
+
+    var labels = 'foo';
+    var report = 'Error: undefined is not a function';
+
+    this.request.restore();
+    this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
+      return handler(new Error('Bogus'));
+    });
+
+    CrashReporter.post(labels, report).catch(error => {
+      test.equal(this.request.callCount, 1);
+      test.equal(error.toString(), 'Error: Bogus');
+      test.done();
+    });
+  },
+
   postWithBadResponse(test) {
     test.expect(2);
 
@@ -526,12 +558,30 @@ exports['CrashReporter.post'] = {
       test.done();
     });
   },
+
+  postWithGoodResponseThatSignifiesAnError(test) {
+    test.expect(1);
+
+    this.request.restore();
+    this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
+      return handler(null, {}, '{"error": "Strange things are afoot at the Circle-K"}');
+    });
+
+    var message = 'Bad response should have caused a failure';
+    CrashReporter.post().then(() => {
+      test.ok(false, message);
+      test.done();
+    }).catch(error => {
+      test.equal(error.toString(), 'Strange things are afoot at the Circle-K');
+      test.done();
+    });
+  },
 };
 
 exports['CrashReporter.status'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logInfo = this.sandbox.stub(log, 'info');
+    this.info = this.sandbox.stub(log, 'info');
     this.prefLoad = this.sandbox.stub(Preferences, 'load', () => {
       return Promise.resolve({
         'crash.reporter.preference': 'on'
@@ -549,7 +599,108 @@ exports['CrashReporter.status'] = {
     test.expect(1);
 
     CrashReporter.status().then(() => {
-      test.equal(this.logInfo.callCount, 1);
+      test.equal(this.info.callCount, 1);
+      test.done();
+    });
+  },
+};
+
+exports['CrashReporter.test'] = {
+  setUp(done) {
+    done();
+  },
+
+  tearDown(done) {
+    done();
+  },
+
+  returnsRejectedPromise(test) {
+    test.expect(1);
+    CrashReporter.test().catch(error => {
+      test.equal(error.toString(), 'Error: Testing the crash reporter');
+      test.done();
+    });
+  },
+};
+
+exports['CrashReporter.onerror'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.error = this.sandbox.stub(log, 'error');
+    this.submit = this.sandbox.stub(CrashReporter, 'submit', (stack) => {
+      return Promise.resolve(stack);
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  logsAndReturnsPromise(test) {
+    test.expect(2);
+    CrashReporter.onerror(new Error('Whatever')).then(stack => {
+      test.equal(this.error.lastCall.args[0], 'Detected CLI crash');
+      test.equal(this.error.lastCall.args[1].toString(), 'Error: Whatever');
+      test.done();
+    });
+  },
+};
+
+exports['CrashReporter.prompt'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.error = this.sandbox.stub(log, 'error');
+
+    // Because these are stored as strings...
+    this.prefValue = 'true';
+    this.prefRead = this.sandbox.stub(Preferences, 'read', (key, defaultValue) => {
+      return Promise.resolve(this.prefValue);
+    });
+    this.selected = true;
+    this.menuPrompt = this.sandbox.stub(Menu, 'prompt', (config) => {
+      return Promise.resolve({
+        selected: this.selected
+      });
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  reportingStateIsTrue(test) {
+    test.expect(1);
+    CrashReporter.prompt().then(reportState => {
+      test.equal(reportState, true);
+      test.done();
+    });
+  },
+
+  reportingStateIsFalse(test) {
+    test.expect(1);
+
+    // Because these are stored as strings...
+    this.prefValue = 'false';
+
+    CrashReporter.prompt().then(reportState => {
+      // It's not a first time crash, proceed
+      test.equal(reportState, true);
+      test.done();
+    });
+  },
+
+  reportingStateIsTrueSelectedFalse(test) {
+    test.expect(1);
+
+    this.selected = false;
+    CrashReporter.prompt().then(reportState => {
+      test.equal(reportState, false);
       test.done();
     });
   },
