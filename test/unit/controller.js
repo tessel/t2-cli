@@ -75,6 +75,67 @@ exports['controller.setupLocal'] = {
   },
 };
 
+exports['controller.reconcileTessels'] = {
+
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  resolveImmediatelyWhenOnlyOne(test) {
+    test.expect(1);
+
+    controller.reconcileTessels([1]).then(reconciled => {
+      test.equal(reconciled, 1);
+      test.done();
+    });
+  },
+};
+
+
+exports['controller.provisionTessel'] = {
+
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+    this.isProvisioned = this.sandbox.stub(Tessel, 'isProvisioned').returns(true);
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').returns(Promise.resolve());
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  isProvisionedAndOptsNotForced(test) {
+    test.expect(1);
+
+    controller.provisionTessel({}).then(() => {
+      // We only care that this resolves.
+      test.ok(true);
+      test.done();
+    });
+  },
+};
 
 exports['controller.closeTesselConnections'] = {
 
@@ -93,6 +154,20 @@ exports['controller.closeTesselConnections'] = {
   tearDown(done) {
     this.sandbox.restore();
     done();
+  },
+
+  rejectsOnError(test) {
+    test.expect(1);
+
+    this.asyncEach = this.sandbox.stub(async, 'each', (tessels, next, done) => {
+      done(new Error('This is only a test'));
+    });
+
+    controller.closeTesselConnections([1, 2, 3])
+      .catch(error => {
+        test.equal(error.toString(), 'Error: This is only a test');
+        test.done();
+      });
   },
 
   callsCloseOnAllAuthorizedLANConnections(test) {
@@ -1870,6 +1945,364 @@ exports['controller.updateWithRemoteBuilds'] = {
         test.equal(error.toString(), 'Error: No such file or directory');
         test.equal(this.warn.callCount, 1);
         test.equal(this.warn.lastCall.args[0], 'Could not find firmware version on TestTessel');
+        test.done();
+      });
+  },
+};
+
+exports['controller.restoreTessel'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.get = this.sandbox.stub(controller, 'get').returns(Promise.resolve(this.tessel));
+    this.tesselRestore = this.sandbox.stub(this.tessel, 'restore').returns(Promise.resolve());
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  restoreCallPipelineResolved(test) {
+    test.expect(2);
+
+    controller.restoreTessel({})
+      .then(() => {
+        test.equal(this.get.callCount, 1);
+        test.equal(this.tesselRestore.callCount, 1);
+        test.done();
+      });
+  },
+
+  restoreCallPipelineRejected(test) {
+    test.expect(2);
+
+    this.tesselRestore.restore();
+    this.tesselRestore = this.sandbox.stub(this.tessel, 'restore').returns(Promise.reject(new Error('whatever')));
+
+    controller.restoreTessel({})
+      .catch(() => {
+        test.equal(this.get.callCount, 1);
+        test.equal(this.tesselRestore.callCount, 1);
+        test.done();
+      });
+  },
+};
+
+exports['controller.deploy'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.deploy = this.sandbox.stub(this.tessel, 'deploy').returns(Promise.resolve());
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+      return callback(this.tessel);
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  deployCallPipeline(test) {
+    test.expect(2);
+
+    var options = {};
+
+    controller.deploy(options)
+      .then(() => {
+        test.equal(this.standardTesselCommand.lastCall.args[0], options);
+        test.equal(this.deploy.callCount, 1);
+        test.done();
+      });
+  },
+};
+
+exports['controller.restart'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.restart = this.sandbox.stub(this.tessel, 'restart').returns(Promise.resolve());
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+      return callback(this.tessel);
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  restartCallPipeline(test) {
+    test.expect(2);
+
+    var options = {};
+
+    controller.restart(options)
+      .then(() => {
+        test.equal(this.standardTesselCommand.lastCall.args[0], options);
+        test.equal(this.restart.callCount, 1);
+        test.done();
+      });
+  },
+};
+
+exports['controller.eraseScript'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.eraseScript = this.sandbox.stub(this.tessel, 'eraseScript').returns(Promise.resolve());
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+      return callback(this.tessel);
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  eraseScriptCallPipeline(test) {
+    test.expect(2);
+
+    var options = {};
+
+    controller.eraseScript(options)
+      .then(() => {
+        test.equal(this.standardTesselCommand.lastCall.args[0], options);
+        test.equal(this.eraseScript.callCount, 1);
+        test.done();
+      });
+  },
+};
+
+exports['controller.setWiFiState'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.setWiFiState = this.sandbox.stub(this.tessel, 'setWiFiState').returns(Promise.resolve());
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+      return callback(this.tessel);
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  setWiFiStateCallPipeline(test) {
+    test.expect(2);
+
+    var options = {};
+
+    controller.setWiFiState(options)
+      .then(() => {
+        test.equal(this.standardTesselCommand.lastCall.args[0], options);
+        test.equal(this.setWiFiState.callCount, 1);
+        test.done();
+      });
+  },
+};
+
+exports['controller.disableAccessPoint'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.disableAccessPoint = this.sandbox.stub(this.tessel, 'disableAccessPoint').returns(Promise.resolve());
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+      return callback(this.tessel);
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  disableAccessPointCallPipeline(test) {
+    test.expect(2);
+
+    var options = {};
+
+    controller.disableAccessPoint(options)
+      .then(() => {
+        test.equal(this.standardTesselCommand.lastCall.args[0], options);
+        test.equal(this.disableAccessPoint.callCount, 1);
+        test.done();
+      });
+  },
+};
+
+exports['controller.enableAccessPoint'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.enableAccessPoint = this.sandbox.stub(this.tessel, 'enableAccessPoint').returns(Promise.resolve());
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+      return callback(this.tessel);
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  enableAccessPointCallPipeline(test) {
+    test.expect(2);
+
+    var options = {};
+
+    controller.enableAccessPoint(options)
+      .then(() => {
+        test.equal(this.standardTesselCommand.lastCall.args[0], options);
+        test.equal(this.enableAccessPoint.callCount, 1);
+        test.done();
+      });
+  },
+};
+
+exports['controller.renameTessel'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
+    this.error = this.sandbox.stub(log, 'error');
+
+    this.tessel = TesselSimulator({
+      name: 'TestTessel'
+    });
+
+    this.rename = this.sandbox.stub(this.tessel, 'rename').returns(Promise.resolve());
+
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+      return callback(this.tessel);
+    });
+
+    done();
+  },
+
+  tearDown(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  renameCallPipeline(test) {
+    test.expect(4);
+
+    var options = {
+      // reset: true,
+      newName: 'Valid',
+    };
+
+    controller.renameTessel(options)
+      .then(() => {
+        test.equal(this.standardTesselCommand.lastCall.args[0], options);
+        test.equal(this.info.callCount, 1);
+        test.equal(this.info.lastCall.args[0], 'Renaming TestTessel to Valid');
+        test.equal(this.rename.callCount, 1);
         test.done();
       });
   },
