@@ -641,7 +641,7 @@ exports['CrashReporter.onerror'] = {
 
   logsAndReturnsPromise(test) {
     test.expect(2);
-    CrashReporter.onerror(new Error('Whatever')).then(stack => {
+    CrashReporter.onerror(new Error('Whatever')).then(() => {
       test.equal(this.error.lastCall.args[0], 'Detected CLI crash');
       test.equal(this.error.lastCall.args[1].toString(), 'Error: Whatever');
       test.done();
@@ -656,11 +656,11 @@ exports['CrashReporter.prompt'] = {
 
     // Because these are stored as strings...
     this.prefValue = 'true';
-    this.prefRead = this.sandbox.stub(Preferences, 'read', (key, defaultValue) => {
+    this.prefRead = this.sandbox.stub(Preferences, 'read', () => {
       return Promise.resolve(this.prefValue);
     });
     this.selected = true;
-    this.menuPrompt = this.sandbox.stub(Menu, 'prompt', (config) => {
+    this.menuPrompt = this.sandbox.stub(Menu, 'prompt', () => {
       return Promise.resolve({
         selected: this.selected
       });
