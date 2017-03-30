@@ -147,20 +147,45 @@ module.exports = (grunt) => {
 
 
 
-  grunt.registerTask('changelog', '`changelog:0.0.0--0.0.2` or `changelog`', (range) => {
+  grunt.registerTask('changelog', '"changelog", "changelog:v0.0.0..v0.0.2" or "changelog:v0.0.0"', (arg) => {
     var done = grunt.task.current.async();
+    var tags = cp.execSync('git tag --sort version:refname').toString().split('\n');
+    var tagIndex = -1;
+    var range;
+    var revisionRange;
 
-    if (!range) {
+    if (!arg) {
       // grunt changelog
-      range = cp.execSync('git tag --sort version:refname').toString().split('\n');
+      range = tags.filter(Boolean).slice(-2);
     } else {
-      // grunt changelog:previous--present
-      range = range.split('--');
+      if (arg.includes('..')) {
+        // grunt changelog:<revision-range>
+        if (!arg.startsWith('v') || !arg.includes('..v')) {
+          range = arg.split('..').map(tag => tag.startsWith('v') ? tag : `v${tag}`);
+        } else {
+          // arg is a well formed <revision-range>
+          revisionRange = arg;
+        }
+      } else {
+        // grunt changelog:<revision>
+        if (!arg.startsWith('v')) {
+          arg = `v${arg}`;
+        }
+
+        tagIndex = tags.indexOf(arg);
+        range = [tags[tagIndex - 1], tags[tagIndex]];
+      }
     }
 
-    range = range.filter(Boolean).reverse();
+    if (!range && revisionRange) {
+      range = revisionRange.split('..');
+    }
 
-    cp.exec(`git log --format='|%h|%s|' ${range[1]}..${range[0]}`, (error, result) => {
+    if (!revisionRange && (range && range.length)) {
+      revisionRange = `${range[0]}..${range[1]}`;
+    }
+
+    cp.exec(`git log --format='|%h|%s|' ${revisionRange}`, (error, result) => {
       if (error) {
         console.log(error.message);
         return;
@@ -168,7 +193,7 @@ module.exports = (grunt) => {
 
       var rows = result.split('\n').filter(commit => {
         return !commit.includes('|Merge ') && !commit.includes(range[0]);
-      }).join('\n');
+      });
 
       // Extra whitespace above and below makes it easier to quickly copy/paste from terminal
       grunt.log.writeln(`\n\n${changelog(rows)}\n\n`);
@@ -182,6 +207,6 @@ function changelog(rows) {
   return tags.stripIndent `
 | Commit | Message/Description |
 | ------ | ------------------- |
-${rows}
+${rows.join('\n')}
 `;
 }
