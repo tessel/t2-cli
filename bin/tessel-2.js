@@ -368,6 +368,9 @@ makeCommand('wifi')
     } else {
       callControllerWith('getWifiInfo', options);
     }
+    else {
+      logs.err('No arguments provided. Type `tessel wifi -h` for usage information.');
+    }
   })
   .option('list', {
     abbr: 'l',
