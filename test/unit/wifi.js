@@ -124,7 +124,7 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
   },
 
   compareSignalStrengths: function(test) {
-    test.expect(5);
+    test.expect(6);
 
 
     var networks = `Cell 01 - Address: 14:35:8B:11:30:F0
@@ -134,7 +134,7 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
               Encryption: mixed WPA/WPA2 PSK (TKIP, CCMP)
 
     Cell 02 - Address: 6C:70:9F:D9:7A:5C
-              ESSID: "worst"
+              ESSID: "second worst"
               Mode: Master  Channel: 2
               Signal: -57 dBm  Quality: 5/70
               Encryption: WPA2 PSK (CCMP)
@@ -145,16 +145,23 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
             Signal: -57 dBm  Quality: 60/70
             Encryption: WPA2 PSK (CCMP)
 
+    Cell 04 - Address: 6C:70:9F:D9:7A:5C
+            ESSID: "worst"
+            Mode: Master  Channel: 2
+            Signal: -56 dBm  Quality: 5/70
+            Encryption: WPA2 PSK (CCMP)
+
 `;
     // Do not remove the blank line at the end of preceding string!!
 
     this.tessel.findAvailableNetworks()
       .then((found) => {
-        test.equal(found.length, 3);
+        test.equal(found.length, 4);
         test.equal(this.findAvailableNetworks.callCount, 1);
         test.equal(found[0].ssid, 'best');
         test.equal(found[1].ssid, 'middle');
-        test.equal(found[2].ssid, 'worst');
+        test.equal(found[2].ssid, 'second worst');
+        test.equal(found[3].ssid, 'worst');
         test.done();
       });
 
@@ -215,6 +222,65 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
       this.tessel._rps.emit('close');
     });
   },
+
+  rejectNoWirelessDevice: function(test) {
+    test.expect(1);
+    var errorMessage = 'Unknown error message';
+
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === commands.scanWiFi().join(' ')) {
+        setImmediate(() => {
+          this.tessel._rps.stderr.emit('data', new Buffer(errorMessage));
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.findAvailableNetworks()
+      .then(() => {
+        test.ok(false, 'findAvailableNetworks should reject');
+        test.done();
+      })
+      .catch((error) => {
+        test.equal(error.message, errorMessage);
+        test.done();
+      });
+  },
+
+  rejectUnknownError: function(test) {
+    test.expect(1);
+
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === commands.scanWiFi().join(' ')) {
+        setImmediate(() => {
+          this.tessel._rps.stderr.emit('data', new Buffer('No such wireless device'));
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.findAvailableNetworks()
+      .then(() => {
+        test.ok(false, 'findAvailableNetworks should reject');
+        test.done();
+      })
+      .catch((error) => {
+        test.equal(error.message, 'Unable to find wireless networks while wifi is disabled. Run "t2 wifi --on" before trying again.');
+        test.done();
+      });
+  },
 };
 
 module.exports['Tessel.prototype.connectToNetwork'] = {
@@ -244,8 +310,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
   noPassword: function(test) {
     test.expect(8);
     var creds = {
-      ssid: 'tank',
-      password: undefined
+      ssid: 'tank'
     };
 
     // Test is expecting several closes...;
@@ -568,7 +633,7 @@ module.exports['Tessel.setWifiState'] = {
         test.equal(this.reconnectWifi.callCount, 1);
         test.equal(this.info.calledOnce, true);
         test.equal(this.info.lastCall.args[1].indexOf('Enabled.') !== -1, true);
-        test.ok(this.getWifiInfo.callCount, 1);
+        test.equal(this.getWifiInfo.callCount, 1);
         test.done();
       })
       .catch(error => {
@@ -704,7 +769,80 @@ module.exports['Tessel.setWifiState'] = {
         test.ok(false, error.toString());
         test.done();
       });
-  }
+  },
+
+  setWifiStateNotFoundTimeout: function(test) {
+    test.expect(2);
+
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === 'ubus call iwinfo info {"device":"wlan0"}') {
+        // Write to stderr so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stderr.emit('data', new Buffer('Not found'));
+          this.tessel._rps.stderr.removeAllListeners();
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.stderr.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.setWiFiState(true)
+      .then(() => {
+        test.ok(false, 'setWiFiState should reject error');
+        test.done();
+      })
+      .catch((error) => {
+        test.equal(error.toString(), 'Error: Not found');
+        test.equal(this.getWifiInfo.callCount, 11);
+        test.done();
+      });
+  },
+
+  setWifiStateConnectionError: function(test) {
+    test.expect(2);
+
+    var originalExec = this.tessel.connection.exec;
+    this.tessel.connection.exec = function(command, options, callback) {
+      if (typeof options === 'function') {
+        callback = options;
+        options = {};
+      }
+
+      if (command.join(' ') === 'ubus call iwinfo info {"device":"wlan0"}') {
+        return callback(new Error('Testing error'));
+      }
+
+      return originalExec(command, options, callback);
+    };
+
+    this.tessel._rps.on('control', () => {
+      setImmediate(() => {
+        // Remove any listeners on stdout so we don't break anything when we write to it
+        this.tessel._rps.stdout.removeAllListeners();
+        this.tessel._rps.stderr.removeAllListeners();
+        this.tessel._rps.emit('close');
+      });
+    });
+
+    this.tessel.setWiFiState(true)
+      .then(() => {
+        test.ok(false, 'setWiFiState should reject error');
+        test.done();
+      })
+      .catch((error) => {
+        test.equal(error.toString(), 'Error: Testing error');
+        test.equal(this.getWifiInfo.callCount, 1);
+        test.done();
+      });
+  },
 
 };
 
@@ -767,11 +905,73 @@ module.exports['Tessel.getWifiInfo'] = {
       .then((info) => {
         test.equal(info.ssid, ssid);
         test.equal(info.ips[0], ip);
-        test.ok(this.getWifiInfo.callCount, 1);
+        test.equal(this.getWifiInfo.callCount, 3);
         test.done();
       })
       .catch((error) => {
         test.ifError(error, 'fetching wifi info with should normally resolve.');
+        test.done();
+      });
+  },
+
+  getWifiInfoUndefinedSSID: function(test) {
+    test.expect(2);
+
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === commands.getWifiInfo().join(' ')) {
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', new Buffer(JSON.stringify({
+            noSSID: 'testing'
+          })));
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.getWifiInfo()
+      .then(() => {
+        test.ok(false, 'get wifi info should reject');
+        test.done();
+      })
+      .catch((error) => {
+        test.ok(error.toString().includes('not connected to Wi-Fi (run "t2 wifi -l" to see available networks)'));
+        test.ok(this.getWifiInfo.callCount, 1);
+        test.done();
+      });
+  },
+
+  getWifiInfoJSONParseError: function(test) {
+    test.expect(2);
+
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === commands.getWifiInfo().join(' ')) {
+        setImmediate(() => {
+          this.tessel._rps.stdout.emit('data', new Buffer('Not JSON'));
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.getWifiInfo()
+      .then(() => {
+        test.ok(false, 'get wifi info should reject');
+        test.done();
+      })
+      .catch((error) => {
+        test.ok(!error.toString().includes('not connected to Wi-Fi (run "t2 wifi -l" to see available networks)'));
+        test.ok(this.getWifiInfo.callCount, 1);
         test.done();
       });
   },
@@ -809,4 +1009,82 @@ module.exports['Tessel.getWifiInfo'] = {
       });
   },
 
+  getWifiInfoDisabledUnknownError: function(test) {
+    test.expect(2);
+
+    // Test is expecting several closes...;
+    this.tessel._rps.on('control', (command) => {
+      if (command.toString() === commands.getWifiInfo().join(' ')) {
+        // Write to stdout so it completes as expected
+        // Wrap in setImmediate to make sure listener is set up before emitting
+        setImmediate(() => {
+          this.tessel._rps.stderr.emit('data', new Buffer('Unknown error'));
+          this.tessel._rps.emit('close');
+        });
+      } else {
+        setImmediate(() => {
+          // Remove any listeners on stdout so we don't break anything when we write to it
+          this.tessel._rps.stdout.removeAllListeners();
+          this.tessel._rps.emit('close');
+        });
+      }
+    });
+
+    this.tessel.getWifiInfo()
+      .then(() => {
+        test.ok(false, 'fetching wifi info with disabled interface should reject.');
+        test.done();
+      })
+      .catch(error => {
+        test.equal(error.toString(), 'Error: Unknown error');
+        test.ok(this.getWifiInfo.callCount, 1);
+        test.done();
+      });
+  },
+
+};
+
+module.exports['Tessel.resetMDNS'] = {
+  setUp: function(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+
+    this.tessel = TesselSimulator();
+    this.simpleExec = this.sandbox.spy(this.tessel, 'simpleExec');
+    this.callMDNSDaemon = this.sandbox.spy(commands, 'callMDNSDaemon');
+    this.callTesselMDNS = this.sandbox.spy(commands, 'callTesselMDNS');
+
+    done();
+  },
+
+  tearDown: function(done) {
+    this.tessel.mockClose();
+    this.sandbox.restore();
+    done();
+  },
+
+  resetMDNSStandard: function(test) {
+    test.expect(2);
+
+    this.tessel._rps.on('control', () => {
+      setImmediate(() => {
+        this.tessel._rps.stdout.removeAllListeners();
+        this.tessel._rps.emit('close');
+      });
+    });
+
+    this.tessel.resetMDNS()
+      .then(() => {
+        test.equal(this.callMDNSDaemon.callCount, 1);
+        test.equal(this.callTesselMDNS.callCount, 1);
+        test.done();
+      })
+      .catch((error) => {
+        test.ok(false, error.toString());
+        test.done();
+      });
+  },
 };
