@@ -208,3 +208,19 @@ global.processVersions = {
   modules: '46',
   openssl: '1.0.2d',
 };
+
+global.registeredProcessHandlers = 0;
+
+function removeCrashReporterHandlers(name, handlers) {
+  handlers.forEach(handler => {
+    if (handler.isCrashHandler) {
+      global.registeredProcessHandlers++;
+      process.removeListener(name, handler);
+    }
+  });
+}
+
+['unhandledRejection', 'uncaughtException'].forEach(name => {
+  var handlers = process._events[name];
+  removeCrashReporterHandlers(name, Array.isArray(handlers) ? handlers : [handlers]);
+});
