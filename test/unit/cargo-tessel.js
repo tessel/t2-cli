@@ -1,6 +1,10 @@
 // Test dependencies are required and exposed in common/bootstrap.js
 require('../common/bootstrap');
 
+// This was removed from bootstrap due to issues that surface
+// when running the test suite on appveyor.
+global.cargo = require('../../bin/cargo-tessel');
+
 exports['Cargo Subcommand (cargo tessel ...)'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();

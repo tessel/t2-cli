@@ -82,8 +82,10 @@ global.TesselSimulator = require('../common/tessel-simulator');
 global.RemoteProcessSimulator = require('../common/remote-process-simulator');
 
 // ./bin/*
-global.t2 = require('../../bin/tessel-2');
-global.cargo = require('../../bin/cargo-tessel');
+// Both of these were moved to their respective test files to due to issues that
+// surface when running the test suite on appveyor.
+// global.t2 = require('../../bin/tessel-2');
+// global.cargo = require('../../bin/cargo-tessel');
 
 // ./package.json
 global.cliPackageJson = require('../../package.json');
