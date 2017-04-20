@@ -1,6 +1,5 @@
 language: node_js
 os:
-  - linux
   - osx
 node_js:
   - 4
@@ -20,7 +19,6 @@ addons:
     - libudev-dev
 
 before_install:
-  - npm install -g npm@3
   - npm install -g grunt-cli
 
 install: npm install
