@@ -208,3 +208,13 @@ global.processVersions = {
   modules: '46',
   openssl: '1.0.2d',
 };
+
+global.tesselBuilds = [{
+  released: '2016-09-21T19:40:32.992Z',
+  sha: '40b2b46a62a34b5a26170c75f7e717cea673d1eb',
+  version: '0.0.16'
+}, {
+  sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
+  released: '2017-05-12T03:01:57.856Z',
+  version: '0.0.17'
+}];

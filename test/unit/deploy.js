@@ -133,7 +133,9 @@ exports['Tessel.prototype.deploy'] = {
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
 
+    this.fetchCurrentBuildInfo = sandbox.stub(this.tessel, 'fetchCurrentBuildInfo').returns(Promise.resolve('40b2b46a62a34b5a26170c75f7e717cea673d1eb'));
     this.fetchNodeProcessVersions = sandbox.stub(this.tessel, 'fetchNodeProcessVersions').returns(Promise.resolve(processVersions));
+    this.requestBuildList = sandbox.stub(updates, 'requestBuildList').returns(Promise.resolve(tesselBuilds));
 
     this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
 

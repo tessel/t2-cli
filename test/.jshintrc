@@ -98,6 +98,7 @@
     "tags": true,
     "tar": true,
     "Tessel": true,
+    "tesselBuilds": true,
     "TesselSeeker": true,
     "TesselSimulator": true,
     "toml": true,
