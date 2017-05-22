@@ -38,7 +38,9 @@ exports['Deployment: JavaScript'] = {
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
 
+    this.fetchCurrentBuildInfo = sandbox.stub(this.tessel, 'fetchCurrentBuildInfo').returns(Promise.resolve('40b2b46a62a34b5a26170c75f7e717cea673d1eb'));
     this.fetchNodeProcessVersions = sandbox.stub(this.tessel, 'fetchNodeProcessVersions').returns(Promise.resolve(processVersions));
+    this.requestBuildList = sandbox.stub(updates, 'requestBuildList').returns(Promise.resolve(tesselBuilds));
 
     this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
 
@@ -1802,7 +1804,10 @@ exports['deploy.findProject'] = {
 exports['deploy.sendBundle, error handling'] = {
   setUp: function(done) {
     this.tessel = TesselSimulator();
+    this.fetchCurrentBuildInfo = sandbox.stub(this.tessel, 'fetchCurrentBuildInfo').returns(Promise.resolve('40b2b46a62a34b5a26170c75f7e717cea673d1eb'));
     this.fetchNodeProcessVersions = sandbox.stub(this.tessel, 'fetchNodeProcessVersions').returns(Promise.resolve(processVersions));
+    this.requestBuildList = sandbox.stub(updates, 'requestBuildList').returns(Promise.resolve(tesselBuilds));
+
 
     this.pathResolve = sandbox.stub(path, 'resolve');
     this.failure = 'FAIL';
@@ -1882,7 +1887,10 @@ exports['deployment.js.preBundle'] = {
       callback();
     });
 
+    this.fetchCurrentBuildInfo = sandbox.stub(this.tessel, 'fetchCurrentBuildInfo').returns(Promise.resolve('40b2b46a62a34b5a26170c75f7e717cea673d1eb'));
     this.fetchNodeProcessVersions = sandbox.stub(this.tessel, 'fetchNodeProcessVersions').returns(Promise.resolve(processVersions));
+    this.requestBuildList = sandbox.stub(updates, 'requestBuildList').returns(Promise.resolve(tesselBuilds));
+
 
     this.findProject = sandbox.stub(deploy, 'findProject').returns(Promise.resolve({
       pushdir: '',
@@ -1912,6 +1920,44 @@ exports['deployment.js.preBundle'] = {
       lang: deployment.js
     }).then(() => {
       test.equal(this.preBundle.lastCall.args[0].tessel, this.tessel);
+      test.done();
+    });
+  },
+
+  preBundleCallsfetchCurrentBuildInfoAndForwardsResult(test) {
+    test.expect(4);
+
+    deploy.sendBundle(this.tessel, {
+      target: '/',
+      entryPoint: 'foo.js',
+      lang: deployment.js
+    }).then(() => {
+      test.equal(this.fetchCurrentBuildInfo.callCount, 1);
+      test.equal(this.resolveBinaryModules.callCount, 1);
+
+      var args = this.resolveBinaryModules.lastCall.args[0];
+
+      test.equal(args.tessel, this.tessel);
+      test.equal(args.tessel.versions, processVersions);
+      test.done();
+    });
+  },
+
+  preBundleCallsrequestBuildListAndForwardsResult(test) {
+    test.expect(4);
+
+    deploy.sendBundle(this.tessel, {
+      target: '/',
+      entryPoint: 'foo.js',
+      lang: deployment.js
+    }).then(() => {
+      test.equal(this.requestBuildList.callCount, 1);
+      test.equal(this.resolveBinaryModules.callCount, 1);
+
+      var args = this.resolveBinaryModules.lastCall.args[0];
+
+      test.equal(args.tessel, this.tessel);
+      test.equal(args.tessel.versions, processVersions);
       test.done();
     });
   },
@@ -2356,6 +2402,80 @@ exports['deployment.js.resolveBinaryModules'] = {
       test.equal(this.createGunzip.callCount, 1);
       test.equal(this.Extract.callCount, 1);
       test.equal(this.transform.stubsUsed.length, 2);
+      test.deepEqual(this.transform.stubsUsed, ['createGunzip', 'Extract']);
+
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
+  },
+
+  requestsRemoteGunzipErrors: function(test) {
+    test.expect(9);
+
+    this.removeSync = sandbox.stub(fs, 'removeSync');
+    this.exists = sandbox.stub(fs, 'existsSync', () => false);
+    this.mkdirp = sandbox.stub(fs, 'mkdirp', (dir, handler) => {
+      handler();
+    });
+
+    this.transform = new Transform();
+    this.transform.stubsUsed = [];
+    this.rstream = null;
+
+    this.pipe = sandbox.stub(stream.Stream.prototype, 'pipe', () => {
+      // After the second transform is piped, emit the end
+      // event on the request stream;
+      if (this.pipe.callCount === 2) {
+        process.nextTick(() => this.rstream.emit('end'));
+      }
+      return this.rstream;
+    });
+
+    this.createGunzip = sandbox.stub(zlib, 'createGunzip', () => {
+      this.transform.stubsUsed.push('createGunzip');
+      return this.transform;
+    });
+
+    this.Extract = sandbox.stub(tar, 'Extract', () => {
+      this.transform.stubsUsed.push('Extract');
+      return this.transform;
+    });
+
+    this.request = sandbox.stub(request, 'Request', (opts) => {
+      this.rstream = new Request(opts);
+      return this.rstream;
+    });
+
+    // Hook into the ifReachable call to trigger an error at the gunzip stream
+    this.ifReachable.restore();
+    this.ifReachable = sandbox.stub(remote, 'ifReachable', () => {
+      this.transform.emit('error', {
+        code: 'Z_DATA_ERROR',
+      });
+      return Promise.resolve();
+    });
+
+    deployment.js.resolveBinaryModules({
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
+    }).then(() => {
+      test.equal(this.globFiles.callCount, 1);
+      test.equal(this.exists.callCount, 1);
+      test.equal(this.mkdirp.callCount, 1);
+      test.equal(this.mkdirp.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/release-1.1.1-Release-node-v46-linux-mipsel')), true);
+
+      // The result of gunzip emitting an error:
+      test.equal(this.removeSync.callCount, 1);
+      test.equal(this.removeSync.lastCall.args[0].endsWith(path.normalize('.tessel/binaries/release-1.1.1-Release-node-v46-linux-mipsel')), true);
+
+      test.equal(this.request.callCount, 1);
+      test.equal(this.createGunzip.callCount, 1);
       test.deepEqual(this.transform.stubsUsed, ['createGunzip', 'Extract']);
 
       test.done();
