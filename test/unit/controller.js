@@ -881,6 +881,7 @@ exports['Tessel.get'] = {
     this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
       this.start = (opts) => {
         testContext.activeSeeker = this;
+        testContext.sandbox.spy(this, 'removeAllListeners');
         this.msg = {
           noAuth: 'No Authorized Tessels Found.',
           auth: 'No Tessels Found.'
@@ -915,7 +916,7 @@ exports['Tessel.get'] = {
   },
 
   fallbackTimeout(test) {
-    test.expect(6);
+    test.expect(7);
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
@@ -934,6 +935,7 @@ exports['Tessel.get'] = {
 
     Tessel.get(customOpts)
       .then(() => {
+        test.equal(this.activeSeeker.removeAllListeners.callCount, 1);
         test.equal(this.reconcileTessels.callCount, 0);
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
@@ -951,7 +953,7 @@ exports['Tessel.get'] = {
   },
 
   oneNamedTessel(test) {
-    test.expect(6);
+    test.expect(7);
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
@@ -970,6 +972,7 @@ exports['Tessel.get'] = {
 
     Tessel.get(customOpts)
       .then(() => {
+        test.equal(this.activeSeeker.removeAllListeners.callCount, 1);
         test.equal(this.reconcileTessels.callCount, 0);
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
@@ -987,7 +990,7 @@ exports['Tessel.get'] = {
   },
 
   oneUnNamedTessel(test) {
-    test.expect(6);
+    test.expect(7);
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
@@ -1000,6 +1003,7 @@ exports['Tessel.get'] = {
 
     Tessel.get(this.standardOpts)
       .then(() => {
+        test.equal(this.activeSeeker.removeAllListeners.callCount, 0);
         test.equal(this.reconcileTessels.callCount, 0);
         test.equal(this.runHeuristics.callCount, 0);
         test.equal(this.closeTesselConnections.callCount, 1);
@@ -1017,7 +1021,7 @@ exports['Tessel.get'] = {
   },
 
   logAndFinishSpecificTessel(test) {
-    // test.expect(6);
+    test.expect(2);
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
@@ -1049,6 +1053,7 @@ exports['Tessel.get'] = {
       .then(() => {
         a.mockClose();
         b.mockClose();
+        test.equal(this.activeSeeker.removeAllListeners.callCount, 1);
         test.equal(this.info.callCount, 2);
         test.done();
       });
@@ -1061,7 +1066,7 @@ exports['Tessel.get'] = {
   },
 
   oneUnamedTesselTwoConnections(test) {
-    test.expect(6);
+    test.expect(7);
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
@@ -1083,6 +1088,7 @@ exports['Tessel.get'] = {
 
     Tessel.get(customOpts)
       .then(() => {
+        test.equal(this.activeSeeker.removeAllListeners.callCount, 0);
         test.equal(this.reconcileTessels.callCount, 1);
         test.equal(this.runHeuristics.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
@@ -1102,7 +1108,7 @@ exports['Tessel.get'] = {
   },
 
   twoDifferentTesselsPickOne(test) {
-    test.expect(5);
+    test.expect(6);
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
@@ -1131,6 +1137,7 @@ exports['Tessel.get'] = {
 
     Tessel.get(customOpts)
       .catch(() => {
+        test.equal(this.activeSeeker.removeAllListeners.callCount, 0);
         test.equal(this.reconcileTessels.callCount, 1);
         test.equal(this.runHeuristics.callCount, 1);
         test.equal(this.closeTesselConnections.callCount, 1);
