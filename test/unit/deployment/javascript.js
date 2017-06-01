@@ -1923,63 +1923,66 @@ exports['deployment.js.preBundle'] = {
       test.done();
     });
   },
+  // // We need to find a way to provde the build version directly from the
+  // // Tessel 2 itself. This approach makes deployment slow with a network
+  // // connection, or impossible without one.
 
-  preBundleCallsfetchCurrentBuildInfoAndForwardsResult(test) {
-    test.expect(4);
+  // preBundleCallsfetchCurrentBuildInfoAndForwardsResult(test) {
+  //   test.expect(4);
 
-    deploy.sendBundle(this.tessel, {
-      target: '/',
-      entryPoint: 'foo.js',
-      lang: deployment.js
-    }).then(() => {
-      test.equal(this.fetchCurrentBuildInfo.callCount, 1);
-      test.equal(this.resolveBinaryModules.callCount, 1);
+  //   deploy.sendBundle(this.tessel, {
+  //     target: '/',
+  //     entryPoint: 'foo.js',
+  //     lang: deployment.js
+  //   }).then(() => {
+  //     test.equal(this.fetchCurrentBuildInfo.callCount, 1);
+  //     test.equal(this.resolveBinaryModules.callCount, 1);
 
-      var args = this.resolveBinaryModules.lastCall.args[0];
+  //     var args = this.resolveBinaryModules.lastCall.args[0];
 
-      test.equal(args.tessel, this.tessel);
-      test.equal(args.tessel.versions, processVersions);
-      test.done();
-    });
-  },
+  //     test.equal(args.tessel, this.tessel);
+  //     test.equal(args.tessel.versions, processVersions);
+  //     test.done();
+  //   });
+  // },
 
-  preBundleCallsrequestBuildListAndForwardsResult(test) {
-    test.expect(4);
+  // preBundleCallsrequestBuildListAndForwardsResult(test) {
+  //   test.expect(4);
 
-    deploy.sendBundle(this.tessel, {
-      target: '/',
-      entryPoint: 'foo.js',
-      lang: deployment.js
-    }).then(() => {
-      test.equal(this.requestBuildList.callCount, 1);
-      test.equal(this.resolveBinaryModules.callCount, 1);
+  //   deploy.sendBundle(this.tessel, {
+  //     target: '/',
+  //     entryPoint: 'foo.js',
+  //     lang: deployment.js
+  //   }).then(() => {
+  //     test.equal(this.requestBuildList.callCount, 1);
+  //     test.equal(this.resolveBinaryModules.callCount, 1);
 
-      var args = this.resolveBinaryModules.lastCall.args[0];
+  //     var args = this.resolveBinaryModules.lastCall.args[0];
 
-      test.equal(args.tessel, this.tessel);
-      test.equal(args.tessel.versions, processVersions);
-      test.done();
-    });
-  },
+  //     test.equal(args.tessel, this.tessel);
+  //     test.equal(args.tessel.versions, processVersions);
+  //     test.done();
+  //   });
+  // },
 
-  preBundleCallsfetchNodeProcessVersionsAndForwardsResult(test) {
-    test.expect(4);
+  // preBundleCallsfetchNodeProcessVersionsAndForwardsResult(test) {
+  //   test.expect(4);
 
-    deploy.sendBundle(this.tessel, {
-      target: '/',
-      entryPoint: 'foo.js',
-      lang: deployment.js
-    }).then(() => {
-      test.equal(this.fetchNodeProcessVersions.callCount, 1);
-      test.equal(this.resolveBinaryModules.callCount, 1);
+  //   deploy.sendBundle(this.tessel, {
+  //     target: '/',
+  //     entryPoint: 'foo.js',
+  //     lang: deployment.js
+  //   }).then(() => {
+  //     test.equal(this.fetchNodeProcessVersions.callCount, 1);
+  //     test.equal(this.resolveBinaryModules.callCount, 1);
 
-      var args = this.resolveBinaryModules.lastCall.args[0];
+  //     var args = this.resolveBinaryModules.lastCall.args[0];
 
-      test.equal(args.tessel, this.tessel);
-      test.equal(args.tessel.versions, processVersions);
-      test.done();
-    });
-  },
+  //     test.equal(args.tessel, this.tessel);
+  //     test.equal(args.tessel.versions, processVersions);
+  //     test.done();
+  //   });
+  // },
 };
 
 exports['deployment.js.resolveBinaryModules'] = {
