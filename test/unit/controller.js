@@ -1703,12 +1703,16 @@ exports['controller.printAvailableNetworks'] = {
 
     this.tessel.name = 'robocop';
 
+    colors.enabled = false;
+
     done();
   },
 
   tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
+
+    colors.enabled = true;
     done();
   },
 
@@ -2287,12 +2291,17 @@ exports['controller.renameTessel'] = {
       return callback(this.tessel);
     });
 
+    colors.enabled = false;
+
     done();
   },
 
   tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
+
+    colors.enabled = true;
+
     done();
   },
 
