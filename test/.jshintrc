@@ -26,6 +26,7 @@
     "cliPackageJson": true,
     "commands": true,
     "concat": true,
+    "colors": true,
     "controller": true,
     "copy": true,
     "cp": true,
