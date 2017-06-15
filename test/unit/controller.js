@@ -613,6 +613,31 @@ exports['controller.tesselEnvVersions'] = {
         test.done();
       });
   },
+
+  // This happens with development builds.
+  noBuildVersionExistsForThisSha(test) {
+    test.expect(4);
+
+    const sha = '59ce9c97e275e6e970c1ee668e5591514eb1cd74';
+
+    this.fetchCurrentBuildInfo.restore();
+    this.sandbox.stub(this.tessel, 'fetchCurrentBuildInfo', () => Promise.resolve(sha));
+
+    var opts = {};
+
+    controller.tesselEnvVersions(opts)
+      .then(() => {
+        test.equal(this.info.getCall(0).args[0], 'Tessel Environment Versions:');
+        test.equal(this.info.getCall(1).args[0], 't2-cli: 0.1.4');
+        test.equal(this.info.getCall(2).args[0], `t2-firmware: ${sha}`);
+        test.equal(this.info.getCall(3).args[0], 'Node.js: 4.2.1');
+        test.done();
+      })
+      .catch(() => {
+        test.ok(false);
+        test.done();
+      });
+  },
 };
 
 exports['Tessel.list'] = {
