@@ -17,7 +17,6 @@
   "unused": true,
   "globals": {
     "_": true,
-    "acorn": true,
     "async": true,
     "bindings": true,
     "builtInRulesCount": true,

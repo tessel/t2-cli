@@ -221,40 +221,34 @@ exports['Deployment: JavaScript'] = {
 };
 
 exports['deployment.js.compress'] = {
-  setUp: function(done) {
-    this.aparse = sandbox.spy(acorn, 'parse');
-    this.uparse = sandbox.spy(uglify, 'parse');
-    this.Compressor = sandbox.spy(uglify, 'Compressor');
-    this.OutputStream = sandbox.spy(uglify, 'OutputStream');
+  setUp(done) {
+    this.minify = sandbox.spy(uglify, 'minify');
     this.spinnerStart = sandbox.stub(log.spinner, 'start');
     this.spinnerStop = sandbox.stub(log.spinner, 'stop');
 
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     sandbox.restore();
     done();
   },
 
-  acornParse: function(test) {
-    test.expect(2);
+  minifySuccess(test) {
+    test.expect(1);
 
     deployment.js.compress('let f = 1');
 
-    test.equal(this.aparse.callCount, 1);
-    test.equal(this.uparse.callCount, 0);
-
+    test.equal(this.minify.callCount, 1);
     test.done();
   },
 
-  uglifyParseFallback: function(test) {
-    test.expect(3);
+  minifyFailureReturnsOriginalSource(test) {
+    test.expect(2);
 
-    var result = deployment.js.compress('#$%^');
+    const result = deployment.js.compress('#$%^');
 
     // Assert that we tried both parsers
-    test.equal(this.aparse.callCount, 1);
-    test.equal(this.uparse.callCount, 1);
+    test.equal(this.minify.callCount, 1);
 
     // Assert that compress just gave back
     // the source as-is, even though the
@@ -264,46 +258,15 @@ exports['deployment.js.compress'] = {
     test.done();
   },
 
-  ourAcornParseOptions: function(test) {
-    test.expect(3);
+  ourUglifyParseOptions(test) {
+    test.expect(2);
 
-    var ourExplicitSettings = {
-      allowImportExportEverywhere: true,
-      allowReturnOutsideFunction: true,
-      ecmaVersion: 7,
-    };
-
-    var ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
-
-    try {
-      // Force the acorn parse step of the
-      // compress operation to fail. This
-      // will ensure that that the uglify
-      // attempt is made.
-      deployment.js.compress('#$%^');
-    } catch (error) {
-      // there is nothing we can about this.
-    }
-
-    var optionsSeen = this.aparse.lastCall.args[1];
-
-    ourExplicitSettingsKeys.forEach(key => {
-      test.equal(optionsSeen[key], ourExplicitSettings[key]);
-    });
-
-    test.done();
-  },
-
-  ourUglifyParseOptions: function(test) {
-    test.expect(3);
-
-    var ourExplicitSettings = {
-      bare_returns: true,
-      fromString: true,
+    const ourExplicitSettings = {
+      toplevel: true,
       warnings: false,
     };
 
-    var ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
+    const ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
 
     try {
       // Force the acorn parse step of the
@@ -315,7 +278,7 @@ exports['deployment.js.compress'] = {
       // there is nothing we can about this.
     }
 
-    var optionsSeen = this.uparse.lastCall.args[1];
+    const optionsSeen = this.minify.lastCall.args[1];
 
     ourExplicitSettingsKeys.forEach(key => {
       test.equal(optionsSeen[key], ourExplicitSettings[key]);
@@ -324,10 +287,10 @@ exports['deployment.js.compress'] = {
     test.done();
   },
 
-  ourCompressorOptions: function(test) {
-    test.expect(18);
+  ourCompressorOptions(test) {
+    test.expect(20);
 
-    var ourExplicitSettings = {
+    const ourExplicitSettings = {
       // ------
       booleans: true,
       cascade: true,
@@ -340,9 +303,12 @@ exports['deployment.js.compress'] = {
       join_vars: true,
       loops: true,
       properties: true,
-      screw_ie8: true,
       sequences: true,
       unsafe: true,
+      // ------
+      dead_code: true,
+      unsafe_math: true,
+      keep_infinity: true,
       // ------
       keep_fargs: false,
       keep_fnames: false,
@@ -350,11 +316,11 @@ exports['deployment.js.compress'] = {
       drop_console: false,
     };
 
-    var ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
+    const ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
 
     deployment.js.compress('var a = 1;');
 
-    var optionsSeen = this.Compressor.lastCall.args[0];
+    const optionsSeen = this.minify.lastCall.args[1].compress;
 
     ourExplicitSettingsKeys.forEach(key => {
       test.equal(optionsSeen[key], ourExplicitSettings[key]);
@@ -363,8 +329,8 @@ exports['deployment.js.compress'] = {
     test.done();
   },
 
-  theirCompressorOptions: function(test) {
-    test.expect(18);
+  theirCompressorOptions(test) {
+    test.expect(20);
 
     var theirExplicitSettings = {
       // ------
@@ -379,9 +345,12 @@ exports['deployment.js.compress'] = {
       join_vars: false,
       loops: false,
       properties: false,
-      screw_ie8: false,
       sequences: false,
       unsafe: false,
+      // ------
+      dead_code: false,
+      unsafe_math: false,
+      keep_infinity: false,
       // ------
       keep_fargs: true,
       keep_fnames: true,
@@ -395,7 +364,7 @@ exports['deployment.js.compress'] = {
       compress: theirExplicitSettings
     });
 
-    var optionsSeen = this.Compressor.lastCall.args[0];
+    const optionsSeen = this.minify.lastCall.args[1].compress;
 
     theirExplicitSettingsKeys.forEach(key => {
       test.equal(optionsSeen[key], theirExplicitSettings[key]);
@@ -403,60 +372,38 @@ exports['deployment.js.compress'] = {
 
     test.done();
   },
-  minifyFromBuffer: function(test) {
+
+  minifyFromBuffer(test) {
     test.expect(1);
     test.equal(deployment.js.compress(new Buffer(codeContents)), codeContents);
     test.done();
   },
 
-  minifyFromString: function(test) {
+  minifyFromString(test) {
     test.expect(1);
     test.equal(deployment.js.compress(codeContents), codeContents);
     test.done();
   },
 
-  minifyInternalOperations: function(test) {
-    test.expect(3);
-
-    deployment.js.compress(new Buffer(codeContents));
-
-    test.equal(this.aparse.callCount, 1);
-    test.equal(this.Compressor.callCount, 1);
-    test.equal(this.OutputStream.callCount, 1);
-    test.done();
-  },
-
-  minifyWithBareReturns: function(test) {
+  minifyWithBareReturns(test) {
     test.expect(1);
 
-    try {
-      deployment.js.compress('return;');
-      test.equal(this.aparse.lastCall.args[1].allowReturnOutsideFunction, true);
-    } catch (e) {
-      test.ok(false, e.message);
-    }
-
+    deployment.js.compress('return;');
+    test.equal(this.minify.lastCall.args[1].parse.bare_returns, true);
     test.done();
   },
 
-  avoidCompleteFailure: function(test) {
-    test.expect(2);
+  avoidCompleteFailure(test) {
+    test.expect(1);
 
-    this.uparse.restore();
-    this.uparse = sandbox.stub(uglify, 'parse', () => {
+    this.minify.restore();
+    this.minify = sandbox.stub(uglify, 'minify', () => {
       return {
-        figure_out_scope: () => {
-          throw new TypeError();
-        }
+        error: new SyntaxError('whatever')
       };
     });
-    var result = '';
-    try {
-      result = deployment.js.compress('return;');
-      test.equal(this.aparse.lastCall.args[1].allowReturnOutsideFunction, true);
-    } catch (e) {
-      test.ok(false, e.message);
-    }
+
+    const result = deployment.js.compress('return;');
 
     test.equal(result, 'return;');
 

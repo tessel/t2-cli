@@ -19,7 +19,6 @@ global.Transform = stream.Transform;
 
 
 // Third Party Dependencies
-global.acorn = require('acorn');
 global.async = require('async');
 global.bindings = require('bindings');
 global.charSpinner = require('char-spinner');
@@ -43,7 +42,7 @@ global.sshpk = require('sshpk');
 global.ssh = require('ssh2');
 global.tags = require('common-tags');
 global.tar = require('tar');
-global.uglify = require('uglify-js');
+global.uglify = require('uglify-es');
 
 
 // Internal
