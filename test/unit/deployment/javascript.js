@@ -1933,7 +1933,7 @@ exports['deployment.js.preBundle'] = {
 };
 
 exports['deployment.js.resolveBinaryModules'] = {
-  setUp: function(done) {
+  setUp(done) {
 
     this.target = path.normalize('test/unit/fixtures/project-binary-modules');
     this.relative = sandbox.stub(path, 'relative', () => {
@@ -1977,12 +1977,12 @@ exports['deployment.js.resolveBinaryModules'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     sandbox.restore();
     done();
   },
 
-  bailOnSkipBinary: function(test) {
+  bailOnSkipBinary(test) {
     test.expect(2);
 
     this.target = path.normalize('test/unit/fixtures/project-skip-binary');
@@ -2028,7 +2028,47 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
   },
 
-  findsModulesMissingBinaryNodeFiles: function(test) {
+  buildPathExpWindow(test) {
+    test.expect(1);
+
+    let descriptor = Object.getOwnPropertyDescriptor(process, 'platform');
+
+    Object.defineProperty(process, 'platform', {
+      value: 'win32'
+    });
+
+    this.match = sandbox.spy(String.prototype, 'match');
+    this.target = path.normalize('test/unit/fixtures/project-skip-binary');
+    this.relative.restore();
+    this.relative = sandbox.stub(path, 'relative', () => {
+      return path.join(FIXTURE_PATH, '/project-skip-binary/');
+    });
+
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+
+    deployment.js.resolveBinaryModules({
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
+    }).then(() => {
+
+      test.equal(
+        this.match.lastCall.args[0].toString(),
+        '/(?:build\\\\(Debug|Release|bindings)\\\\)/'
+      );
+      // Restore this descriptor
+      Object.defineProperty(process, 'platform', descriptor);
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
+  },
+
+  findsModulesMissingBinaryNodeFiles(test) {
     test.expect(2);
 
 
@@ -2065,7 +2105,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
   },
 
-  spawnPythonScriptReturnsNull: function(test) {
+  spawnPythonScriptReturnsNull(test) {
     test.expect(1);
 
     this.readGypFileSync.restore();
@@ -2102,7 +2142,7 @@ exports['deployment.js.resolveBinaryModules'] = {
       test.done();
     });
   },
-  spawnPythonScript: function(test) {
+  spawnPythonScript(test) {
     test.expect(7);
 
     this.readGypFileSync.restore();
@@ -2156,7 +2196,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
   },
 
-  failsWithMessage: function(test) {
+  failsWithMessage(test) {
     test.expect(1);
 
     this.globSync.restore();
@@ -2190,7 +2230,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
   },
 
-  existsInLocalCache: function(test) {
+  existsInLocalCache(test) {
     test.expect(2);
 
     this.exists = sandbox.stub(fs, 'existsSync', () => true);
@@ -2212,7 +2252,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
   },
 
-  existsInLocalCacheNodeGypLinkedBinPath: function(test) {
+  existsInLocalCacheNodeGypLinkedBinPath(test) {
     test.expect(1);
 
     this.readGypFileSync.restore();
@@ -2235,11 +2275,7 @@ exports['deployment.js.resolveBinaryModules'] = {
         },
       },
     }).then(() => {
-
       test.equal(this.exists.callCount, 2);
-
-
-      // console.log(this.exists);
       test.done();
     }).catch(error => {
       test.ok(false, error.toString());
@@ -2247,7 +2283,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
   },
 
-  resolveFromRealDirFixtures: function(test) {
+  resolveFromRealDirFixtures(test) {
     test.expect(5);
 
     // We WANT to read the actual gyp files if necessary
@@ -2293,7 +2329,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
   },
 
-  requestsRemote: function(test) {
+  requestsRemote(test) {
     test.expect(12);
 
     this.exists = sandbox.stub(fs, 'existsSync', () => false);
@@ -2361,7 +2397,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
   },
 
-  requestsRemoteGunzipErrors: function(test) {
+  requestsRemoteGunzipErrors(test) {
     test.expect(9);
 
     this.removeSync = sandbox.stub(fs, 'removeSync');
