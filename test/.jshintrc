@@ -69,6 +69,7 @@
     "log": true,
     "Menu": true,
     "mdns": true,
+    "minimatch": true,
     "mkdirp": true,
     "npm": true,
     "NodeRSA": true,

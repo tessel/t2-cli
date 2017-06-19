@@ -30,6 +30,7 @@ global.fstream = require('fstream');
 global.Ignore = require('fstream-ignore');
 global.inquirer = require('inquirer');
 global.mdns = require('mdns-js');
+global.minimatch = require('minimatch');
 global.mkdirp = require('mkdirp');
 global.npm = require('npm');
 global.npmlog = require('npmlog');
@@ -43,7 +44,6 @@ global.ssh = require('ssh2');
 global.tags = require('common-tags');
 global.tar = require('tar');
 global.uglify = require('uglify-es');
-
 
 // Internal
 // ./lib/tessel/*

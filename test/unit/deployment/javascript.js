@@ -258,7 +258,7 @@ exports['deployment.js.compress'] = {
     test.done();
   },
 
-  ourUglifyParseOptions(test) {
+  ourOptionsParse(test) {
     test.expect(2);
 
     const ourExplicitSettings = {
@@ -287,7 +287,49 @@ exports['deployment.js.compress'] = {
     test.done();
   },
 
-  ourCompressorOptions(test) {
+  noOptionsCompress(test) {
+    test.expect(20);
+
+    const optionsCompress = {
+      // ------
+      booleans: true,
+      cascade: true,
+      conditionals: true,
+      comparisons: true,
+      evaluate: true,
+      hoist_funs: true,
+      hoist_vars: true,
+      if_return: true,
+      join_vars: true,
+      loops: true,
+      properties: true,
+      sequences: true,
+      unsafe: true,
+      // ------
+      dead_code: true,
+      unsafe_math: true,
+      keep_infinity: true,
+      // ------
+      keep_fargs: false,
+      keep_fnames: false,
+      warnings: false,
+      drop_console: false,
+    };
+
+    const optionsCompressKeys = Object.keys(optionsCompress);
+
+    deployment.js.compress('var a = 1;', {});
+
+    const optionsSeen = this.minify.lastCall.args[1].compress;
+
+    optionsCompressKeys.forEach(key => {
+      test.equal(optionsSeen[key], optionsCompress[key]);
+    });
+
+    test.done();
+  },
+
+  ourOptionsCompress(test) {
     test.expect(20);
 
     const ourExplicitSettings = {
@@ -329,7 +371,7 @@ exports['deployment.js.compress'] = {
     test.done();
   },
 
-  theirCompressorOptions(test) {
+  theirOptionsCompress(test) {
     test.expect(20);
 
     var theirExplicitSettings = {
@@ -412,7 +454,7 @@ exports['deployment.js.compress'] = {
 };
 
 exports['deployment.js.tarBundle'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.copySync = sandbox.spy(fs, 'copySync');
     this.outputFileSync = sandbox.spy(fs, 'outputFileSync');
     this.writeFileSync = sandbox.spy(fs, 'writeFileSync');
@@ -420,6 +462,7 @@ exports['deployment.js.tarBundle'] = {
     this.readdirSync = sandbox.spy(fs, 'readdirSync');
 
     this.globSync = sandbox.spy(glob, 'sync');
+    this.collect = sandbox.spy(Project.prototype, 'collect');
     this.exclude = sandbox.spy(Project.prototype, 'exclude');
     this.mkdirSync = sandbox.spy(fsTemp, 'mkdirSync');
     this.addIgnoreRules = sandbox.spy(Ignore.prototype, 'addIgnoreRules');
@@ -436,16 +479,16 @@ exports['deployment.js.tarBundle'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     sandbox.restore();
     done();
   },
 
-  actionsGlobRules: function(test) {
+  actionsGlobRules(test) {
     test.expect(1);
 
-    var target = 'test/unit/fixtures/ignore';
-    var rules = glob.rules(target, '.tesselignore');
+    const target = 'test/unit/fixtures/ignore';
+    const rules = glob.rules(target, '.tesselignore');
 
     test.deepEqual(
       rules.map(path.normalize), [
@@ -461,22 +504,22 @@ exports['deployment.js.tarBundle'] = {
     test.done();
   },
 
-  actionsGlobFiles: function(test) {
+  actionsGlobFiles(test) {
     test.expect(1);
 
-    var target = 'test/unit/fixtures/ignore';
-    var rules = glob.rules(target, '.tesselignore');
-    var files = glob.files(target, rules);
+    const target = 'test/unit/fixtures/ignore';
+    const rules = glob.rules(target, '.tesselignore');
+    const files = glob.files(target, rules);
 
     test.deepEqual(files, ['mock-foo.js']);
     test.done();
   },
 
-  actionsGlobFilesNested: function(test) {
+  actionsGlobFilesNested(test) {
     test.expect(1);
 
-    var target = 'test/unit/fixtures/ignore';
-    var files = glob.files(target, ['**/.tesselignore']);
+    const target = 'test/unit/fixtures/ignore';
+    const files = glob.files(target, ['**/.tesselignore']);
 
     test.deepEqual(files, [
       '.tesselignore',
@@ -486,20 +529,56 @@ exports['deployment.js.tarBundle'] = {
     test.done();
   },
 
-  actionsGlobFilesNonNested: function(test) {
+  actionsGlobFilesNonNested(test) {
     test.expect(1);
 
-    var target = 'test/unit/fixtures/ignore';
-    var files = glob.files(target, ['.tesselignore']);
+    const target = 'test/unit/fixtures/ignore';
+    const files = glob.files(target, ['.tesselignore']);
 
     test.deepEqual(files, ['.tesselignore']);
     test.done();
   },
 
-  full: function(test) {
+  noOptionsTargetFallbackToCWD(test) {
+    test.expect(2);
+
+    const target = path.normalize('test/unit/fixtures/project');
+
+    sandbox.stub(process, 'cwd').returns(target);
+    sandbox.spy(path, 'relative');
+
+    /*
+      project
+      ├── .tesselignore
+      ├── index.js
+      ├── mock-foo.js
+      ├── nested
+      │   └── another.js
+      ├── node_modules
+      │   └── foo
+      │       ├── .tesselignore
+      │       ├── index.js
+      │       └── package.json
+      ├── other.js
+      └── package.json
+
+      3 directories, 9 files
+     */
+
+    deployment.js.tarBundle({
+      compress: true,
+      full: true,
+    }).then(() => {
+      test.equal(path.relative.firstCall.args[0], path.normalize('test/unit/fixtures/project'));
+      test.equal(path.relative.firstCall.args[1], path.normalize('test/unit/fixtures/project'));
+      test.done();
+    });
+  },
+
+  full(test) {
     test.expect(8);
 
-    var target = 'test/unit/fixtures/project';
+    const target = 'test/unit/fixtures/project';
 
     /*
       project
@@ -565,11 +644,38 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  slim: function(test) {
+  fullHitsErrorFromFstreamIgnore(test) {
+    test.expect(1);
+
+    // Need to stub function in _actual_ fs (but we use fs-extra)
+    const fs = require('fs');
+
+    sandbox.stub(fs, 'readFile', (file, callback) => {
+      callback('foo');
+    });
+
+    const target = 'test/unit/fixtures/project';
+
+    deployment.js.tarBundle({
+        target: path.normalize(target),
+        compress: true,
+        full: true,
+      })
+      .then(() => {
+        test.ok(false, 'tarBundle should not resolve');
+        test.done();
+      })
+      .catch(error => {
+        test.equal(error.toString(), 'foo');
+        test.done();
+      });
+  },
+
+  slim(test) {
     test.expect(9);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/project';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
 
     /*
       project
@@ -620,7 +726,7 @@ exports['deployment.js.tarBundle'] = {
         'test/unit/fixtures/project/node_modules/foo/package.json'
       ].map(path.normalize));
 
-      var minified = this.compress.lastCall.returnValue;
+      const minified = this.compress.lastCall.returnValue;
       test.equal(this.compress.callCount, 2);
       test.equal(minified.indexOf('!!mock-foo!!') === -1, true);
 
@@ -642,11 +748,150 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  compressionProducesNoErrors: function(test) {
+  slimHitsErrorFromFstreamReader(test) {
     test.expect(1);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/syntax-error';
+    const pipe = fstream.Reader.prototype.pipe;
+
+    // Need to stub function in _actual_ fs (but we use fs-extra)
+    this.readerPipe = sandbox.stub(fstream.Reader.prototype, 'pipe', function(...args) {
+      this.emit('error', new Error('foo'));
+      return pipe.call(this, ...args);
+    });
+
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
+
+    deployment.js.tarBundle({
+        target: path.normalize(target),
+        resolvedEntryPoint: entryPoint,
+        compress: true,
+        slim: true,
+      })
+      .then(() => {
+        test.ok(false, 'tarBundle should not resolve');
+        test.done();
+      })
+      .catch(error => {
+        test.equal(error.toString(), 'Error: foo');
+        test.done();
+      });
+  },
+
+  slimHitsErrorInfsRemove(test) {
+    test.expect(1);
+
+    this.remove.restore();
+    this.remove = sandbox.stub(fs, 'remove', (temp, handler) => {
+      handler(new Error('foo'));
+    });
+
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
+
+    deployment.js.tarBundle({
+        target: path.normalize(target),
+        resolvedEntryPoint: entryPoint,
+        compress: true,
+        slim: true,
+      })
+      .then(() => {
+        this.remove.reset();
+        test.ok(false, 'tarBundle should not resolve');
+        test.done();
+      })
+      .catch(error => {
+        test.equal(error.toString(), 'Error: foo');
+        test.done();
+      });
+  },
+
+  slimHitsErrorFromCompress(test) {
+    test.expect(1);
+
+    this.compress.restore();
+    this.compress = sandbox.stub(deployment.js, 'compress', () => {
+      throw new Error('foo');
+    });
+
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
+
+    deployment.js.tarBundle({
+        target: path.normalize(target),
+        resolvedEntryPoint: entryPoint,
+        compress: true,
+        slim: true,
+      })
+      .then(() => {
+        test.ok(false, 'tarBundle should not resolve');
+        test.done();
+      })
+      .catch(error => {
+        test.equal(error.toString(), 'Error: foo');
+        test.done();
+      });
+  },
+
+  slimHitsErrorFromProjectCollect(test) {
+    test.expect(1);
+
+    this.collect.restore();
+    this.collect = sandbox.stub(Project.prototype, 'collect', (handler) => {
+      handler(new Error('foo'));
+    });
+
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
+
+    deployment.js.tarBundle({
+        target: path.normalize(target),
+        resolvedEntryPoint: entryPoint,
+        compress: true,
+        slim: true,
+      })
+      .then(() => {
+        test.ok(false, 'tarBundle should not resolve');
+        test.done();
+      })
+      .catch(error => {
+        test.equal(error.toString(), 'Error: foo');
+        test.done();
+      });
+  },
+
+  slimHitsErrorFromProject(test) {
+    test.expect(1);
+
+    this.collect.restore();
+    this.collect = sandbox.stub(Project.prototype, 'collect', function() {
+      this.emit('error', new Error('foo'));
+    });
+
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
+
+    deployment.js.tarBundle({
+        target: path.normalize(target),
+        resolvedEntryPoint: entryPoint,
+        compress: true,
+        slim: true,
+      })
+      .then(() => {
+        test.ok(false, 'tarBundle should not resolve');
+        test.done();
+      })
+      .catch(error => {
+        test.equal(error.toString(), 'Error: foo');
+        test.done();
+      });
+  },
+
+  compressionProducesNoErrors(test) {
+    test.expect(1);
+
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/syntax-error';
 
     deployment.js.tarBundle({
       target: path.normalize(target),
@@ -672,11 +917,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  compressionIsSkipped: function(test) {
+  compressionIsSkipped(test) {
     test.expect(2);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/syntax-error';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/syntax-error';
 
     deployment.js.tarBundle({
       target: path.normalize(target),
@@ -706,11 +951,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  slimTesselInit: function(test) {
+  slimTesselInit(test) {
     test.expect(5);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/init';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/init';
 
     /*
       init
@@ -730,9 +975,9 @@ exports['deployment.js.tarBundle'] = {
       test.equal(this.compress.callCount, 1);
       test.equal(this.mkdirSync.callCount, 1);
 
-      var minified = this.compress.lastCall.returnValue;
+      const minified = this.compress.lastCall.returnValue;
 
-      test.equal(minified, 'var e=require("tessel");e.led[2].on(),setInterval(function(){e.led[2].toggle(),e.led[3].toggle()},100);');
+      test.equal(minified, 'const e=require("tessel"),{2:o,3:l}=e.led;o.on(),setInterval(()=>{o.toggle();l.toggle()},100),console.log(`I\'m blinking! (Press CTRL + C to stop)`);');
 
       // Extract and inspect the bundle...
       extract(bundle, (error, entries) => {
@@ -747,11 +992,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  slimSingle: function(test) {
+  slimSingle(test) {
     test.expect(4);
 
-    var target = 'test/unit/fixtures/project';
-    var entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
+    const entryPoint = 'index.js';
 
     deployment.js.tarBundle({
       target: path.normalize(target),
@@ -777,11 +1022,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  slimSingleNested: function(test) {
+  slimSingleNested(test) {
     test.expect(4);
 
-    var target = 'test/unit/fixtures/project';
-    var entryPoint = 'another.js';
+    const target = 'test/unit/fixtures/project';
+    const entryPoint = 'another.js';
 
     deployment.js.tarBundle({
       target: path.normalize(target),
@@ -808,11 +1053,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  fullSingle: function(test) {
+  fullSingle(test) {
     test.expect(3);
 
-    var target = 'test/unit/fixtures/project';
-    var entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
+    const entryPoint = 'index.js';
 
     deployment.js.tarBundle({
       target: path.normalize(target),
@@ -837,11 +1082,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  fullSingleNested: function(test) {
+  fullSingleNested(test) {
     test.expect(2);
 
-    var target = 'test/unit/fixtures/project';
-    var entryPoint = 'another.js';
+    const target = 'test/unit/fixtures/project';
+    const entryPoint = 'another.js';
 
     deployment.js.tarBundle({
       target: path.normalize(target),
@@ -864,11 +1109,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  slimIncludeOverridesIgnore: function(test) {
+  slimIncludeOverridesIgnore(test) {
     test.expect(9);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/project-include-overrides-ignore';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project-include-overrides-ignore';
 
     /*
       project-include-overrides-ignore
@@ -949,10 +1194,10 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  fullIncludeOverridesIgnore: function(test) {
+  fullIncludeOverridesIgnore(test) {
     test.expect(8);
 
-    var target = 'test/unit/fixtures/project-include-overrides-ignore';
+    const target = 'test/unit/fixtures/project-include-overrides-ignore';
 
     /*
       project-include-overrides-ignore
@@ -1028,11 +1273,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  slimIncludeWithoutIgnore: function(test) {
+  slimIncludeWithoutIgnore(test) {
     test.expect(9);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/project-include-without-ignore';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project-include-without-ignore';
 
     /*
       project-include-without-ignore
@@ -1109,7 +1354,7 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  fullIncludeWithoutIgnore: function(test) {
+  fullIncludeWithoutIgnore(test) {
     test.expect(8);
 
     /*
@@ -1120,7 +1365,7 @@ exports['deployment.js.tarBundle'] = {
       in the .tesselinclude file or not.
     */
 
-    var target = 'test/unit/fixtures/project-include-without-ignore';
+    const target = 'test/unit/fixtures/project-include-without-ignore';
 
     /*
       project-include-without-ignore
@@ -1203,11 +1448,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  slimIncludeHasNegateRules: function(test) {
+  slimIncludeHasNegateRules(test) {
     test.expect(8);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/project-include-has-negate-rules';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project-include-has-negate-rules';
 
     /*
       project-include-has-negate-rules
@@ -1289,10 +1534,10 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  fullIncludeHasNegateRules: function(test) {
+  fullIncludeHasNegateRules(test) {
     test.expect(8);
 
-    var target = 'test/unit/fixtures/project-include-has-negate-rules';
+    const target = 'test/unit/fixtures/project-include-has-negate-rules';
 
     /*
       project-include-has-negate-rules
@@ -1381,11 +1626,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  slimSingleInclude: function(test) {
+  slimSingleInclude(test) {
     test.expect(2);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/project-include-without-ignore';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project-include-without-ignore';
 
     /*
       project-include-without-ignore
@@ -1437,11 +1682,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  detectAssetsWithoutInclude: function(test) {
+  detectAssetsWithoutInclude(test) {
     test.expect(4);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/project-assets-without-include';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project-assets-without-include';
 
     /*
       project-assets-without-include
@@ -1477,11 +1722,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  detectAssetsWithoutIncludeEliminatedByDepGraph: function(test) {
+  detectAssetsWithoutIncludeEliminatedByDepGraph(test) {
     test.expect(3);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/project-assets-without-include-eliminated-by-dep-graph';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project-assets-without-include-eliminated-by-dep-graph';
 
     /*
       project-assets-without-include
@@ -1514,11 +1759,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  alwaysExplicitlyProvideProjectDirname: function(test) {
+  alwaysExplicitlyProvideProjectDirname(test) {
     test.expect(1);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/project';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
 
     deployment.js.tarBundle({
       target: path.normalize(target),
@@ -1534,12 +1779,11 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-
-  detectAndEliminateBlacklistedAssets: function(test) {
+  detectAndEliminateBlacklistedAssets(test) {
     test.expect(1);
 
-    var entryPoint = 'index.js';
-    var target = 'test/unit/fixtures/project-ignore-blacklisted';
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project-ignore-blacklisted';
 
     /*
       project-ignore-blacklisted
@@ -1573,6 +1817,53 @@ exports['deployment.js.tarBundle'] = {
         test.done();
       });
     });
+  },
+
+  iteratesBinaryModulesUsed(test) {
+    test.expect(5);
+
+    const entryPoint = 'index.js';
+    const target = 'test/unit/fixtures/project';
+    const details = {
+      modulePath: ''
+    };
+
+    this.minimatch = sandbox.stub(deployment.js, 'minimatch').returns(true);
+
+    this.rules = sandbox.stub(glob, 'rules', () => {
+      return [
+        'a', 'b',
+      ];
+    });
+
+    this.forEach = sandbox.stub(Map.prototype, 'forEach', (handler) => {
+      handler(details);
+    });
+
+    deployment.js.tarBundle({
+        target: path.normalize(target),
+        resolvedEntryPoint: entryPoint,
+        compress: true,
+        slim: true,
+      })
+      .then(() => {
+        test.equal(this.forEach.callCount, 2);
+        test.equal(this.minimatch.callCount, 3);
+        test.deepEqual(this.minimatch.getCall(0).args, ['', 'a', {
+          matchBase: true,
+          dot: true
+        }]);
+        test.deepEqual(this.minimatch.getCall(1).args, ['', 'b', {
+          matchBase: true,
+          dot: true
+        }]);
+        test.deepEqual(this.minimatch.getCall(2).args, ['', 'node_modules/**/tessel/**/*', {
+          matchBase: true,
+          dot: true
+        }]);
+
+        test.done();
+      });
   },
 };
 
@@ -2473,7 +2764,7 @@ exports['deployment.js.resolveBinaryModules'] = {
 };
 
 exports['deployment.js.injectBinaryModules'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.target = path.normalize('test/unit/fixtures/project-binary-modules');
     this.relative = sandbox.stub(path, 'relative', () => {
       return path.join(FIXTURE_PATH, '/project-binary-modules/');
@@ -2513,12 +2804,12 @@ exports['deployment.js.injectBinaryModules'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     sandbox.restore();
     done();
   },
 
-  copies: function(test) {
+  copies(test) {
     test.expect(17);
 
 
@@ -2674,7 +2965,7 @@ exports['deployment.js.injectBinaryModules'] = {
     });
   },
 
-  doesNotCopyIgnoredBinaries: function(test) {
+  doesNotCopyIgnoredBinaries(test) {
     test.expect(1);
     this.target = path.normalize('test/unit/fixtures/project-ignore-binary');
     this.relative.restore();
@@ -2698,7 +2989,31 @@ exports['deployment.js.injectBinaryModules'] = {
     });
   },
 
-  doesNotCopyWhenOptionsSingleTrue: function(test) {
+  fallbackWhenOptionsMissing(test) {
+    test.expect(1);
+
+    deployment.js.resolveBinaryModules({
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
+    }).then(binaryModulesUsed => {
+
+      binaryModulesUsed.clear();
+
+      // We need something to look at...
+      sandbox.stub(binaryModulesUsed, 'forEach');
+
+      deployment.js.injectBinaryModules(this.globRoot, fsTemp.mkdirSync()).then(() => {
+        test.equal(binaryModulesUsed.forEach.callCount, 1);
+        test.done();
+      });
+    });
+  },
+
+  doesNotCopyWhenOptionsSingleTrue(test) {
     test.expect(1);
     // This would normally result in 8 calls to this.copySync
     this.globSync.restore();
@@ -2732,7 +3047,8 @@ exports['deployment.js.injectBinaryModules'] = {
     });
   },
 
-  rewriteBinaryBuildPlatformPaths: function(test) {
+
+  rewriteBinaryBuildPlatformPaths(test) {
     test.expect(2);
 
     this.forEach = sandbox.stub(Map.prototype, 'forEach', (handler) => {
@@ -2767,7 +3083,7 @@ exports['deployment.js.injectBinaryModules'] = {
     });
   },
 
-  tryTheirPathAndOurPath: function(test) {
+  tryTheirPathAndOurPath(test) {
     test.expect(3);
 
     this.copySync.restore();
@@ -2808,7 +3124,7 @@ exports['deployment.js.injectBinaryModules'] = {
     });
   },
 
-  tryCatchTwiceAndFailGracefullyWithMissingBinaryMessage: function(test) {
+  tryCatchTwiceAndFailGracefullyWithMissingBinaryMessage(test) {
     test.expect(4);
 
     this.copySync.restore();
