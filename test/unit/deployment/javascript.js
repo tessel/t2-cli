@@ -754,9 +754,9 @@ exports['deployment.js.tarBundle'] = {
     const pipe = fstream.Reader.prototype.pipe;
 
     // Need to stub function in _actual_ fs (but we use fs-extra)
-    this.readerPipe = sandbox.stub(fstream.Reader.prototype, 'pipe', function(...args) {
+    this.readerPipe = sandbox.stub(fstream.Reader.prototype, 'pipe', function() {
       this.emit('error', new Error('foo'));
-      return pipe.call(this, ...args);
+      return pipe.apply(this, arguments);
     });
 
     const entryPoint = 'index.js';
