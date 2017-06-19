@@ -2359,6 +2359,61 @@ exports['deployment.js.resolveBinaryModules'] = {
     });
   },
 
+  noOptionsTargetFallbackToCWD(test) {
+    test.expect(3);
+
+    const target = path.normalize('test/unit/fixtures/project');
+
+    sandbox.stub(process, 'cwd').returns(target);
+
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+
+    deployment.js.resolveBinaryModules({
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
+    }).then(() => {
+      test.equal(this.relative.callCount, 1);
+      test.equal(this.relative.lastCall.args[0], target);
+      test.equal(this.relative.lastCall.args[1], target);
+      test.done();
+    }).catch(error => {
+      test.ok(false, error.toString());
+      test.done();
+    });
+  },
+
+  noOptionsTargetFallbackToCWDNoRelative(test) {
+    test.expect(1);
+
+    this.relative.restore();
+    this.relative = sandbox.stub(path, 'relative').returns('');
+    this.cwd = sandbox.stub(process, 'cwd').returns('');
+    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+
+    deployment.js.resolveBinaryModules({
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
+    }).then(() => {
+      test.ok(false, 'resolveBinaryModules should not resolve');
+      test.done();
+    }).catch(error => {
+      // The thing to be found:
+      //
+      //  node_modules/release/package.json
+      //
+      // Will not be found, because it doesn't exist,
+      // but in this case, that's exactly what we want.
+      test.equal(error.toString(), `Error: Cannot find module 'node_modules/release/package.json'`);
+      test.done();
+    });
+  },
+
   findsModulesMissingBinaryNodeFiles(test) {
     test.expect(2);
 
@@ -3386,6 +3441,22 @@ exports['deployment.js.logMissingBinaryModuleWarning'] = {
     var output = this.warn.lastCall.args[0];
 
     test.equal(output.includes('Pre-compiled module is missing: compiled-binary@2.0.6'), true);
+    test.done();
+  },
+};
+
+exports['deployment.js.minimatch'] = {
+  setUp(done) {
+    done();
+  },
+  tearDown(done) {
+    done();
+  },
+
+  callsThroughToMinimatch(test) {
+    test.expect(1);
+    const result = deployment.js.minimatch('', '', {});
+    test.equal(result, true);
     test.done();
   },
 };
