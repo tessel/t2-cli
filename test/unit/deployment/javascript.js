@@ -2411,7 +2411,7 @@ exports['deployment.js.resolveBinaryModules'] = {
       //
       // Will not be found, because it doesn't exist,
       // but in this case, that's exactly what we want.
-      test.equal(error.toString(), `Error: Cannot find module 'node_modules/release/package.json'`);
+      test.equal(error.toString(), `Error: Cannot find module '${path.normalize('node_modules/release/package.json')}'`);
       test.done();
     });
   },
