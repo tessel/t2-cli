@@ -1,9 +1,11 @@
+'use strict';
+
 // Test dependencies are required and exposed in common/bootstrap.js
 require('../common/bootstrap');
 /*global log, npmlog */
 
 exports['log'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.npmlog = {
       basic: this.sandbox.stub(npmlog, 'basic'),
@@ -18,12 +20,13 @@ exports['log'] = {
     log.enable();
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
+    log.level('basic');
     done();
   },
   usage: {
-    basic: function(test) {
+    basic(test) {
       test.expect(3);
       log.basic('basic message');
       test.equal(this.npmlog.basic.callCount, 1);
@@ -31,7 +34,7 @@ exports['log'] = {
       test.deepEqual(this.npmlog.basic.lastCall.args, ['', 'basic message']);
       test.done();
     },
-    error: function(test) {
+    error(test) {
       test.expect(3);
       log.error('error message');
       test.equal(this.npmlog.error.callCount, 1);
@@ -39,7 +42,7 @@ exports['log'] = {
       test.deepEqual(this.npmlog.error.lastCall.args, ['', 'error message']);
       test.done();
     },
-    info: function(test) {
+    info(test) {
       test.expect(3);
       log.info('info message');
       test.equal(this.npmlog.info.callCount, 1);
@@ -47,7 +50,7 @@ exports['log'] = {
       test.deepEqual(this.npmlog.info.lastCall.args, ['', 'info message']);
       test.done();
     },
-    http: function(test) {
+    http(test) {
       test.expect(3);
       log.http('http message');
       test.equal(this.npmlog.http.callCount, 1);
@@ -55,7 +58,7 @@ exports['log'] = {
       test.deepEqual(this.npmlog.http.lastCall.args, ['', 'http message']);
       test.done();
     },
-    warn: function(test) {
+    warn(test) {
       test.expect(3);
       log.warn('warn message');
       test.equal(this.npmlog.warn.callCount, 1);
@@ -65,39 +68,39 @@ exports['log'] = {
     },
   },
   disableAll: {
-    setUp: function(done) {
+    setUp(done) {
       log.disable();
       done();
     },
-    tearDown: function(done) {
+    tearDown(done) {
       log.enable();
       done();
     },
-    basic: function(test) {
+    basic(test) {
       test.expect(1);
       log.basic('basic message');
       test.equal(this.npmlog.basic.callCount, 0);
       test.done();
     },
-    error: function(test) {
+    error(test) {
       test.expect(1);
       log.error('error message');
       test.equal(this.npmlog.error.callCount, 0);
       test.done();
     },
-    info: function(test) {
+    info(test) {
       test.expect(1);
       log.info('info message');
       test.equal(this.npmlog.info.callCount, 0);
       test.done();
     },
-    http: function(test) {
+    http(test) {
       test.expect(1);
       log.http('http message');
       test.equal(this.npmlog.http.callCount, 0);
       test.done();
     },
-    warn: function(test) {
+    warn(test) {
       test.expect(1);
       log.warn('warn message');
       test.equal(this.npmlog.warn.callCount, 0);
@@ -105,39 +108,39 @@ exports['log'] = {
     },
   },
   enableAll: {
-    setUp: function(done) {
+    setUp(done) {
       log.enable();
       done();
     },
-    tearDown: function(done) {
+    tearDown(done) {
       log.disable();
       done();
     },
-    basic: function(test) {
+    basic(test) {
       test.expect(1);
       log.basic('basic message');
       test.equal(this.npmlog.basic.callCount, 1);
       test.done();
     },
-    error: function(test) {
+    error(test) {
       test.expect(1);
       log.error('error message');
       test.equal(this.npmlog.error.callCount, 1);
       test.done();
     },
-    info: function(test) {
+    info(test) {
       test.expect(1);
       log.info('info message');
       test.equal(this.npmlog.info.callCount, 1);
       test.done();
     },
-    http: function(test) {
+    http(test) {
       test.expect(1);
       log.http('http message');
       test.equal(this.npmlog.http.callCount, 1);
       test.done();
     },
-    warn: function(test) {
+    warn(test) {
       test.expect(1);
       log.warn('warn message');
       test.equal(this.npmlog.warn.callCount, 1);
@@ -146,12 +149,12 @@ exports['log'] = {
   },
 
   configure: {
-    setUp: function(done) {
+    setUp(done) {
       log.enable();
       done();
     },
 
-    basic: function(test) {
+    basic(test) {
       test.expect(1);
       log.configure({
         basic: false,
@@ -165,7 +168,7 @@ exports['log'] = {
       test.equal(this.npmlog.basic.callCount, 1);
       test.done();
     },
-    error: function(test) {
+    error(test) {
       test.expect(1);
       log.configure({
         error: false,
@@ -179,7 +182,7 @@ exports['log'] = {
       test.equal(this.npmlog.error.callCount, 1);
       test.done();
     },
-    info: function(test) {
+    info(test) {
       test.expect(1);
       log.configure({
         info: false,
@@ -193,7 +196,7 @@ exports['log'] = {
       test.equal(this.npmlog.info.callCount, 1);
       test.done();
     },
-    http: function(test) {
+    http(test) {
       test.expect(1);
       log.configure({
         http: false,
@@ -207,7 +210,7 @@ exports['log'] = {
       test.equal(this.npmlog.http.callCount, 1);
       test.done();
     },
-    warn: function(test) {
+    warn(test) {
       test.expect(1);
       log.configure({
         warn: false,
@@ -221,18 +224,35 @@ exports['log'] = {
       test.equal(this.npmlog.warn.callCount, 1);
       test.done();
     },
-  },
 
+    throws(test) {
+      test.expect(1);
+      test.throws(() => {
+        log.configure();
+      });
+      test.done();
+    },
+  },
+  level(test) {
+    test.expect(3);
+
+    test.equal(npmlog.level, 'basic');
+    log.level('whatever');
+    test.equal(npmlog.level, 'whatever');
+    test.equal(log.level(), 'whatever');
+
+    test.done();
+  },
 };
 
 exports['log.isEnabled/isDisabled'] = {
-  setUp: function(done) {
+  setUp(done) {
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     done();
   },
-  basic: function(test) {
+  basic(test) {
     test.expect(6);
     test.equal(log.isDisabled('basic'), false);
     test.equal(log.isEnabled('basic'), true);
@@ -248,7 +268,7 @@ exports['log.isEnabled/isDisabled'] = {
     test.equal(log.isEnabled('basic'), true);
     test.done();
   },
-  error: function(test) {
+  error(test) {
     test.expect(6);
     test.equal(log.isDisabled('error'), false);
     test.equal(log.isEnabled('error'), true);
@@ -264,7 +284,7 @@ exports['log.isEnabled/isDisabled'] = {
     test.equal(log.isEnabled('error'), true);
     test.done();
   },
-  info: function(test) {
+  info(test) {
     test.expect(6);
     test.equal(log.isDisabled('info'), false);
     test.equal(log.isEnabled('info'), true);
@@ -280,7 +300,7 @@ exports['log.isEnabled/isDisabled'] = {
     test.equal(log.isEnabled('info'), true);
     test.done();
   },
-  http: function(test) {
+  http(test) {
     test.expect(6);
     test.equal(log.isDisabled('http'), false);
     test.equal(log.isEnabled('http'), true);
@@ -296,7 +316,7 @@ exports['log.isEnabled/isDisabled'] = {
     test.equal(log.isEnabled('http'), true);
     test.done();
   },
-  warn: function(test) {
+  warn(test) {
     test.expect(6);
     test.equal(log.isDisabled('warn'), false);
     test.equal(log.isEnabled('warn'), true);
@@ -315,7 +335,7 @@ exports['log.isEnabled/isDisabled'] = {
 };
 
 exports['log.spinner'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
 
     this.spinnerCount = 0;
@@ -323,7 +343,7 @@ exports['log.spinner'] = {
     this.clearInterval = this.sandbox.stub(global, 'clearInterval');
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     log.spinner.interval = null;
     log.configure({
@@ -331,7 +351,7 @@ exports['log.spinner'] = {
     });
     done();
   },
-  usage: function(test) {
+  usage(test) {
     test.expect(3);
     test.equal(log.spinner.interval, null);
     log.spinner.start();
@@ -340,7 +360,7 @@ exports['log.spinner'] = {
     test.equal(log.spinner.interval, null);
     test.done();
   },
-  disable: function(test) {
+  disable(test) {
     test.expect(2);
     test.equal(log.spinner.interval, null);
     log.configure({
@@ -350,14 +370,14 @@ exports['log.spinner'] = {
     test.equal(log.spinner.interval, null);
     test.done();
   },
-  startMakesCharSpinner: function(test) {
+  startMakesCharSpinner(test) {
     test.expect(2);
     test.equal(log.spinner.interval, null);
     log.spinner.start();
     test.equal(this.charSpinner.callCount, 1);
     test.done();
   },
-  duplicateStartIsNoop: function(test) {
+  duplicateStartIsNoop(test) {
     test.expect(4);
     test.equal(log.spinner.interval, null);
     log.spinner.start();
@@ -368,15 +388,18 @@ exports['log.spinner'] = {
     test.equal(this.charSpinner.callCount, 1);
     test.done();
   },
-  stopClearsCharSpinner: function(test) {
-    test.expect(2);
+  stopClearsCharSpinner(test) {
+    test.expect(3);
+    log.charSpinner.clear = this.sandbox.stub();
     log.spinner.interval = Math.PI;
     log.spinner.stop();
     test.equal(this.clearInterval.callCount, 1);
     test.equal(log.spinner.interval, null);
+    test.equal(log.charSpinner.clear.callCount, 1);
+
     test.done();
   },
-  duplicateStopIsNoop: function(test) {
+  duplicateStopIsNoop(test) {
     test.expect(4);
     log.spinner.interval = Math.PI;
     log.spinner.stop();
@@ -386,6 +409,218 @@ exports['log.spinner'] = {
     test.equal(this.clearInterval.callCount, 1);
     log.spinner.stop();
     test.equal(this.clearInterval.callCount, 1);
+    test.done();
+  },
+};
+
+
+exports['log.charSpinner'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.clock = this.sandbox.useFakeTimers();
+    this.stderrWrite = this.sandbox.stub(process.stderr, 'write');
+
+    if (!process.stderr.isTTY) {
+      process.stderr.isTTY = true;
+    }
+    done();
+  },
+  tearDown(done) {
+    this.sandbox.restore();
+    log.spinner.interval = null;
+    log.configure({
+      spinner: true
+    });
+    done();
+  },
+  defaults(test) {
+    test.expect(7);
+
+    log.charSpinner();
+
+    // Jump beyond the delay
+    this.clock.tick(50 * 3);
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\\\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '|\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '/\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '-\u001b[0G');
+
+    test.equal(this.stderrWrite.callCount, 4);
+
+    log.charSpinner.clear();
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\u001b[2K');
+    test.equal(this.stderrWrite.callCount, 5);
+    test.done();
+  },
+
+  cleanupTrue(test) {
+    test.expect(7);
+
+    log.charSpinner({
+      cleanup: true
+    });
+
+    // Jump beyond the delay
+    this.clock.tick(50 * 3);
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\\\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '|\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '/\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '-\u001b[0G');
+
+    test.equal(this.stderrWrite.callCount, 4);
+
+    log.charSpinner.clear();
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\u001b[2K');
+    test.equal(this.stderrWrite.callCount, 5);
+    test.done();
+  },
+
+  ms(test) {
+    test.expect(7);
+
+    log.charSpinner({
+      ms: 10
+    });
+
+    // Jump beyond the delay
+    this.clock.tick(10 * 3);
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\\\u001b[0G');
+    this.clock.tick(10);
+    test.equal(this.stderrWrite.lastCall.args[0], '|\u001b[0G');
+    this.clock.tick(10);
+    test.equal(this.stderrWrite.lastCall.args[0], '/\u001b[0G');
+    this.clock.tick(10);
+    test.equal(this.stderrWrite.lastCall.args[0], '-\u001b[0G');
+
+    test.equal(this.stderrWrite.callCount, 4);
+
+    log.charSpinner.clear();
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\u001b[2K');
+    test.equal(this.stderrWrite.callCount, 5);
+    test.done();
+  },
+
+  sprite(test) {
+    test.expect(7);
+
+    log.charSpinner({
+      sprite: '1234'
+    });
+
+    // Jump beyond the delay
+    this.clock.tick(50 * 3);
+
+    test.equal(this.stderrWrite.lastCall.args[0], '2\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '3\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '4\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '1\u001b[0G');
+
+    test.equal(this.stderrWrite.callCount, 4);
+
+    log.charSpinner.clear();
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\u001b[2K');
+    test.equal(this.stderrWrite.callCount, 5);
+    test.done();
+  },
+
+  stream(test) {
+    test.expect(7);
+
+    log.charSpinner({
+      stream: process.stderr
+    });
+
+    // Jump beyond the delay
+    this.clock.tick(50 * 3);
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\\\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '|\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '/\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '-\u001b[0G');
+
+    test.equal(this.stderrWrite.callCount, 4);
+
+    log.charSpinner.clear();
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\u001b[2K');
+    test.equal(this.stderrWrite.callCount, 5);
+    test.done();
+  },
+
+  streamIsNotTTY(test) {
+    test.expect(7);
+
+    const isTTY = process.stderr.isTTY;
+
+    process.stderr.isTTY = false;
+
+    log.charSpinner({
+      stream: process.stderr
+    });
+
+    // Jump beyond the delay
+    this.clock.tick(50 * 3);
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\\\r');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '|\r');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '/\r');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '-\r');
+
+    test.equal(this.stderrWrite.callCount, 4);
+
+    log.charSpinner.clear();
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\r \r');
+    test.equal(this.stderrWrite.callCount, 5);
+
+    process.stderr.isTTY = isTTY;
+    test.done();
+  },
+
+  delay(test) {
+    test.expect(7);
+
+    log.charSpinner({
+      delay: 0
+    });
+
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '\\\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '|\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '/\u001b[0G');
+    this.clock.tick(50);
+    test.equal(this.stderrWrite.lastCall.args[0], '-\u001b[0G');
+
+    test.equal(this.stderrWrite.callCount, 4);
+
+    log.charSpinner.clear();
+
+    test.equal(this.stderrWrite.lastCall.args[0], '\u001b[2K');
+    test.equal(this.stderrWrite.callCount, 5);
     test.done();
   },
 };
