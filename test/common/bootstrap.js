@@ -21,7 +21,6 @@ global.Transform = stream.Transform;
 // Third Party Dependencies
 global.async = require('async');
 global.bindings = require('bindings');
-global.charSpinner = require('char-spinner');
 global.colors = require('colors');
 global.concat = require('concat-stream');
 global.fs = require('fs-extra');
