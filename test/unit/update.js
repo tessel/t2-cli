@@ -3,11 +3,11 @@ require('../common/bootstrap');
 
 var builds = [{
   sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
-  released: '2015-05-18T02:21:57.856Z',
+  released: '2017-05-18T02:21:57.856Z',
   version: '0.0.0'
 }, {
   sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
-  released: '2015-08-12T03:01:57.856Z',
+  released: '2017-08-12T03:01:57.856Z',
   version: '0.0.1'
 }];
 
@@ -53,7 +53,7 @@ exports['controller.update'] = {
   },
 
   listBuilds: function(test) {
-    test.expect(3);
+    test.expect(5);
 
     controller.printAvailableUpdates()
       .then(() => {
@@ -62,8 +62,17 @@ exports['controller.update'] = {
         // 'Latest builds:'
         test.equal(this.info.callCount, 1);
         // Print each version out
-        // '\t Version:', build.version, '\tPublished:', build.released.toLocaleString()
+        // `Version: ${build.version}\nPublished: ${published}\n${build.sha}\n`
         test.equal(this.basic.callCount, 2);
+
+        test.equal(
+          this.basic.getCall(0).args[0],
+          'Version: 0.0.1\nPublished: 8/11/2017, 11:01:57 PM\n9a85c84f5a03c715908921baaaa9e7397985bc7f\n'
+        );
+        test.equal(
+          this.basic.getCall(1).args[0],
+          'Version: 0.0.0\nPublished: 5/17/2017, 10:21:57 PM\nac4d8d8a5bfd671f7f174c2eaa258856bd82fe29\n'
+        );
         // Finish
         test.done();
       })
@@ -575,11 +584,11 @@ exports['controller.update'] = {
     // would lead to incorrect comparison ('0.0.7 > 0.0.10')
     var mixedBuilds = [{
       sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
-      released: '2015-05-18T02:21:57.856Z',
+      released: '2017-05-18T02:21:57.856Z',
       version: '0.0.7'
     }, {
       sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
-      released: '2015-08-12T03:01:57.856Z',
+      released: '2017-08-12T03:01:57.856Z',
       version: '0.0.10'
     }];
 
@@ -766,15 +775,15 @@ exports['update-fetch'] = {
 
     var mixedBuilds = [{
       sha: 'ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29',
-      released: '2015-05-18T02:21:57.856Z',
+      released: '2017-05-18T02:21:57.856Z',
       version: '0.0.0'
     }, {
       sha: '9a85c84f5a03c715908921baaaa9e7397985bc7f',
-      released: '2015-08-12T03:01:57.856Z',
+      released: '2017-08-12T03:01:57.856Z',
       version: '0.0.4'
     }, {
       sha: '789432897cd7829a988888b8843274cd8de89a98',
-      released: '2015-06-12T03:01:57.856Z',
+      released: '2017-06-12T03:01:57.856Z',
       version: '0.0.1'
     }];
 
