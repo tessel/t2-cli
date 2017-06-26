@@ -33,7 +33,8 @@ exports['controller.update'] = {
       return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
     });
 
-    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', () => Promise.resolve(builds));
+    // resolve requestBuildList with a copy of the stubbed data, otherwise the original stub is mutated when sorted
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', () => Promise.resolve(builds.slice()));
 
     this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
@@ -53,7 +54,7 @@ exports['controller.update'] = {
   },
 
   listBuilds: function(test) {
-    test.expect(5);
+    test.expect(7);
 
     controller.printAvailableUpdates()
       .then(() => {
@@ -65,14 +66,14 @@ exports['controller.update'] = {
         // `Version: ${build.version}\nPublished: ${published}\n${build.sha}\n`
         test.equal(this.basic.callCount, 2);
 
-        test.equal(
-          this.basic.getCall(0).args[0],
-          'Version: 0.0.1\nPublished: 8/11/2017, 11:01:57 PM\n9a85c84f5a03c715908921baaaa9e7397985bc7f\n'
-        );
-        test.equal(
-          this.basic.getCall(1).args[0],
-          'Version: 0.0.0\nPublished: 5/17/2017, 10:21:57 PM\nac4d8d8a5bfd671f7f174c2eaa258856bd82fe29\n'
-        );
+        const firstCallArgs = this.basic.getCall(0).args[0];
+        test.equal(firstCallArgs.startsWith('Version: 0.0.1'), true);
+        test.equal(firstCallArgs.includes(builds[1].sha), true);
+
+        const secondCallArgs = this.basic.getCall(1).args[0];
+        test.equal(secondCallArgs.startsWith('Version: 0.0.0'), true);
+        test.equal(secondCallArgs.includes(builds[0].sha), true);
+
         // Finish
         test.done();
       })
