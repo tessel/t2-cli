@@ -979,7 +979,7 @@ exports['deployment.js.tarBundle'] = {
 
       const minified = this.compress.lastCall.returnValue;
 
-      test.equal(minified, 'const e=require("tessel"),{2:o,3:l}=e.led;o.on(),setInterval(()=>{o.toggle();l.toggle()},100),console.log(`I\'m blinking! (Press CTRL + C to stop)`);');
+      test.equal(minified, 'const e=require("tessel"),{2:o,3:l}=e.led;o.on(),setInterval(()=>{o.toggle(),l.toggle()},100),console.log(`I\'m blinking! (Press CTRL + C to stop)`);');
 
       // Extract and inspect the bundle...
       extract(bundle, (error, entries) => {
