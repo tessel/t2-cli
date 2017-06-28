@@ -290,7 +290,7 @@ exports['deployment.js.compress'] = {
   },
 
   noOptionsCompress(test) {
-    test.expect(20);
+    test.expect(22);
 
     const optionsCompress = {
       // ------
@@ -298,12 +298,14 @@ exports['deployment.js.compress'] = {
       cascade: true,
       conditionals: true,
       comparisons: true,
+      ecma: 6,
       evaluate: true,
       hoist_funs: true,
       hoist_vars: true,
       if_return: true,
       join_vars: true,
       loops: true,
+      passes: 3,
       properties: true,
       sequences: true,
       unsafe: true,
@@ -332,7 +334,7 @@ exports['deployment.js.compress'] = {
   },
 
   ourOptionsCompress(test) {
-    test.expect(20);
+    test.expect(22);
 
     const ourExplicitSettings = {
       // ------
@@ -340,12 +342,14 @@ exports['deployment.js.compress'] = {
       cascade: true,
       conditionals: true,
       comparisons: true,
+      ecma: 6,
       evaluate: true,
       hoist_funs: true,
       hoist_vars: true,
       if_return: true,
       join_vars: true,
       loops: true,
+      passes: 3,
       properties: true,
       sequences: true,
       unsafe: true,
@@ -3326,9 +3330,6 @@ exports['deployment.js.lists'] = {
      */
     var compressionOptions = {
       extend: {
-        special: {
-          rescope_after_mangle: true
-        },
         compress: {
           keep_fnames: true
         },
