@@ -86,8 +86,13 @@ module.exports = {
           } catch (e) {
             return next()
           }
-          if (!p.version) return next();
-          deps[d] = '~' + p.version;
+          if (!p.version) {
+            return next();
+          }
+          if (p._requiredBy &&
+            p._requiredBy.includes('#USER')) {
+            deps[d] = '~' + p.version;
+          }
           return next();
         })
       })
@@ -128,7 +133,9 @@ module.exports = {
     })
   },
   "scripts": (function() {
-    return {'test': 'echo \"Error: no test specified\" && exit 1'};
+    return {
+      'test': 'echo \"Error: no test specified\" && exit 1'
+    };
   })(),
 
   "repository": (function() {
@@ -160,5 +167,5 @@ module.exports = {
     "url": config['init.author.url']
   } : undefined,
   "license": 'MIT',
-  "readme" : "A bare bones Tessel 2 blinky script."
+  "readme": "A bare bones Tessel 2 blinky script."
 }

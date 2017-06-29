@@ -138,7 +138,7 @@ exports['Tessel.prototype.deploy'] = {
     this.requestBuildList = sandbox.stub(updates, 'requestBuildList').returns(Promise.resolve(tesselBuilds));
 
     this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
-
+    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
 
     deleteTemporaryDeployCode()
       .then(done);

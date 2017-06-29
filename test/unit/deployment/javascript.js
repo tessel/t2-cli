@@ -45,6 +45,7 @@ exports['Deployment: JavaScript'] = {
     this.requestBuildList = sandbox.stub(updates, 'requestBuildList').returns(Promise.resolve(tesselBuilds));
 
     this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
+    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
 
     this.spinnerStart = sandbox.stub(log.spinner, 'start');
     this.spinnerStop = sandbox.stub(log.spinner, 'stop');
@@ -2080,6 +2081,10 @@ exports['deploy.sendBundle, error handling'] = {
   resolveBinaryModules: function(test) {
     test.expect(1);
 
+    this.pathResolve.restore();
+    this.pathResolve = sandbox.stub(path, 'resolve').returns('');
+    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
+
     this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
       pushdir: '',
       entryPoint: ''
@@ -2097,6 +2102,10 @@ exports['deploy.sendBundle, error handling'] = {
 
   tarBundle: function(test) {
     test.expect(1);
+
+    this.pathResolve.restore();
+    this.pathResolve = sandbox.stub(path, 'resolve').returns('');
+    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
 
     this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
       pushdir: '',
@@ -2155,8 +2164,32 @@ exports['deployment.js.preBundle'] = {
     done();
   },
 
+  preBundleChecksForNpmrc(test) {
+    test.expect(1);
+
+    const warning = tags.stripIndents `This project is missing an ".npmrc" file!
+    To prepare your project for deployment, use the command:
+
+      t2 init
+
+    Once complete, retry:`;
+
+    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(false));
+
+    deployment.js.preBundle({
+      target: '/',
+    }).catch(error => {
+      test.equal(error.startsWith(warning), true);
+      test.done();
+    });
+  },
+
   preBundleReceivesTessel(test) {
     test.expect(1);
+
+    this.pathResolve.restore();
+    this.pathResolve = sandbox.stub(path, 'resolve').returns('');
+    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
 
     deploy.sendBundle(this.tessel, {
       target: '/',
