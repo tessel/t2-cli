@@ -53,7 +53,7 @@
     "bindings": "^1.2.1",
     "block-stream2": "^1.1.0",
     "colors": "^1.1.0",
-    "common-tags": "0.0.1",
+    "common-tags": "^1.4.0",
     "fs-extra": "^0.26.2",
     "fs-temp": "^1.0.0",
     "fstream": "^1.0.8",
