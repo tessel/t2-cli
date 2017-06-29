@@ -1,3 +1,5 @@
+'use strict';
+
 // Test dependencies are required and exposed in common/bootstrap.js
 require('../common/bootstrap');
 
@@ -338,6 +340,30 @@ exports['init --lang=javascript'] = {
       callback();
     });
 
+    const projectDependencyPath = path.normalize('test/unit/fixtures/project-binary-modules/node_modules/release/package.json');
+
+    this.globSync = this.sandbox.stub(glob, 'sync', () => {
+      return [
+        projectDependencyPath
+      ];
+    });
+
+    this.npm = {
+      commands: {
+        install(deps, callback) {
+          callback();
+        }
+      },
+      registry: {
+        log: {
+          level: 'warn'
+        }
+      }
+    };
+
+    this.npmLoad = this.sandbox.stub(npm, 'load', (callback) => {
+      callback(null, this.npm);
+    });
 
     done();
   },
@@ -348,11 +374,11 @@ exports['init --lang=javascript'] = {
 
 
   allOperations(test) {
-    test.expect(11);
+    test.expect(12);
 
     // THIS TEST ONLY ASSERTS THAT ALL EXPECTED
     // OPERATIONS ARE CALLED
-    var operations = [{
+    const operations = [{
       name: 'loadNpm',
       callCount: 1,
     }, {
@@ -372,6 +398,9 @@ exports['init --lang=javascript'] = {
       callCount: 2,
     }, {
       name: 'getDependencies',
+      callCount: 1,
+    }, {
+      name: 'createNpmrc',
       callCount: 1,
     }, {
       name: 'npmInstall',
@@ -405,10 +434,6 @@ exports['init --lang=javascript'] = {
   loadNpmSuccess(test) {
     test.expect(1);
 
-    this.npmLoad = this.sandbox.stub(npm, 'load', (callback) => {
-      callback(null, {});
-    });
-
     init.js.loadNpm().then(() => {
       test.equal(this.npmLoad.callCount, 1);
       test.done();
@@ -418,6 +443,7 @@ exports['init --lang=javascript'] = {
   loadNpmFailure(test) {
     test.expect(2);
 
+    this.npmLoad.restore();
     this.npmLoad = this.sandbox.stub(npm, 'load', (callback) => {
       callback(new Error('npm.load failed?'), {});
     });
@@ -492,7 +518,7 @@ exports['init --lang=javascript'] = {
 
     this.stringify = this.sandbox.stub(JSON, 'stringify');
 
-    var data = {
+    const data = {
       a: 1
     };
 
@@ -505,6 +531,23 @@ exports['init --lang=javascript'] = {
 
 
     test.done();
+  },
+
+  npmInstallRegistryLogLevel(test) {
+    test.expect(3);
+
+    this.loadNpm = this.sandbox.stub(init.js, 'loadNpm', () => {
+      return Promise.resolve(this.npm);
+    });
+
+    test.equal(this.npm.registry.log.level, 'warn');
+
+    init.js.npmInstall(['test@1.1.1'])
+      .then(() => {
+        test.equal(this.npm.registry.log.level, 'silent');
+        test.equal(this.loadNpm.callCount, 1);
+        test.done();
+      });
   },
 
   npmInstallNoDeps(test) {
@@ -522,20 +565,25 @@ exports['init --lang=javascript'] = {
   npmInstallWithDepsSuccess(test) {
     test.expect(2);
 
-    var dependencies = [
+    const dependencies = [
       'debug@1.1.1',
       'linked@1.1.1',
       'missing@1.1.1',
       'release@1.1.1',
     ];
 
-    var npm = {
+    const npm = {
       commands: {
         install(dependencies, callback) {
           test.ok(true);
           callback();
-        }
-      }
+        },
+      },
+      registry: {
+        log: {
+          level: 'warn',
+        },
+      },
     };
 
     this.loadNpm = this.sandbox.stub(init.js, 'loadNpm').returns(Promise.resolve(npm));
@@ -549,20 +597,25 @@ exports['init --lang=javascript'] = {
   npmInstallWithDepsFailure(test) {
     test.expect(2);
 
-    var dependencies = [
+    const dependencies = [
       'debug@1.1.1',
       'linked@1.1.1',
       'missing@1.1.1',
       'release@1.1.1',
     ];
 
-    var npm = {
+    const npm = {
       commands: {
         install(dependencies, callback) {
           test.ok(true);
           callback(new Error('npm.commands.install failed?'));
-        }
-      }
+        },
+      },
+      registry: {
+        log: {
+          level: 'warn',
+        },
+      },
     };
 
     this.loadNpm = this.sandbox.stub(init.js, 'loadNpm').returns(Promise.resolve(npm));
@@ -577,7 +630,7 @@ exports['init --lang=javascript'] = {
   getDependencies(test) {
     test.expect(1);
 
-    var parsedPackageJson = {
+    const parsedPackageJson = {
       name: 'project-binary-modules',
       version: '0.0.1',
       description: 'project-binary-modules',
@@ -590,7 +643,7 @@ exports['init --lang=javascript'] = {
       }
     };
 
-    var dependencies = init.js.getDependencies(parsedPackageJson);
+    const dependencies = init.js.getDependencies(parsedPackageJson);
 
     test.deepEqual(dependencies, [
       'debug@1.1.1',
@@ -601,19 +654,83 @@ exports['init --lang=javascript'] = {
     test.done();
   },
 
+  getDependenciesInstalledByAuthorNoSaved(test) {
+    test.expect(1);
+
+    const parsedPackageJson = {
+      name: 'project-binary-modules',
+      version: '0.0.1',
+      description: 'project-binary-modules',
+      main: 'index.js',
+      dependencies: {}
+    };
+
+    const dependencies = init.js.getDependencies(parsedPackageJson);
+
+    test.deepEqual(dependencies, [
+      'release@1.1.1',
+    ]);
+    test.done();
+  },
+
+  getDependenciesInstalledByAuthorPlusSaved(test) {
+    test.expect(1);
+
+    const parsedPackageJson = {
+      name: 'project-binary-modules',
+      version: '0.0.1',
+      description: 'project-binary-modules',
+      main: 'index.js',
+      dependencies: {
+        debug: '1.1.1',
+        linked: '1.1.1',
+      }
+    };
+
+    const dependencies = init.js.getDependencies(parsedPackageJson);
+
+    test.deepEqual(dependencies, [
+      'debug@1.1.1',
+      'linked@1.1.1',
+      'release@1.1.1',
+    ]);
+    test.done();
+  },
+
+  getDependenciesInstalledByAuthorDeduped(test) {
+    test.expect(1);
+
+    const parsedPackageJson = {
+      name: 'project-binary-modules',
+      version: '0.0.1',
+      description: 'project-binary-modules',
+      main: 'index.js',
+      dependencies: {
+        release: '1.1.1',
+      }
+    };
+
+    const dependencies = init.js.getDependencies(parsedPackageJson);
+
+    test.deepEqual(dependencies, [
+      'release@1.1.1',
+    ]);
+    test.done();
+  },
+
   getDependenciesEmpty(test) {
     test.expect(1);
 
-    var parsedPackageJson = {
+    const parsedPackageJson = {
       name: 'project-binary-modules',
       version: '0.0.1',
       description: 'project-binary-modules',
       main: 'index.js'
     };
 
-    var dependencies = init.js.getDependencies(parsedPackageJson);
+    const dependencies = init.js.getDependencies(parsedPackageJson);
 
-    test.deepEqual(dependencies, []);
+    test.deepEqual(dependencies, ['release@1.1.1']);
     test.done();
   },
 

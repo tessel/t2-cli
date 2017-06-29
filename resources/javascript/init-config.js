@@ -51,7 +51,7 @@ module.exports = {
     fs.readdir(dirname + '/bin', function(er, d) {
       // no bins
       if (er) return cb()
-        // just take the first js file we find there, or nada
+      // just take the first js file we find there, or nada
       return cb(null, d.filter(function(f) {
         return f.match(/\.js$/)
       })[0])
@@ -96,8 +96,14 @@ module.exports = {
           } catch (e) {
             return next()
           }
-          if (!p.version) return next()
-          deps[d] = '~' + p.version
+          if (!p.version) {
+            return next();
+          }
+          if (p._requiredBy &&
+            p._requiredBy.includes('#USER')) {
+            deps[d] = '~' + p.version;
+          }
+
           return next()
         })
       })
