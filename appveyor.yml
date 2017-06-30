@@ -26,8 +26,5 @@ test_script:
   - ps: "grunt test # PowerShell"
   - cmd: grunt test
 
-cache:
-  - node_modules
-
 matrix:
   fast_finish: true
