@@ -593,6 +593,42 @@ exports['controller.tesselEnvVersions'] = {
       });
   },
 
+  requestVersionWithoutTessel(test) {
+    test.expect(7);
+
+    const message = 'No Tessels Found.';
+    
+    this.standardTesselCommand.restore();
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', () => {
+      return Promise.reject(message);
+    });
+
+    const opts = {};
+
+    controller.tesselEnvVersions(opts)
+      .then(() => {
+        // Version command was sent
+        test.equal(this.standardTesselCommand.callCount, 1);
+
+        test.equal(this.fetchCurrentBuildInfo.callCount, 0);
+        test.equal(this.fetchNodeProcessVersion.callCount, 0);
+
+        // Make sure we have some output
+        test.equal(this.info.callCount, 3);
+
+        test.equal(this.info.getCall(0).args[0], `Tessel Environment Versions:`);
+        // Output of CLI version to console
+        test.equal(this.info.getCall(1).args[0], `t2-cli: ${this.packageJsonVersion}`);
+        // Output 'No Tessels Found' message
+        test.equal(this.info.getCall(2).args[0], message);
+        test.done();
+      })
+      .catch(() => {
+        test.ok(false, 'tesselEnvVersions was expected to succeed');
+        test.done();
+      });
+  },
+
   requestVersionsFailure(test) {
     test.expect(1);
 
