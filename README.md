@@ -24,7 +24,7 @@ Prerequisites for installation: [Node.js](https://nodejs.org/) and [Git](https:/
 2. Go to the root directory of repository: `cd t2-cli`.
 3. Create a symbolic link: `npm link --local`.
 
-####Windows
+#### Windows
 You may encounter the following error when executing `npm link` on windows:
 ```
 19798 error Windows_NT 6.3.9600
@@ -38,7 +38,7 @@ You may encounter the following error when executing `npm link` on windows:
 ```
 This error occurs because of windows folder permissions. To resolve this make sure you are running cmd or powershell as an administrator and that the permissions on the node_modules folder is set to full control for the user.
 
-####Source Tab Completion
+#### Source Tab Completion
 For bash users, add this line to your `~/.bashrc` or `~/.bash_profile` file:
 
 `source /PATH/TO/t2-cli/bash_completion`
