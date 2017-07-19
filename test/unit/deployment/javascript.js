@@ -2607,7 +2607,7 @@ exports['deployment.js.resolveBinaryModules'] = {
         },
       },
     }).then(binaryModulesUsed => {
-      test.equal(binaryModulesUsed.get('missing').resolved, false);
+      test.equal(binaryModulesUsed.get('missing@1.1.1').resolved, false);
       test.done();
     }).catch(error => {
       test.ok(false, error.toString());
@@ -2706,7 +2706,6 @@ exports['deployment.js.resolveBinaryModules'] = {
         test.equal(this.exists.getCall(callIndex).args[0].endsWith(path.normalize(cbp)), true);
       });
 
-      // console.log(this.exists);
       test.done();
     }).catch(error => {
       test.ok(false, error.toString());
@@ -3080,6 +3079,53 @@ exports['deployment.js.injectBinaryModules'] = {
         test.equal(this.copySync.callCount, 0);
         test.done();
       });
+    });
+  },
+
+  usesBinaryHighestInTreeWhenEncounteringDuplicates(test) {
+    // test.expect(1);
+    this.target = path.normalize('test/unit/fixtures/project-binary-modules-duplicate-lower-deps');
+    this.relative.restore();
+    this.relative = sandbox.stub(path, 'relative', () => {
+      return path.join(FIXTURE_PATH, '/project-binary-modules-duplicate-lower-deps/');
+    });
+
+    this.mapHas = sandbox.spy(Map.prototype, 'has');
+    this.mapGet = sandbox.spy(Map.prototype, 'get');
+    this.mapSet = sandbox.spy(Map.prototype, 'set');
+    this.arrayMap = sandbox.spy(Array.prototype, 'map');
+
+    deployment.js.resolveBinaryModules({
+      target: this.target,
+      tessel: {
+        versions: {
+          modules: 46
+        },
+      },
+    }).then(binaryModulesUsed => {
+      // Ensure that 2 modules with the same name and version were found!
+      for (var i = 0; i < this.arrayMap.callCount; i++) {
+        let call = this.arrayMap.getCall(i);
+        if (call.thisValue.UNRESOLVED_BINARY_LIST) {
+          test.equal(call.thisValue.length, 2);
+        }
+      }
+      test.equal(this.mapHas.callCount, 2);
+      test.equal(this.mapHas.getCall(0).args[0], 'release@1.1.1');
+      test.equal(this.mapHas.getCall(1).args[0], 'release@1.1.1');
+
+      // Ensure that a swap has occurred
+      test.equal(this.mapGet.lastCall.returnValue, this.mapSet.lastCall.args[1]);
+      test.equal(
+        path.normalize(this.mapSet.lastCall.args[1].modulePath),
+        path.normalize('node_modules/release/')
+      );
+
+      // Ensure that only one of the two were included in the
+      // final list of binary modules to bundle
+      test.equal(binaryModulesUsed.size, 1);
+
+      test.done();
     });
   },
 

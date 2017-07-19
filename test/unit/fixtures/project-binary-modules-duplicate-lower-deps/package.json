@@ -1,0 +1,10 @@
+{
+  "name": "project-binary-modules",
+  "version": "0.0.1",
+  "description": "project-binary-modules",
+  "main": "index.js",
+  "dependencies": {
+    "linked": "1.1.1",
+    "release": "1.1.1"
+  }
+}
