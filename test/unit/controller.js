@@ -597,7 +597,7 @@ exports['controller.tesselEnvVersions'] = {
     test.expect(7);
 
     const message = 'No Tessels Found.';
-    
+
     this.standardTesselCommand.restore();
     this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', () => {
       return Promise.reject(message);
