@@ -291,7 +291,7 @@ exports['deployment.js.compress'] = {
   },
 
   noOptionsCompress(test) {
-    test.expect(22);
+    test.expect(23);
 
     const optionsCompress = {
       // ------
@@ -315,6 +315,7 @@ exports['deployment.js.compress'] = {
       unsafe_math: true,
       keep_infinity: true,
       // ------
+      arrows: false,
       keep_fargs: false,
       keep_fnames: false,
       warnings: false,
@@ -335,7 +336,7 @@ exports['deployment.js.compress'] = {
   },
 
   ourOptionsCompress(test) {
-    test.expect(22);
+    test.expect(23);
 
     const ourExplicitSettings = {
       // ------
@@ -359,6 +360,7 @@ exports['deployment.js.compress'] = {
       unsafe_math: true,
       keep_infinity: true,
       // ------
+      arrows: false,
       keep_fargs: false,
       keep_fnames: false,
       warnings: false,
@@ -3381,6 +3383,7 @@ exports['deployment.js.lists'] = {
       'node_modules/**/negotiator/**/*.js',
       'node_modules/**/socket.io-client/socket.io.js',
       'node_modules/**/socket.io-client/dist/socket.io.min.js',
+      'node_modules/**/socket.io-client/dist/socket.io.js',
     ];
 
     test.deepEqual(lists.includes, includes);
