@@ -1,5 +1,7 @@
 # t2-cli
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/tessel/t2-cli.svg)](https://greenkeeper.io/)
+
 [![Code of Conduct](https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat)](https://github.com/tessel/project/blob/master/CONDUCT.md)
 [![Slack](http://tessel-slack.herokuapp.com/badge.svg)](https://tessel-slack.herokuapp.com/)
 [![Travis-CI Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli)
