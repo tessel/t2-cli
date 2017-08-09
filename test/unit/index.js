@@ -4,13 +4,13 @@ require('../common/bootstrap');
 var api = require('../../index');
 
 exports['API Surface'] = {
-  setUp: function(done) {
+  setUp(done) {
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     done();
   },
-  ensureExistence: function(test) {
+  ensureExistence(test) {
     test.ok(api === controller);
     test.ok(api === controller);
     test.ok(api.commands === commands);
@@ -22,14 +22,14 @@ exports['API Surface'] = {
 };
 
 exports['CLI.list'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
-    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn');
+    this.logInfo = this.sandbox.stub(log, 'info');
+    this.logBasic = this.sandbox.stub(log, 'basic');
     this.closeConnections = this.sandbox.stub(controller, 'closeTesselConnections').returns(Promise.resolve());
     var test = this;
-    this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
+    this.seeker = this.sandbox.stub(discover, 'TesselSeeker').callsFake(function() {
       this.start = (options) => {
         test.activeSeeker = this;
         setTimeout(() => this.stop(), options.timeout);
@@ -44,11 +44,11 @@ exports['CLI.list'] = {
     util.inherits(this.seeker, Emitter);
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
-  rejectWithNoTessels: function(test) {
+  rejectWithNoTessels(test) {
     test.expect(1);
     api.list({
         timeout: 0.0001,
@@ -63,7 +63,7 @@ exports['CLI.list'] = {
         test.done();
       });
   },
-  resolveWithOneTessel: function(test) {
+  resolveWithOneTessel(test) {
     // Create a new Tessel
     var tessel = new Tessel({
       connectionType: 'USB'
@@ -90,7 +90,7 @@ exports['CLI.list'] = {
     });
   },
 
-  resolveWithMultipleTessels: function(test) {
+  resolveWithMultipleTessels(test) {
     // Create a new Tessel
     var tessel1 = new Tessel({
       connectionType: 'USB'

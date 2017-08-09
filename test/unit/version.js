@@ -2,11 +2,11 @@
 require('../common/bootstrap');
 
 exports['version *'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
-    this.basic = this.sandbox.stub(log, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
 
@@ -15,14 +15,14 @@ exports['version *'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     this.tessel.mockClose();
 
     done();
   },
 
-  'Tessel.prototype.fetchNodeProcessVersion': function(test) {
+  'Tessel.prototype.fetchNodeProcessVersion' (test) {
     test.expect(3);
 
     this.simpleExec = this.sandbox.stub(this.tessel, 'simpleExec').returns(Promise.resolve('v4.2.1'));
@@ -40,7 +40,7 @@ exports['version *'] = {
       });
   },
 
-  'Tessel.prototype.fetchNodeProcessVersions': function(test) {
+  'Tessel.prototype.fetchNodeProcessVersions' (test) {
     test.expect(3);
     this.simpleExec = this.sandbox.stub(this.tessel, 'simpleExec').returns(Promise.resolve(JSON.stringify(processVersions)));
 

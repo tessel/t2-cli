@@ -125,7 +125,7 @@ exports['CrashReporter.submit'] = {
     this.crPrompt = this.sandbox.stub(CrashReporter, 'prompt').returns(Promise.resolve(true));
     this.crPost = this.sandbox.spy(CrashReporter, 'post');
     this.crSanitize = this.sandbox.spy(CrashReporter, 'sanitize');
-    this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
+    this.request = this.sandbox.stub(request, 'post').callsFake((opts, handler) => {
       return handler(null, {}, '{}');
     });
     done();
@@ -414,7 +414,7 @@ exports['CrashReporter.sanitize'] = {
     this.pWrite = this.sandbox.stub(Preferences, 'write').returns(Promise.resolve());
     this.crPrompt = this.sandbox.stub(CrashReporter, 'prompt').returns(Promise.resolve(true));
     this.crPost = this.sandbox.spy(CrashReporter, 'post');
-    this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
+    this.request = this.sandbox.stub(request, 'post').callsFake((opts, handler) => {
       return handler(null, {}, '{}');
     });
     done();
@@ -494,7 +494,7 @@ exports['CrashReporter.post'] = {
         fingerprint: this.crFingerPrint
       }
     };
-    this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
+    this.request = this.sandbox.stub(request, 'post').callsFake((opts, handler) => {
       return handler(null, {}, JSON.stringify(crPostResponse));
     });
     done();
@@ -529,7 +529,7 @@ exports['CrashReporter.post'] = {
     var report = 'Error: undefined is not a function';
 
     this.request.restore();
-    this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
+    this.request = this.sandbox.stub(request, 'post').callsFake((opts, handler) => {
       return handler(new Error('Bogus'));
     });
 
@@ -544,7 +544,7 @@ exports['CrashReporter.post'] = {
     test.expect(2);
 
     this.request.restore();
-    this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
+    this.request = this.sandbox.stub(request, 'post').callsFake((opts, handler) => {
       return handler(null, {}, '** {Bad Response} **');
     });
 
@@ -563,7 +563,7 @@ exports['CrashReporter.post'] = {
     test.expect(1);
 
     this.request.restore();
-    this.request = this.sandbox.stub(request, 'post', (opts, handler) => {
+    this.request = this.sandbox.stub(request, 'post').callsFake((opts, handler) => {
       return handler(null, {}, '{"error": "Strange things are afoot at the Circle-K"}');
     });
 
@@ -582,7 +582,7 @@ exports['CrashReporter.status'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.info = this.sandbox.stub(log, 'info');
-    this.prefLoad = this.sandbox.stub(Preferences, 'load', () => {
+    this.prefLoad = this.sandbox.stub(Preferences, 'load').callsFake(() => {
       return Promise.resolve({
         'crash.reporter.preference': 'on'
       });
@@ -627,7 +627,7 @@ exports['CrashReporter.onerror'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
-    this.submit = this.sandbox.stub(CrashReporter, 'submit', (stack) => {
+    this.submit = this.sandbox.stub(CrashReporter, 'submit').callsFake((stack) => {
       return Promise.resolve(stack);
     });
 
@@ -656,11 +656,11 @@ exports['CrashReporter.prompt'] = {
 
     // Because these are stored as strings...
     this.prefValue = 'true';
-    this.prefRead = this.sandbox.stub(Preferences, 'read', () => {
+    this.prefRead = this.sandbox.stub(Preferences, 'read').callsFake(() => {
       return Promise.resolve(this.prefValue);
     });
     this.selected = true;
-    this.menuPrompt = this.sandbox.stub(Menu, 'prompt', () => {
+    this.menuPrompt = this.sandbox.stub(Menu, 'prompt').callsFake(() => {
       return Promise.resolve({
         selected: this.selected
       });
