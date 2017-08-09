@@ -2241,6 +2241,20 @@ exports['controller.setWiFiState'] = {
         test.done();
       });
   },
+
+  setWiFiStateMissingEnable(test) {
+    test.expect(1);
+    this.setWiFiState.restore();
+
+    controller.setWiFiState({})
+      .then(() => {
+        test.ok(false, 'This should not be successful');
+        test.done();
+      }).catch(error => {
+        test.equal(error.toString(), 'Error: Missing Wifi State: property "enable" not provided.');
+        test.done();
+      });
+  },
 };
 
 exports['controller.disableAccessPoint'] = {
