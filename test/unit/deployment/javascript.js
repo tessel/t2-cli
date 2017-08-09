@@ -3085,12 +3085,15 @@ exports['deployment.js.injectBinaryModules'] = {
   },
 
   usesBinaryHighestInTreeWhenEncounteringDuplicates(test) {
-    // test.expect(1);
+    test.expect(6);
     this.target = path.normalize('test/unit/fixtures/project-binary-modules-duplicate-lower-deps');
     this.relative.restore();
     this.relative = sandbox.stub(path, 'relative', () => {
       return path.join(FIXTURE_PATH, '/project-binary-modules-duplicate-lower-deps/');
     });
+
+    // We WANT to glob the actual target directory
+    this.globSync.restore();
 
     this.mapHas = sandbox.spy(Map.prototype, 'has');
     this.mapGet = sandbox.spy(Map.prototype, 'get');
@@ -3116,16 +3119,14 @@ exports['deployment.js.injectBinaryModules'] = {
       test.equal(this.mapHas.getCall(0).args[0], 'release@1.1.1');
       test.equal(this.mapHas.getCall(1).args[0], 'release@1.1.1');
 
-      // Ensure that a swap has occurred
-      test.equal(this.mapGet.lastCall.returnValue, this.mapSet.lastCall.args[1]);
-      test.equal(
-        path.normalize(this.mapSet.lastCall.args[1].modulePath),
-        path.normalize('node_modules/release/')
-      );
-
       // Ensure that only one of the two were included in the
       // final list of binary modules to bundle
       test.equal(binaryModulesUsed.size, 1);
+      // Ensure that the swap has occurred
+      test.equal(
+        path.normalize(binaryModulesUsed.get('release@1.1.1').globPath),
+        path.normalize('node_modules/release/build/Release/release.node')
+      );
 
       test.done();
     });
