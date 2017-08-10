@@ -24,12 +24,12 @@ exports['remote.* consts'] = {
 exports['remote.ifReachable(...)'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', () => {});
-    this.logInfo = this.sandbox.stub(log, 'info', () => {});
-    this.logBasic = this.sandbox.stub(log, 'basic', () => {});
+    this.logWarn = this.sandbox.stub(log, 'warn');
+    this.logInfo = this.sandbox.stub(log, 'info');
+    this.logBasic = this.sandbox.stub(log, 'basic');
 
     this.error = null;
-    this.lookup = this.sandbox.stub(dns, 'lookup', (hostname, handler) => {
+    this.lookup = this.sandbox.stub(dns, 'lookup').callsFake((hostname, handler) => {
       handler(this.error);
     });
     done();

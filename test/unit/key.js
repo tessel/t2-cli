@@ -13,16 +13,16 @@ function createKeyTestFolder(callback) {
 }
 
 exports['provision.setDefaultKey'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
-    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn');
+    this.logInfo = this.sandbox.stub(log, 'info');
+    this.logBasic = this.sandbox.stub(log, 'basic');
     this.setDefaultKeySpy = this.sandbox.spy(provision, 'setDefaultKey');
     this.fsSpyStatSync = this.sandbox.spy(fs, 'statSync');
 
-    this.parseKey = this.sandbox.stub(sshpk, 'parseKey', _ => _);
-    this.RSA = this.sandbox.stub(global, 'RSA', () => {
+    this.parseKey = this.sandbox.stub(sshpk, 'parseKey').callsFake(_ => _);
+    this.RSA = this.sandbox.stub(global, 'RSA').callsFake(() => {
       return {
         exportKey: _ => _
       };
@@ -31,12 +31,12 @@ exports['provision.setDefaultKey'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     fs.remove(testDir, done);
   },
 
-  noKeyPath: function(test) {
+  noKeyPath(test) {
     test.expect(3);
     provision.setDefaultKey()
       .then(() => {
@@ -51,7 +51,7 @@ exports['provision.setDefaultKey'] = {
       });
   },
 
-  keyIsNoString: function(test) {
+  keyIsNoString(test) {
     test.expect(3);
     provision.setDefaultKey(1234)
       .then(() => {
@@ -66,7 +66,7 @@ exports['provision.setDefaultKey'] = {
       });
   },
 
-  keyNotPresent: function(test) {
+  keyNotPresent(test) {
     test.expect(3);
     provision.setDefaultKey('wrongkeypath')
       .then(() => {
@@ -81,7 +81,7 @@ exports['provision.setDefaultKey'] = {
       });
   },
 
-  validAlternateKey: function(test) {
+  validAlternateKey(test) {
     test.expect(4);
     // Create folders for the folder that we'd like to
     createKeyTestFolder((error) => {

@@ -339,7 +339,7 @@ exports['log.spinner'] = {
     this.sandbox = sinon.sandbox.create();
 
     this.spinnerCount = 0;
-    this.charSpinner = this.sandbox.stub(log, 'charSpinner', () => this.spinnerCount++);
+    this.charSpinner = this.sandbox.stub(log, 'charSpinner').callsFake(() => this.spinnerCount++);
     this.clearInterval = this.sandbox.stub(global, 'clearInterval');
     done();
   },

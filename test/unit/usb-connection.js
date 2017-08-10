@@ -2,7 +2,7 @@
 require('../common/bootstrap');
 
 exports['USB.Connection'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -11,18 +11,18 @@ exports['USB.Connection'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  duplexSubclass: function(test) {
+  duplexSubclass(test) {
     test.expect(1);
     test.ok(this.usbConnection instanceof Duplex);
     test.done();
   },
 
-  connectionType: function(test) {
+  connectionType(test) {
     test.expect(1);
     test.equal(this.usbConnection.connectionType, 'USB');
     test.done();
@@ -30,7 +30,7 @@ exports['USB.Connection'] = {
 };
 
 exports['USB.Connection.prototype.exec'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -40,12 +40,12 @@ exports['USB.Connection.prototype.exec'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  openProcess: function(test) {
+  openProcess(test) {
     test.expect(1);
 
     this.usbConnection.exec(['some -command 1']);
@@ -58,7 +58,7 @@ exports['USB.Connection.prototype.exec'] = {
 };
 
 exports['USB.Connection.prototype._write'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -70,12 +70,12 @@ exports['USB.Connection.prototype._write'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  transfer: function(test) {
+  transfer(test) {
     test.expect(3);
 
     var spy = this.sandbox.spy();
@@ -89,7 +89,7 @@ exports['USB.Connection.prototype._write'] = {
     test.done();
   },
 
-  transferClosed: function(test) {
+  transferClosed(test) {
     test.expect(2);
 
     var spy = this.sandbox.spy();
@@ -105,7 +105,7 @@ exports['USB.Connection.prototype._write'] = {
 };
 
 exports['USB.Connection.prototype.open'] = {
-  setUp: function(done) {
+  setUp(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
@@ -123,28 +123,28 @@ exports['USB.Connection.prototype.open'] = {
     };
     this.closeFunc = this.sandbox.spy(this.usbConnection, '_close');
     this.fakeInterface = {
-      claim: function() {},
-      setAltSetting: function(arg1, cb) {
+      claim() {},
+      setAltSetting(arg1, cb) {
         cb();
       },
-      release: function(val, cb) {
+      release(val, cb) {
         cb();
       },
       endpoints: [this.usbConnection.epIn, this.usbConnection.epOut],
     };
-    this.sandbox.stub(this.usbConnection, 'device', {
-      open: function() {},
-      close: function() {},
-      interface: function() {
+    this.usbConnection.device = {
+      open() {},
+      close() {},
+      interface() {
         return testContext.fakeInterface;
       },
-      getStringDescriptor: function(arg1, cb) {
+      getStringDescriptor(arg1, cb) {
         cb();
       },
       deviceDescriptor: {
         iSerialNumber: 'blah',
       }
-    });
+    };
     this.openDevice = this.sandbox.spy(this.usbConnection.device, 'open');
     this.interface = this.sandbox.spy(this.usbConnection.device, 'interface');
     this.claim = this.sandbox.spy(this.fakeInterface, 'claim');
@@ -154,12 +154,12 @@ exports['USB.Connection.prototype.open'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  standardOpen: function(test) {
+  standardOpen(test) {
     test.expect(11);
 
     this.usbConnection.open()
@@ -184,7 +184,7 @@ exports['USB.Connection.prototype.open'] = {
       });
   },
 
-  setAltSettingFails: function(test) {
+  setAltSettingFails(test) {
     test.expect(9);
 
     this.connectionAltSetting = this.sandbox.stub(this.usbConnection, 'setAltSetting').returns(Promise.reject('bad usb things'));
@@ -208,8 +208,8 @@ exports['USB.Connection.prototype.open'] = {
         test.done();
       });
   },
-  multipleOpens: function(test) {
-    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister', (val, cb) => {
+  multipleOpens(test) {
+    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister').callsFake((val, cb) => {
       // deregister was a success
       cb();
     });
@@ -226,7 +226,7 @@ exports['USB.Connection.prototype.open'] = {
 };
 
 exports['USB.Connection.prototype.end'] = {
-  setUp: function(done) {
+  setUp(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
@@ -244,28 +244,28 @@ exports['USB.Connection.prototype.end'] = {
     };
     this.closeFunc = this.sandbox.spy(this.usbConnection, '_close');
     this.fakeInterface = {
-      claim: function() {},
-      setAltSetting: function(arg1, cb) {
+      claim() {},
+      setAltSetting(arg1, cb) {
         cb();
       },
-      release: function(val, cb) {
+      release(val, cb) {
         cb();
       },
       endpoints: [this.usbConnection.epIn, this.usbConnection.epOut],
     };
-    this.sandbox.stub(this.usbConnection, 'device', {
-      open: function() {},
-      close: function() {},
-      interface: function() {
+    this.usbConnection.device = {
+      open() {},
+      close() {},
+      interface() {
         return testContext.fakeInterface;
       },
-      getStringDescriptor: function(arg1, cb) {
+      getStringDescriptor(arg1, cb) {
         cb();
       },
       deviceDescriptor: {
         iSerialNumber: 'blah',
       }
-    });
+    };
     this.openDevice = this.sandbox.spy(this.usbConnection.device, 'open');
     this.interface = this.sandbox.spy(this.usbConnection.device, 'interface');
     this.claim = this.sandbox.spy(this.fakeInterface, 'claim');
@@ -275,15 +275,15 @@ exports['USB.Connection.prototype.end'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  deregisterFailNoClose: function(test) {
+  deregisterFailNoClose(test) {
     test.expect(2);
 
-    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister', (val, cb) => {
+    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister').callsFake((val, cb) => {
       cb('some error');
     });
     this.usbConnection.open()
@@ -299,17 +299,17 @@ exports['USB.Connection.prototype.end'] = {
         test.done();
       });
   },
-  resolveWaitOnClose: function(test) {
+  resolveWaitOnClose(test) {
     test.expect(3);
 
-    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister', (val, cb) => {
+    this.daemonDeregister = this.sandbox.stub(Daemon, 'deregister').callsFake((val, cb) => {
       // deregister was a success
       cb();
     });
 
     var waited = false;
     this.closeFunc.restore();
-    this.closeFunc = this.sandbox.stub(this.usbConnection, '_close', (cb) => {
+    this.closeFunc = this.sandbox.stub(this.usbConnection, '_close').callsFake((cb) => {
       waited = true;
       setImmediate(cb);
     });
@@ -332,7 +332,7 @@ exports['USB.Connection.prototype.end'] = {
 };
 
 exports['USB.Connection.prototype._receiveMessages'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
@@ -345,12 +345,12 @@ exports['USB.Connection.prototype._receiveMessages'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  startPolling: function(test) {
+  startPolling(test) {
     test.expect(3);
 
     this.usbConnection._receiveMessages();
@@ -361,7 +361,7 @@ exports['USB.Connection.prototype._receiveMessages'] = {
     test.done();
   },
 
-  pushReceivedData: function(test) {
+  pushReceivedData(test) {
     test.expect(1);
 
     this.usbConnection._receiveMessages();
@@ -371,36 +371,36 @@ exports['USB.Connection.prototype._receiveMessages'] = {
     test.done();
   },
 
-  errorOnOpen: function(test) {
+  errorOnOpen(test) {
     test.expect(2);
     var errorMessage = 'bad usb things!';
 
     this.usbConnection.epIn.stopPoll = function() {};
-    this.sandbox.stub(this.usbConnection, '_receiveMessages', () => {
+    this.sandbox.stub(this.usbConnection, '_receiveMessages').callsFake(() => {
       this.usbConnection.epIn.emit('error', errorMessage);
     });
 
     var closeFunc = this.sandbox.spy(this.usbConnection, '_close');
 
     var fakeInterface = {
-      claim: function() {},
-      setAltSetting: function(arg1, cb) {
+      claim() {},
+      setAltSetting(arg1, cb) {
         cb();
       },
       endpoints: [this.usbConnection.epIn, new Emitter()],
     };
-    this.sandbox.stub(this.usbConnection, 'device', {
-      open: function() {},
-      interface: function() {
+    this.usbConnection.device = {
+      open() {},
+      interface() {
         return fakeInterface;
       },
-      getStringDescriptor: function(arg1, cb) {
+      getStringDescriptor(arg1, cb) {
         cb();
       },
       deviceDescriptor: {
         iSerialNumber: 'blah',
       }
-    });
+    };
 
     this.usbConnection.open()
       .then(() => {
