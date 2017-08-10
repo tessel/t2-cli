@@ -64,8 +64,11 @@ exports['installer.homedir'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.error = this.sandbox.stub(log, 'error');
+    this.info = this.sandbox.stub(log, 'info');
 
     this.ensureDir = this.sandbox.stub(fs, 'ensureDir').callsFake((target, callback) => callback(null));
+    this.ensureFile = this.sandbox.stub(fs, 'ensureFile').callsFake((target, callback) => callback(null));
+    this.readJson = this.sandbox.stub(fs, 'readJson').callsFake((target, callback) => callback(null));
     this.outputJson = this.sandbox.stub(fs, 'outputJson').callsFake((target, data, callback) => callback(null));
 
     done();
@@ -76,16 +79,42 @@ exports['installer.homedir'] = {
     done();
   },
 
-  successful(test) {
-    test.expect(5);
+  successfulInitialization(test) {
+    test.expect(9);
 
     installer.homedir().then(() => {
       test.equal(this.ensureDir.callCount, 1);
+      test.equal(this.ensureFile.callCount, 1);
+      test.equal(this.readJson.callCount, 1);
       test.equal(this.outputJson.callCount, 1);
 
       test.equal(this.ensureDir.lastCall.args[0], path.join(osenv.home(), '.tessel'));
+      test.equal(this.ensureFile.lastCall.args[0], path.join(osenv.home(), '.tessel', 'preferences.json'));
+      test.equal(this.readJson.lastCall.args[0], path.join(osenv.home(), '.tessel', 'preferences.json'));
       test.equal(this.outputJson.lastCall.args[0], path.join(osenv.home(), '.tessel', 'preferences.json'));
       test.deepEqual(this.outputJson.lastCall.args[1], {});
+      test.done();
+    });
+  },
+
+  successfulVerification(test) {
+    test.expect(9);
+
+    this.readJson.restore();
+    this.readJson = this.sandbox.stub(fs, 'readJson').callsFake((target, callback) => {
+      callback(null, { foo: 1 });
+    });
+    installer.homedir().then(() => {
+      test.equal(this.ensureDir.callCount, 1);
+      test.equal(this.ensureFile.callCount, 1);
+      test.equal(this.readJson.callCount, 1);
+      test.equal(this.outputJson.callCount, 1);
+
+      test.equal(this.ensureDir.lastCall.args[0], path.join(osenv.home(), '.tessel'));
+      test.equal(this.ensureFile.lastCall.args[0], path.join(osenv.home(), '.tessel', 'preferences.json'));
+      test.equal(this.readJson.lastCall.args[0], path.join(osenv.home(), '.tessel', 'preferences.json'));
+      test.equal(this.outputJson.lastCall.args[0], path.join(osenv.home(), '.tessel', 'preferences.json'));
+      test.deepEqual(this.outputJson.lastCall.args[1], { foo: 1 });
       test.done();
     });
   },
