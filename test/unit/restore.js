@@ -12,8 +12,8 @@ exports['Tessel.prototype.restore'] = {
       uboot: new Buffer('uboot'),
       squashfs: new Buffer('squashfs'),
     };
-    this.status = this.sandbox.stub(restore, 'status', () => Promise.resolve(0));
-    this.fetchRestore = this.sandbox.stub(updates, 'fetchRestore', () => {
+    this.status = this.sandbox.stub(restore, 'status').callsFake(() => Promise.resolve(0));
+    this.fetchRestore = this.sandbox.stub(updates, 'fetchRestore').callsFake(() => {
       return Promise.resolve(this.images);
     });
     this.restore = this.sandbox.spy(Tessel.prototype, 'restore');
@@ -35,8 +35,8 @@ exports['Tessel.prototype.restore'] = {
   restoreWithValidateDeviceId(test) {
     test.expect(2);
 
-    this.validateDeviceId = this.sandbox.stub(restore, 'validateDeviceId', () => Promise.resolve());
-    this.transaction = this.sandbox.stub(restore, 'transaction', () => Promise.resolve());
+    this.validateDeviceId = this.sandbox.stub(restore, 'validateDeviceId').callsFake(() => Promise.resolve());
+    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake(() => Promise.resolve());
 
     this.tessel.restore({})
       .then(() => {
@@ -49,8 +49,8 @@ exports['Tessel.prototype.restore'] = {
   restoreWithoutValidateDeviceId(test) {
     test.expect(2);
 
-    this.validateDeviceId = this.sandbox.stub(restore, 'validateDeviceId', () => Promise.resolve());
-    this.transaction = this.sandbox.stub(restore, 'transaction', () => Promise.resolve());
+    this.validateDeviceId = this.sandbox.stub(restore, 'validateDeviceId').callsFake(() => Promise.resolve());
+    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake(() => Promise.resolve());
 
     this.tessel.restore({
         force: true
@@ -65,8 +65,8 @@ exports['Tessel.prototype.restore'] = {
   restoreFetchImages(test) {
     test.expect(3);
 
-    this.flash = this.sandbox.stub(restore, 'flash', () => Promise.resolve());
-    this.transaction = this.sandbox.stub(restore, 'transaction', (usb, bytesOrCommand) => {
+    this.flash = this.sandbox.stub(restore, 'flash').callsFake(() => Promise.resolve());
+    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake((usb, bytesOrCommand) => {
       if (bytesOrCommand === 0x9F) {
         return Promise.resolve(new Buffer([0x01, 0x02, 0x19]));
       }
@@ -96,8 +96,8 @@ exports['restore.*'] = {
       uboot: new Buffer('uboot'),
       squashfs: new Buffer('squashfs'),
     };
-    this.status = this.sandbox.stub(restore, 'status', () => Promise.resolve(0));
-    this.fetchRestore = this.sandbox.stub(updates, 'fetchRestore', () => {
+    this.status = this.sandbox.stub(restore, 'status').callsFake(() => Promise.resolve(0));
+    this.fetchRestore = this.sandbox.stub(updates, 'fetchRestore').callsFake(() => {
       return Promise.resolve(this.images);
     });
     this.restore = this.sandbox.spy(Tessel.prototype, 'restore');
@@ -116,7 +116,7 @@ exports['restore.*'] = {
   validateDeviceIdSuccess(test) {
     test.expect(1);
 
-    this.transaction = this.sandbox.stub(restore, 'transaction', () => Promise.resolve(new Buffer([0x01, 0x02, 0x19])));
+    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake(() => Promise.resolve(new Buffer([0x01, 0x02, 0x19])));
 
     restore.validateDeviceId({})
       .then(() => {
@@ -128,7 +128,7 @@ exports['restore.*'] = {
   validateDeviceIdFailure(test) {
     test.expect(1);
 
-    this.transaction = this.sandbox.stub(restore, 'transaction', () => Promise.resolve(new Buffer([0x00, 0x00, 0x00])));
+    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake(() => Promise.resolve(new Buffer([0x00, 0x00, 0x00])));
 
     restore.validateDeviceId({})
       .catch((error) => {
@@ -196,8 +196,8 @@ exports['restore.transaction'] = {
       uboot: new Buffer('uboot'),
       squashfs: new Buffer('squashfs'),
     };
-    this.status = this.sandbox.stub(restore, 'status', () => Promise.resolve(0));
-    this.fetchRestore = this.sandbox.stub(updates, 'fetchRestore', () => {
+    this.status = this.sandbox.stub(restore, 'status').callsFake(() => Promise.resolve(0));
+    this.fetchRestore = this.sandbox.stub(updates, 'fetchRestore').callsFake(() => {
       return Promise.resolve(this.images);
     });
     this.restore = this.sandbox.spy(Tessel.prototype, 'restore');
@@ -342,8 +342,8 @@ exports['restore.bulkEraseFlash'] = {
     this.info = this.sandbox.stub(log, 'info');
     this.usb = new USB.Connection({});
 
-    this.transaction = this.sandbox.stub(restore, 'transaction', () => Promise.resolve());
-    this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete', () => Promise.resolve());
+    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake(() => Promise.resolve());
+    this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete').callsFake(() => Promise.resolve());
 
     this.tick = this.sandbox.stub(Progress.prototype, 'tick');
     done();
@@ -386,10 +386,10 @@ exports['restore.flash'] = {
       squashfs: new Buffer('squashfs'),
     };
     this.partition = this.sandbox.spy(restore, 'partition');
-    this.status = this.sandbox.stub(restore, 'status', () => Promise.resolve(0));
-    this.enableWrite = this.sandbox.stub(restore, 'enableWrite', () => Promise.resolve());
-    this.bulkEraseFlash = this.sandbox.stub(restore, 'bulkEraseFlash', () => Promise.resolve());
-    this.write = this.sandbox.stub(restore, 'write', () => Promise.resolve());
+    this.status = this.sandbox.stub(restore, 'status').callsFake(() => Promise.resolve(0));
+    this.enableWrite = this.sandbox.stub(restore, 'enableWrite').callsFake(() => Promise.resolve());
+    this.bulkEraseFlash = this.sandbox.stub(restore, 'bulkEraseFlash').callsFake(() => Promise.resolve());
+    this.write = this.sandbox.stub(restore, 'write').callsFake(() => Promise.resolve());
 
     this.tessel = TesselSimulator();
     this.usb = new USB.Connection({});
@@ -473,8 +473,8 @@ exports['restore.write'] = {
       uboot: new Buffer('uboot'),
       squashfs: new Buffer('squashfs'),
     };
-    this.writePage = this.sandbox.stub(restore, 'writePage', () => Promise.resolve());
-    this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete', () => Promise.resolve());
+    this.writePage = this.sandbox.stub(restore, 'writePage').callsFake(() => Promise.resolve());
+    this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete').callsFake(() => Promise.resolve());
     done();
   },
 

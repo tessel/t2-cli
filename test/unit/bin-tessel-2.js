@@ -698,7 +698,7 @@ exports['--output true/false'] = {
     this.info = this.sandbox.stub(log, 'info');
     this.error = this.sandbox.stub(log, 'error');
     this.controllerList = this.sandbox.spy(controller, 'listTessels');
-    this.tesselList = this.sandbox.stub(Tessel, 'list', () => {
+    this.tesselList = this.sandbox.stub(Tessel, 'list').callsFake(() => {
       // Simulating what actually happens in Tessel.list
       // without the complexity of mocking a seeker
       log.info('Searching for devices...');

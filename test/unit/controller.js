@@ -12,7 +12,7 @@ function newTessel(options) {
 
   tessel.name = options.name || 'a';
 
-  options.sandbox.stub(tessel, 'close', function() {
+  options.sandbox.stub(tessel, 'close').callsFake(function() {
     return Promise.resolve();
   });
 
@@ -159,7 +159,7 @@ exports['controller.closeTesselConnections'] = {
   rejectsOnError(test) {
     test.expect(1);
 
-    this.asyncEach = this.sandbox.stub(async, 'each', (tessels, next, done) => {
+    this.asyncEach = this.sandbox.stub(async, 'each').callsFake((tessels, next, done) => {
       done(new Error('This is only a test'));
     });
 
@@ -527,19 +527,19 @@ exports['controller.tesselEnvVersions'] = {
 
     this.packageJsonVersion = require('../../package.json').version;
 
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((opts, callback) => {
       return callback(this.tessel);
     });
 
-    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', () => {
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo').callsFake(() => {
       return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
     });
 
-    this.fetchNodeProcessVersion = this.sandbox.stub(Tessel.prototype, 'fetchNodeProcessVersion', () => {
+    this.fetchNodeProcessVersion = this.sandbox.stub(Tessel.prototype, 'fetchNodeProcessVersion').callsFake(() => {
       return Promise.resolve('4.2.1');
     });
 
-    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', () => {
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList').callsFake(() => {
       return Promise.resolve(
         [{
           'released': '2015-08-20T16:20:08.704Z',
@@ -599,7 +599,7 @@ exports['controller.tesselEnvVersions'] = {
     const message = 'No Tessels Found.';
 
     this.standardTesselCommand.restore();
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', () => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake(() => {
       return Promise.reject(message);
     });
 
@@ -633,7 +633,7 @@ exports['controller.tesselEnvVersions'] = {
     test.expect(1);
 
     this.fetchCurrentBuildInfo.restore();
-    this.fetchCurrentBuildInfo = this.sandbox.stub(this.tessel, 'fetchCurrentBuildInfo', () => {
+    this.fetchCurrentBuildInfo = this.sandbox.stub(this.tessel, 'fetchCurrentBuildInfo').callsFake(() => {
       throw new Error();
     });
 
@@ -657,7 +657,7 @@ exports['controller.tesselEnvVersions'] = {
     const sha = '59ce9c97e275e6e970c1ee668e5591514eb1cd74';
 
     this.fetchCurrentBuildInfo.restore();
-    this.sandbox.stub(this.tessel, 'fetchCurrentBuildInfo', () => Promise.resolve(sha));
+    this.sandbox.stub(this.tessel, 'fetchCurrentBuildInfo').callsFake(() => Promise.resolve(sha));
 
     var opts = {};
 
@@ -687,7 +687,7 @@ exports['Tessel.list'] = {
 
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
-    this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function() {
+    this.seeker = this.sandbox.stub(discover, 'TesselSeeker').callsFake(function() {
       testContext.activeSeeker = this;
       this.start = (opts) => {
         if (opts.timeout && typeof opts.timeout === 'number') {
@@ -936,7 +936,7 @@ exports['Tessel.get'] = {
 
     this.processOn = this.sandbox.stub(process, 'on');
     this.activeSeeker = undefined;
-    this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
+    this.seeker = this.sandbox.stub(discover, 'TesselSeeker').callsFake(function Seeker() {
       this.start = (opts) => {
         testContext.activeSeeker = this;
         testContext.sandbox.spy(this, 'removeAllListeners');
@@ -1083,7 +1083,7 @@ exports['Tessel.get'] = {
 
     controller.closeTesselConnections.returns(Promise.resolve());
 
-    this.menuPrompt = this.sandbox.stub(Menu, 'prompt', (prompt) => {
+    this.menuPrompt = this.sandbox.stub(Menu, 'prompt').callsFake((prompt) => {
 
       var value = prompt.translate('\tUSB\ta\t');
       return Promise.resolve(value);
@@ -1171,8 +1171,10 @@ exports['Tessel.get'] = {
     controller.closeTesselConnections.returns(Promise.resolve());
 
     this.runHeuristics.restore();
-    this.runHeuristics = this.sandbox.stub(controller, 'runHeuristics').returns(Promise.reject(new controller.HeuristicAmbiguityError('Bogus error')));
-    this.menuPrompt = this.sandbox.stub(Menu, 'prompt', (prompt) => {
+    this.runHeuristics = this.sandbox.stub(controller, 'runHeuristics').callsFake(() => {
+      return Promise.reject(new controller.HeuristicAmbiguityError('Bogus error'));
+    });
+    this.menuPrompt = this.sandbox.stub(Menu, 'prompt').callsFake((prompt) => {
 
       var value = prompt.translate('\tUSB\ta\t');
       return Promise.resolve(value);
@@ -1598,7 +1600,7 @@ exports['controller.root'] = {
 
     this.child = new FakeChild();
 
-    this.spawn = this.sandbox.stub(cp, 'spawn', () => this.child);
+    this.spawn = this.sandbox.stub(cp, 'spawn').callsFake(() => this.child);
 
     done();
   },
@@ -1677,14 +1679,21 @@ exports['controller.root'] = {
     var testKey = '~/fake';
 
     this.standardTesselCommand.restore();
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((opts, callback) => {
       return callback(tessel);
     });
 
     // Return our own local auth key (it won't be set because we have stubbed
     // that functionality out of standardTesselCommand)
-    this.sandbox.stub(Tessel, 'LOCAL_AUTH_KEY', testKey);
+    // this.sandbox.stub(Tessel, 'LOCAL_AUTH_KEY').callsFake(testKey);
 
+    var opd = Object.getOwnPropertyDescriptor(Tessel, 'LOCAL_AUTH_KEY');
+
+    Object.defineProperty(Tessel, 'LOCAL_AUTH_KEY', {
+      get() {
+        return testKey;
+      }
+    });
     controller.root({
         key: testKey
       })
@@ -1701,6 +1710,8 @@ exports['controller.root'] = {
         test.equal(this.spawn.firstCall.args[1][2], 'root@' + testIP);
         // We want to ensure stdio streams are piped to the console
         test.equal(this.spawn.firstCall.args[2].stdio, 'inherit');
+
+        Object.defineProperty(Tessel, 'LOCAL_AUTH_KEY', opd);
         test.done();
       });
 
@@ -1720,7 +1731,7 @@ exports['controller.root'] = {
     });
 
     this.standardTesselCommand.restore();
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((opts, callback) => {
       return callback(tessel);
     });
 
@@ -1754,7 +1765,7 @@ exports['controller.printAvailableNetworks'] = {
     this.error = this.sandbox.stub(log, 'error');
 
     this.tessel = TesselSimulator();
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((options, callback) => {
       callback(this.tessel);
       return Promise.resolve(this.tessel);
     });
@@ -1777,7 +1788,7 @@ exports['controller.printAvailableNetworks'] = {
   listCountOfVisibleToTesselSingle(test) {
     test.expect(5);
 
-    this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks', () => {
+    this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks').callsFake(() => {
       return Promise.resolve([{
         ssid: 'foo',
         quality: '100/100'
@@ -1804,7 +1815,7 @@ exports['controller.printAvailableNetworks'] = {
   listCountOfVisibleToTesselPlural(test) {
     test.expect(6);
 
-    this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks', () => {
+    this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks').callsFake(() => {
       return Promise.resolve([{
         ssid: 'foo',
         quality: '100/100'
@@ -1835,7 +1846,7 @@ exports['controller.printAvailableNetworks'] = {
   listCountOfVisibleToTesselPluralZero(test) {
     test.expect(4);
 
-    this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks', () => {
+    this.findAvailableNetworks = this.sandbox.stub(this.tessel, 'findAvailableNetworks').callsFake(() => {
       return Promise.resolve([]);
     });
 
@@ -1905,7 +1916,7 @@ exports['controller.reboot'] = {
 
     this.reboot = this.sandbox.stub(this.tessel, 'reboot');
 
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (opts, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((opts, callback) => {
       return callback(this.tessel);
     });
 
@@ -1959,7 +1970,7 @@ exports['controller.updateWithRemoteBuilds'] = {
       type: 'LAN'
     });
 
-    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', () => {
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList').callsFake(() => {
       return Promise.resolve(
         [{
           'released': '2015-08-20T16:20:08.704Z',
@@ -2087,7 +2098,7 @@ exports['controller.deploy'] = {
 
     this.deploy = this.sandbox.stub(this.tessel, 'deploy').returns(Promise.resolve());
 
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((options, callback) => {
       return callback(this.tessel);
     });
 
@@ -2130,7 +2141,7 @@ exports['controller.restart'] = {
 
     this.restart = this.sandbox.stub(this.tessel, 'restart').returns(Promise.resolve());
 
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((options, callback) => {
       return callback(this.tessel);
     });
 
@@ -2173,7 +2184,7 @@ exports['controller.eraseScript'] = {
 
     this.eraseScript = this.sandbox.stub(this.tessel, 'eraseScript').returns(Promise.resolve());
 
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((options, callback) => {
       return callback(this.tessel);
     });
 
@@ -2216,7 +2227,7 @@ exports['controller.setWiFiState'] = {
 
     this.setWiFiState = this.sandbox.stub(this.tessel, 'setWiFiState').returns(Promise.resolve());
 
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((options, callback) => {
       return callback(this.tessel);
     });
 
@@ -2273,7 +2284,7 @@ exports['controller.disableAccessPoint'] = {
 
     this.disableAccessPoint = this.sandbox.stub(this.tessel, 'disableAccessPoint').returns(Promise.resolve());
 
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((options, callback) => {
       return callback(this.tessel);
     });
 
@@ -2316,7 +2327,7 @@ exports['controller.enableAccessPoint'] = {
 
     this.enableAccessPoint = this.sandbox.stub(this.tessel, 'enableAccessPoint').returns(Promise.resolve());
 
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((options, callback) => {
       return callback(this.tessel);
     });
 
@@ -2359,7 +2370,7 @@ exports['controller.renameTessel'] = {
 
     this.rename = this.sandbox.stub(this.tessel, 'rename').returns(Promise.resolve());
 
-    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand', (options, callback) => {
+    this.standardTesselCommand = this.sandbox.stub(controller, 'standardTesselCommand').callsFake((options, callback) => {
       return callback(this.tessel);
     });
 

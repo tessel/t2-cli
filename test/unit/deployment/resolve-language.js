@@ -5,7 +5,7 @@ exports['deployment.resolveLanguage()'] = {
   setUp: function(done) {
     this.sandbox = sinon.sandbox.create();
     this.arg = '';
-    this.existsSync = this.sandbox.stub(fs, 'existsSync', (arg) => {
+    this.existsSync = this.sandbox.stub(fs, 'existsSync').callsFake((arg) => {
       return this.arg === arg;
     });
     done();

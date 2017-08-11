@@ -2,18 +2,18 @@
 require('../common/bootstrap');
 
 exports['Tessel.prototype.erase'] = {
-  setUp: function(done) {
+  setUp(done) {
 
     this.erase = sinon.spy(Tessel.prototype, 'eraseScript');
-    this.logWarn = sinon.stub(log, 'warn', function() {});
-    this.logInfo = sinon.stub(log, 'info', function() {});
+    this.logWarn = sinon.stub(log, 'warn');
+    this.logInfo = sinon.stub(log, 'info');
 
     this.tessel = TesselSimulator();
 
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.erase.restore();
     this.logWarn.restore();
@@ -21,7 +21,7 @@ exports['Tessel.prototype.erase'] = {
     done();
   },
 
-  eraseAsUsual: function(test) {
+  eraseAsUsual(test) {
     test.expect(10);
 
     var expected = [commands.app.stop(), commands.app.disable(), commands.deleteFolder(Tessel.REMOTE_APP_PATH)];
@@ -56,7 +56,7 @@ exports['Tessel.prototype.erase'] = {
       });
   },
 
-  noCodeInFlash: function(test) {
+  noCodeInFlash(test) {
     test.expect(1);
 
     // Attempt to erase the script

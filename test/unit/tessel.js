@@ -4,7 +4,7 @@ require('../common/bootstrap');
 
 exports['Tessel (get)'] = {
 
-  setUp: function(done) {
+  setUp(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
@@ -12,7 +12,7 @@ exports['Tessel (get)'] = {
     this.activeSeeker = undefined;
     // This is necessary to prevent an Emitter memory leak warning
     this.processOn = this.sandbox.stub(process, 'on');
-    this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
+    this.seeker = this.sandbox.stub(discover, 'TesselSeeker').callsFake(function Seeker() {
       this.start = function(options) {
         testContext.activeSeeker = this;
         setTimeout(() => this.stop(), options.timeout);
@@ -24,10 +24,10 @@ exports['Tessel (get)'] = {
       };
     });
     util.inherits(this.seeker, Emitter);
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn');
+    this.logInfo = this.sandbox.stub(log, 'info');
 
-    this.menu = this.sandbox.stub(Menu, 'prompt', function() {
+    this.menu = this.sandbox.stub(Menu, 'prompt').callsFake(function() {
       return Promise.resolve();
     });
 
@@ -38,12 +38,12 @@ exports['Tessel (get)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  infoOutput: function(test) {
+  infoOutput(test) {
     test.expect(1);
     Tessel.get(this.standardOpts)
       .catch(() => {
@@ -52,7 +52,7 @@ exports['Tessel (get)'] = {
       });
   },
 
-  noTessels: function(test) {
+  noTessels(test) {
     // Try to get Tessels but return none
     Tessel.get(this.standardOpts)
       // If Tessels were returned, this test should fail because we're
@@ -66,7 +66,7 @@ exports['Tessel (get)'] = {
       });
   },
 
-  noTesselWithName: function(test) {
+  noTesselWithName(test) {
     var testConnectionType = 'USB';
     var testName = 'Does_Exist';
 
@@ -93,7 +93,7 @@ exports['Tessel (get)'] = {
     setImmediate(() => this.activeSeeker.emit('tessel', tessel));
   },
 
-  oneUSB: function(test) {
+  oneUSB(test) {
     var testConnectionType = 'USB';
     var testName = 'testTessel';
     // Try to get Tessels but return none
@@ -116,7 +116,7 @@ exports['Tessel (get)'] = {
     setImmediate(() => this.activeSeeker.emit('tessel', tessel));
   },
 
-  multipleUSBNoName: function(test) {
+  multipleUSBNoName(test) {
     test.expect(2);
     // Try to get Tessels
     Tessel.get(this.standardOpts)
@@ -135,13 +135,13 @@ exports['Tessel (get)'] = {
 
     var a = new Tessel({
       connectionType: 'USB',
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
     var b = new Tessel({
       connectionType: 'USB',
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -155,7 +155,7 @@ exports['Tessel (get)'] = {
     });
   },
 
-  multipleUSBHasName: function(test) {
+  multipleUSBHasName(test) {
     test.expect(1);
 
     var customOpts = {
@@ -175,13 +175,13 @@ exports['Tessel (get)'] = {
 
     var a = new Tessel({
       connectionType: 'USB',
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
     var b = new Tessel({
       connectionType: 'USB',
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -195,7 +195,7 @@ exports['Tessel (get)'] = {
     });
   },
 
-  usbAndNonAuthorizedLANSameTessel: function(test) {
+  usbAndNonAuthorizedLANSameTessel(test) {
     test.expect(2);
 
     // Try to get Tessels but return none
@@ -215,14 +215,14 @@ exports['Tessel (get)'] = {
 
     var usb = new Tessel({
       connectionType: 'USB',
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
     var lan = new Tessel({
       connectionType: 'LAN',
       authorized: false,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -236,7 +236,7 @@ exports['Tessel (get)'] = {
     });
   },
 
-  usbAndNonAuthorizedLANSameTesselLANFirst: function(test) {
+  usbAndNonAuthorizedLANSameTesselLANFirst(test) {
     test.expect(2);
     // Try to get Tessels but return none
     Tessel.get(this.standardOpts)
@@ -252,14 +252,14 @@ exports['Tessel (get)'] = {
 
     var usb = new Tessel({
       connectionType: 'USB',
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
     var lan = new Tessel({
       connectionType: 'LAN',
       authorized: false,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -277,7 +277,7 @@ exports['Tessel (get)'] = {
 
   },
 
-  usbAndAuthorizedLANSameTessel: function(test) {
+  usbAndAuthorizedLANSameTessel(test) {
     test.expect(2);
 
     // Try to get Tessels
@@ -294,14 +294,14 @@ exports['Tessel (get)'] = {
 
     var usb = new Tessel({
       connectionType: 'USB',
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
     var lan = new Tessel({
       connectionType: 'LAN',
       authorized: true,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -317,7 +317,7 @@ exports['Tessel (get)'] = {
     });
   },
 
-  multipleLANNoName: function(test) {
+  multipleLANNoName(test) {
     test.expect(2);
     // Try to get Tessels but return none
     Tessel.get(this.standardOpts)
@@ -332,14 +332,14 @@ exports['Tessel (get)'] = {
     var a = new Tessel({
       connectionType: 'LAN',
       authorized: true,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
     var b = new Tessel({
       connectionType: 'LAN',
       authorized: true,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -353,7 +353,7 @@ exports['Tessel (get)'] = {
     });
   },
 
-  multipleLANHasName: function(test) {
+  multipleLANHasName(test) {
     test.expect(1);
 
     var customOpts = {
@@ -376,14 +376,14 @@ exports['Tessel (get)'] = {
     var a = new Tessel({
       connectionType: 'LAN',
       authorized: true,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
     var b = new Tessel({
       connectionType: 'LAN',
       authorized: true,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -399,7 +399,7 @@ exports['Tessel (get)'] = {
 
   // Tests that Tessel.get will return a USB connection
   // immediately upon being found if preferLAN is false
-  defaultUSBPrefer: function(test) {
+  defaultUSBPrefer(test) {
     test.expect(1);
 
     Tessel.get({
@@ -419,14 +419,14 @@ exports['Tessel (get)'] = {
     var a = new Tessel({
       connectionType: 'LAN',
       authorized: true,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
     var b = new Tessel({
       connectionType: 'USB',
       authorized: true,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -442,7 +442,7 @@ exports['Tessel (get)'] = {
 
   // Tests that Tessel.get will return a LAN connection
   // if one is ever found for a default Tessel
-  LANPrefer: function(test) {
+  LANPrefer(test) {
     test.expect(2);
 
     Tessel.get({
@@ -463,14 +463,14 @@ exports['Tessel (get)'] = {
 
     var usb = new Tessel({
       connectionType: 'USB',
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
     var lan = new Tessel({
       connectionType: 'LAN',
       authorized: true,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -487,7 +487,7 @@ exports['Tessel (get)'] = {
 
   // Tests that Tessel.get will return a LAN connection
   // if USB is preferred but none are found
-  USBPreferNoUSBFound: function(test) {
+  USBPreferNoUSBFound(test) {
     test.expect(2);
 
     Tessel.get({
@@ -508,7 +508,7 @@ exports['Tessel (get)'] = {
     var lan = new Tessel({
       connectionType: 'LAN',
       authorized: true,
-      end: function() {
+      end() {
         return Promise.resolve();
       }
     });
@@ -522,7 +522,7 @@ exports['Tessel (get)'] = {
 
 exports['Tessel (get); filter: unauthorized'] = {
 
-  setUp: function(done) {
+  setUp(done) {
     var testContext = this;
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
@@ -535,20 +535,20 @@ exports['Tessel (get); filter: unauthorized'] = {
 
     this.start = this.sandbox.spy(Seeker.prototype, 'start');
 
-    this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function() {
+    this.seeker = this.sandbox.stub(discover, 'TesselSeeker').callsFake(function() {
       testContext.activeSeeker = new Seeker();
       return testContext.activeSeeker;
     });
 
-    this.startScan = this.sandbox.stub(lan, 'startScan', function() {
+    this.startScan = this.sandbox.stub(lan, 'startScan').callsFake(function() {
       return new Emitter();
     });
 
     util.inherits(this.seeker, Emitter);
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn');
+    this.logInfo = this.sandbox.stub(log, 'info');
 
-    this.menu = this.sandbox.stub(Menu, 'prompt', function() {
+    this.menu = this.sandbox.stub(Menu, 'prompt').callsFake(function() {
       return Promise.resolve();
     });
 
@@ -559,12 +559,12 @@ exports['Tessel (get); filter: unauthorized'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  unauthorizedLANDoesNotSurface: function(test) {
+  unauthorizedLANDoesNotSurface(test) {
     test.expect(1);
 
     var customOpts = {
@@ -596,7 +596,7 @@ exports['Tessel (get); filter: unauthorized'] = {
 };
 
 exports['Tessel.simpleExec'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -604,15 +604,15 @@ exports['Tessel.simpleExec'] = {
     this.tessel = new TesselSimulator();
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
     done();
   },
 
-  fastClose: function(test) {
+  fastClose(test) {
     // Stub exec so we can inject an immediate close
-    this.sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       // Return the remote process
       callback(null, this.tessel._rps);
       // Immediately close the remote process

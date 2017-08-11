@@ -10,10 +10,10 @@ var sandbox = sinon.sandbox.create();
 
 exports['Tessel.prototype.memoryInfo'] = {
   setUp: function(done) {
-    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.resolve(meminfo));
+    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec').callsFake(() => Promise.resolve(meminfo));
 
-    this.warn = sandbox.stub(log, 'warn', function() {});
-    this.info = sandbox.stub(log, 'info', function() {});
+    this.warn = sandbox.stub(log, 'warn');
+    this.info = sandbox.stub(log, 'info');
 
     this.tessel = TesselSimulator();
 
@@ -80,7 +80,7 @@ exports['Tessel.prototype.memoryInfo'] = {
 
     this.simpleExec.restore();
 
-    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.resolve());
+    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec').callsFake(() => Promise.resolve());
 
     this.tessel.memoryInfo().catch((error) => {
       test.equal(error, 'Could not read device memory information.');
@@ -93,7 +93,7 @@ exports['Tessel.prototype.memoryInfo'] = {
 
     this.simpleExec.restore();
 
-    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.resolve(''));
+    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec').callsFake(() => Promise.resolve(''));
 
     this.tessel.memoryInfo().catch((error) => {
       test.equal(error, 'Could not read device memory information.');
@@ -121,14 +121,10 @@ exports['Tessel.prototype.deploy'] = {
 
     this.injectBinaryModules = sandbox.stub(deployment.js, 'injectBinaryModules').returns(Promise.resolve());
     this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules').returns(Promise.resolve());
-    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', function() {
-      return new Promise(function(resolve) {
-        resolve(jsCodeReference);
-      });
-    });
+    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle').returns(Promise.resolve(jsCodeReference));
 
-    this.warn = sandbox.stub(log, 'warn', function() {});
-    this.info = sandbox.stub(log, 'info', function() {});
+    this.warn = sandbox.stub(log, 'warn');
+    this.info = sandbox.stub(log, 'info');
 
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
@@ -138,7 +134,7 @@ exports['Tessel.prototype.deploy'] = {
     this.requestBuildList = sandbox.stub(updates, 'requestBuildList').returns(Promise.resolve(tesselBuilds));
 
     this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
-    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
+    this.exists = sandbox.stub(fs, 'exists').callsFake((fpath, callback) => callback(true));
 
     deleteTemporaryDeployCode()
       .then(done);
@@ -160,7 +156,7 @@ exports['Tessel.prototype.deploy'] = {
     test.expect(10);
 
     // This is used _solely_ to bailout of deployment early.
-    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec', () => Promise.reject('Bailout'));
+    this.simpleExec = sandbox.stub(Tessel.prototype, 'simpleExec').callsFake(() => Promise.reject('Bailout'));
     this.resolveLanguage = sandbox.spy(deployment, 'resolveLanguage');
     this.existsSync = sandbox.stub(fs, 'existsSync').returns(false);
 
@@ -392,10 +388,10 @@ exports['Tessel.prototype.deploy'] = {
 exports['Tessel.prototype.restart'] = {
   setUp: function(done) {
     this.resolveLanguage = sandbox.spy(deployment, 'resolveLanguage');
-    this.run = sandbox.stub(deploy, 'run', () => Promise.resolve());
-    this.start = sandbox.stub(deploy, 'start', () => Promise.resolve());
-    this.warn = sandbox.stub(log, 'warn', function() {});
-    this.info = sandbox.stub(log, 'info', function() {});
+    this.run = sandbox.stub(deploy, 'run').callsFake(() => Promise.resolve());
+    this.start = sandbox.stub(deploy, 'start').callsFake(() => Promise.resolve());
+    this.warn = sandbox.stub(log, 'warn');
+    this.info = sandbox.stub(log, 'info');
 
     this.tessel = TesselSimulator();
     this.simpleExec = sandbox.spy(this.tessel, 'simpleExec');
@@ -488,11 +484,11 @@ exports['Tessel.prototype.restart'] = {
 exports['deploy.start'] = {
   setUp: function(done) {
     this.resolveLanguage = sandbox.spy(deployment, 'resolveLanguage');
-    this.warn = sandbox.stub(log, 'warn', function() {});
-    this.info = sandbox.stub(log, 'info', function() {});
+    this.warn = sandbox.stub(log, 'warn');
+    this.info = sandbox.stub(log, 'info');
 
     this.tessel = TesselSimulator();
-    this.simpleExec = sandbox.stub(this.tessel, 'simpleExec', () => Promise.resolve());
+    this.simpleExec = sandbox.stub(this.tessel, 'simpleExec').callsFake(() => Promise.resolve());
 
     done();
   },
@@ -535,7 +531,7 @@ exports['deploy.run'] = {
 
     var entryPoint = 'foo';
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, opts, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, opts, callback) => {
       callback(null, this.tessel._rps);
       this.tessel._rps.emit('close');
     });
@@ -556,7 +552,7 @@ exports['deploy.run'] = {
 
     var entryPoint = 'foo';
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, opts, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, opts, callback) => {
 
       if (callback === undefined) {
         callback = opts;
@@ -590,8 +586,8 @@ exports['deploy.run'] = {
 
     this.tessel.connection.connectionType = 'LAN';
 
-    this.postRun = sandbox.stub(deployment.js, 'postRun', () => Promise.resolve());
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, options, callback) => {
+    this.postRun = sandbox.stub(deployment.js, 'postRun').callsFake(() => Promise.resolve());
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, options, callback) => {
       callback(null, this.tessel._rps);
       this.tessel._rps.emit('close');
     });
@@ -610,12 +606,12 @@ exports['deploy.run'] = {
     test.expect(1);
 
     this.tessel.connection.connectionType = 'USB';
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, options, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, options, callback) => {
       callback(null, this.tessel._rps);
       this.tessel._rps.emit('close');
     });
 
-    this.postRun = sandbox.stub(deployment.js, 'postRun', () => Promise.resolve());
+    this.postRun = sandbox.stub(deployment.js, 'postRun').callsFake(() => Promise.resolve());
 
     deploy.run(this.tessel, {
       resolvedEntryPoint: 'foo',
@@ -642,7 +638,7 @@ exports['deploy.createShellScript'] = {
   remoteShellScriptPathIsNotPathNormalized: function(test) {
     test.expect(2);
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       callback(null, this.tessel._rps);
       this.tessel._rps.emit('close');
     });

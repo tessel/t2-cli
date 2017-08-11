@@ -9,18 +9,18 @@ var pubKey = (`ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKg4tn+4c1lutKReMLhS8OeoHFC
 
 
 exports['Tessel.isProvisioned()'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.existsSync = this.sandbox.stub(fs, 'existsSync').returns(true);
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  isProvisionedTrue: function(test) {
+  isProvisionedTrue(test) {
     test.expect(3);
 
     var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
@@ -36,7 +36,7 @@ exports['Tessel.isProvisioned()'] = {
     test.done();
   },
 
-  isProvisionedFalse: function(test) {
+  isProvisionedFalse(test) {
     test.expect(2);
 
     this.existsSync.returns(false);
@@ -55,7 +55,7 @@ exports['Tessel.isProvisioned()'] = {
 };
 
 exports['controller.provisionTessel'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.tessel = TesselSimulator();
 
@@ -70,49 +70,49 @@ exports['controller.provisionTessel'] = {
     this.isProvisioned = this.sandbox.stub(Tessel, 'isProvisioned');
     this.controllerProvisionTessel = this.sandbox.spy(controller, 'provisionTessel');
 
-    this.exec = this.sandbox.stub(cp, 'exec', (command, callback) => {
+    this.exec = this.sandbox.stub(cp, 'exec').callsFake((command, callback) => {
       callback();
     });
 
-    this.writeFile = this.sandbox.stub(fs, 'writeFile', (file, contents, options, callback) => {
+    this.writeFile = this.sandbox.stub(fs, 'writeFile').callsFake((file, contents, options, callback) => {
       callback(null, callback);
     });
 
-    this.readFile = this.sandbox.stub(fs, 'readFile', (file, options, callback) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((file, options, callback) => {
       callback(null, pubKey.trim());
     });
 
     this.provision = this.sandbox.spy(Tessel.prototype, 'provisionTessel');
 
-    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', () => {
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(() => {
       return Promise.resolve('Tessel-1');
     });
 
-    this.getTessel = this.sandbox.stub(Tessel, 'get', () => {
+    this.getTessel = this.sandbox.stub(Tessel, 'get').callsFake(() => {
       return Promise.resolve(this.tessel);
     });
 
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
 
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
 
-    this.exportKey = this.sandbox.stub(RSA.prototype, 'exportKey', _ => _);
-    this.parseKey = this.sandbox.stub(sshpk, 'parseKey', _ => _);
+    this.exportKey = this.sandbox.stub(RSA.prototype, 'exportKey').callsFake(_ => _);
+    this.parseKey = this.sandbox.stub(sshpk, 'parseKey').callsFake(_ => _);
     this.RSA = this.sandbox.stub(global, 'RSA').returns(Object.create(RSA.prototype));
 
 
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.tessel._rps.removeAllListeners();
     this.sandbox.restore();
     deleteKeyTestFolder(done);
   },
 
-  completeForced: function(test) {
+  completeForced(test) {
     test.expect(5);
     var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
@@ -137,7 +137,7 @@ exports['controller.provisionTessel'] = {
       });
   },
 
-  completeUnprovisioned: function(test) {
+  completeUnprovisioned(test) {
     test.expect(4);
     var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
@@ -155,7 +155,7 @@ exports['controller.provisionTessel'] = {
     });
   },
 
-  completeUnprovisionedForced: function(test) {
+  completeUnprovisionedForced(test) {
     test.expect(4);
     var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
 
@@ -175,11 +175,11 @@ exports['controller.provisionTessel'] = {
     });
   },
 
-  reportFailure: function(test) {
+  reportFailure(test) {
     test.expect(2);
 
     this.exec.restore();
-    this.exec = this.sandbox.stub(cp, 'exec', function(command, callback) {
+    this.exec = this.sandbox.stub(cp, 'exec').callsFake(function(command, callback) {
       callback('some error');
     });
 
@@ -197,24 +197,24 @@ exports['controller.provisionTessel'] = {
 
 exports['Tessel.prototype.provisionTessel'] = {
 
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
 
     this.provision = this.sandbox.spy(Tessel.prototype, 'provisionTessel');
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
     this.setupLocal = this.sandbox.spy(provision, 'setupLocal');
     this.fileExists = this.sandbox.spy(commands, 'ensureFileExists');
     this.appendStdinToFile = this.sandbox.spy(commands, 'appendStdinToFile');
 
-    this.exportKey = this.sandbox.stub(RSA.prototype, 'exportKey', _ => _);
-    this.parseKey = this.sandbox.stub(sshpk, 'parseKey', _ => _);
+    this.exportKey = this.sandbox.stub(RSA.prototype, 'exportKey').callsFake(_ => _);
+    this.parseKey = this.sandbox.stub(sshpk, 'parseKey').callsFake(_ => _);
     this.RSA = this.sandbox.stub(global, 'RSA').returns(Object.create(RSA.prototype));
 
-    this.writeFile = this.sandbox.stub(fs, 'writeFile', (dirname, contents, options, callback) => {
+    this.writeFile = this.sandbox.stub(fs, 'writeFile').callsFake((dirname, contents, options, callback) => {
       callback(null);
     });
-    this.ensureDir = this.sandbox.stub(fs, 'ensureDir', (dirname, callback) => {
+    this.ensureDir = this.sandbox.stub(fs, 'ensureDir').callsFake((dirname, callback) => {
       callback(null);
     });
 
@@ -225,21 +225,21 @@ exports['Tessel.prototype.provisionTessel'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
     deleteKeyTestFolder(done);
   },
 
-  alreadyAuthedError: function(test) {
+  alreadyAuthedError(test) {
     test.expect(1);
 
     this.setupLocal.restore();
 
-    this.setupLocal = this.sandbox.stub(provision, 'setupLocal', function() {
+    this.setupLocal = this.sandbox.stub(provision, 'setupLocal').callsFake(function() {
       return Promise.resolve();
     });
-    this.authTessel = this.sandbox.stub(provision, 'authTessel', function() {
+    this.authTessel = this.sandbox.stub(provision, 'authTessel').callsFake(function() {
       return Promise.reject(new provision.AlreadyAuthenticatedError());
     });
 
@@ -255,7 +255,7 @@ exports['Tessel.prototype.provisionTessel'] = {
 
   },
 
-  requestFromLANTessel: function(test) {
+  requestFromLANTessel(test) {
     test.expect(2);
     // Set the connectionType to LAN so it will fail
     this.tessel = new TesselSimulator({
@@ -280,7 +280,7 @@ exports['Tessel.prototype.provisionTessel'] = {
       });
   },
 
-  keysCreatedCorrectPermissions: function(test) {
+  keysCreatedCorrectPermissions(test) {
     test.expect(3);
 
     var tesselAuthPath = Tessel.LOCAL_AUTH_PATH;
@@ -307,7 +307,7 @@ exports['Tessel.prototype.provisionTessel'] = {
       });
   },
 
-  noPreviousLocalKeys: function(test) {
+  noPreviousLocalKeys(test) {
     test.expect(1);
 
     this.isProvisioned = this.sandbox.stub(Tessel, 'isProvisioned').returns(false);
@@ -325,7 +325,7 @@ exports['Tessel.prototype.provisionTessel'] = {
       });
   },
 
-  fallbackKeyPath: function(test) {
+  fallbackKeyPath(test) {
     test.expect(4);
 
     this.isProvisioned = this.sandbox.stub(Tessel, 'isProvisioned').returns(false);
@@ -356,7 +356,7 @@ exports['Tessel.prototype.provisionTessel'] = {
       });
   },
 
-  keyAlreadyInRemoteAuth: function(test) {
+  keyAlreadyInRemoteAuth(test) {
     test.expect(3);
 
     this.writeFile.restore();
@@ -397,7 +397,7 @@ exports['Tessel.prototype.provisionTessel'] = {
     });
   },
 
-  deviceReadyForProvision: function(test) {
+  deviceReadyForProvision(test) {
     test.expect(3);
 
     this.writeFile.restore();
@@ -447,22 +447,22 @@ exports['Tessel.prototype.provisionTessel'] = {
   }
 };
 exports['provision.setDefaultKey'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
-    this.basic = this.sandbox.stub(log, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
 
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
   // setDefaultKey should reject with an error if no path was provided
-  failNoKey: function(test) {
+  failNoKey(test) {
     test.expect(1);
 
     provision.setDefaultKey()
@@ -478,7 +478,7 @@ exports['provision.setDefaultKey'] = {
   },
 
   // setDefaultKey should reject with an error if a non-string was provided
-  failWrongType: function(test) {
+  failWrongType(test) {
     test.expect(1);
 
     provision.setDefaultKey(path.parse('~/.tessel/id_rsa'))
@@ -494,7 +494,7 @@ exports['provision.setDefaultKey'] = {
   },
 
   // setDefaultKey should reject with an error if a non-existent file was provided
-  failNoFiles: function(test) {
+  failNoFiles(test) {
     test.expect(1);
     provision.setDefaultKey('./no_files_here')
       .then(function noCall() {
@@ -508,7 +508,7 @@ exports['provision.setDefaultKey'] = {
       });
   },
 
-  successfulSetting: function(test) {
+  successfulSetting(test) {
     test.expect(1);
 
     var key = path.join(__dirname, './real_file_i_promise');

@@ -2,7 +2,7 @@
 require('../common/bootstrap');
 
 exports['USBProcess death'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.context = sinon.sandbox.create();
 
     // Create a simulated USB Daemon (just a writable stream)
@@ -18,7 +18,7 @@ exports['USBProcess death'] = {
 
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     // Make sure we start each test with no registered connections
     Daemon.entries = {};
     this.context.restore();
@@ -26,7 +26,7 @@ exports['USBProcess death'] = {
   },
   // Creates a USB Process, then kills it
   // Ensures an error code is provided with close
-  exitWithError: function(test) {
+  exitWithError(test) {
     test.expect(2);
     var testStatusCode = 9;
 
@@ -55,7 +55,7 @@ exports['USBProcess death'] = {
       });
     });
   },
-  exitedWithoutError: function(test) {
+  exitedWithoutError(test) {
     test.expect(2);
     var testStatusCode = 0;
 
