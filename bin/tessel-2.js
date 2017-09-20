@@ -27,12 +27,14 @@ const pkg = require('../package.json');
  * Can be removed once https://github.com/npm/write-file-atomic/issues/11
  * has been resolved.
  */
+/* istanbul ignore else */
 if (!isRoot()) {
   try {
     updateNotifier({
       pkg
     }).notify();
   } catch (err) {
+    /* istanbul ignore next */
     CrashReporter.submit(err.stack, {
       silent: true
     });
@@ -204,6 +206,9 @@ makeCommand('run')
     options.push = false;
     // Overridden in tarBundle if options.full is `true`
     options.slim = true;
+    // binopts will come from an actual option,
+    // whereas subargs are custom parsed
+    options.binopts = options.binopts || [];
     options.subargs = parser.subargs || [];
 
     callControllerWith('deploy', options);
@@ -241,6 +246,13 @@ makeCommand('run')
   .option('rustcc', {
     flag: true,
     help: 'Specify the location and port of the Rust cross-compilation server.'
+  })
+  .option('binopts', {
+    default: [],
+    transform(binopts) {
+      return binopts.split(/,|\s+/).filter(Boolean);
+    },
+    help: 'Arguments sent to the binary (e.g. Node.js, Python)'
   })
   .help(`
     Deploy an application to Tessel and run it.
@@ -261,6 +273,9 @@ makeCommand('push')
     options.push = true;
     // Overridden in tarBundle if options.full is `true`
     options.slim = true;
+    // binopts will come from an actual option,
+    // whereas subargs are custom parsed
+    options.binopts = options.binopts || [];
     options.subargs = parser.subargs || [];
 
     callControllerWith('deploy', options);
@@ -298,6 +313,13 @@ makeCommand('push')
   .option('rustcc', {
     flag: true,
     help: 'Specify the location and port of the Rust cross-compilation server.'
+  })
+  .option('binopts', {
+    default: [],
+    transform(binopts) {
+      return binopts.split(/,|\s+/).filter(Boolean);
+    },
+    help: 'Arguments sent to the binary (e.g. Node.js, Python)'
   })
   .help(`
     Pushes the file/dir to Flash memory to be run anytime the Tessel is powered,

@@ -16,7 +16,7 @@ var sandbox = sinon.sandbox.create();
 var FIXTURE_PATH = path.join(__dirname, '/../../../test/unit/fixtures');
 
 exports['Deployment: JavaScript'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.deploy = sandbox.spy(Tessel.prototype, 'deploy');
     this.appStop = sandbox.spy(commands.app, 'stop');
     this.appStart = sandbox.spy(commands.app, 'start');
@@ -54,7 +54,7 @@ exports['Deployment: JavaScript'] = {
       .then(done);
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
 
     sandbox.restore();
@@ -66,7 +66,7 @@ exports['Deployment: JavaScript'] = {
       });
   },
 
-  bundling: function(test) {
+  bundling(test) {
     test.expect(1);
 
     this.tarBundle.restore();
@@ -98,21 +98,23 @@ exports['Deployment: JavaScript'] = {
     });
   },
 
-  createShellScriptDefaultEntryPoint: function(test) {
-    test.expect(1);
+  createShellScriptDefaultEntryPoint(test) {
+    test.expect(5);
 
-    var shellScript = tags.stripIndent `
-      #!/bin/sh
-      exec node /app/remote-script/index.js --key=value
-    `;
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'index.js',
+      binopts: ['--harmony'],
       subargs: ['--key=value'],
     };
     this.end.restore();
     this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
-      test.equal(buffer.toString(), shellScript);
+      let result = buffer.toString();
+      test.equal(result.includes('#!/bin/sh'), true);
+      test.equal(result.includes('exec node '), true);
+      test.equal(result.includes(' --harmony '), true);
+      test.equal(result.includes(' /app/remote-script/index.js '), true);
+      test.equal(result.includes(' --key=value'), true);
       test.done();
     });
 
@@ -123,21 +125,22 @@ exports['Deployment: JavaScript'] = {
     deploy.createShellScript(this.tessel, opts);
   },
 
-  createShellScriptDefaultEntryPointNoSubargs: function(test) {
-    test.expect(1);
+  createShellScriptDefaultEntryPointNoSubargs(test) {
+    test.expect(4);
 
-    var shellScript = tags.stripIndent `
-      #!/bin/sh
-      exec node /app/remote-script/index.js
-    `;
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'index.js',
+      binopts: ['--harmony'],
       subargs: [],
     };
     this.end.restore();
     this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
-      test.equal(buffer.toString(), shellScript);
+      let result = buffer.toString();
+      test.equal(result.includes('#!/bin/sh'), true);
+      test.equal(result.includes('exec node '), true);
+      test.equal(result.includes(' --harmony '), true);
+      test.equal(result.includes(' /app/remote-script/index.js'), true);
       test.done();
     });
 
@@ -148,21 +151,71 @@ exports['Deployment: JavaScript'] = {
     deploy.createShellScript(this.tessel, opts);
   },
 
-  createShellScriptSendsCorrectEntryPoint: function(test) {
-    test.expect(1);
+  createShellScriptDefaultEntryPointNoNodeargs(test) {
+    test.expect(3);
 
-    var shellScript = tags.stripIndent `
-      #!/bin/sh
-      exec node /app/remote-script/index.js --key=value
-    `;
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'index.js',
+      binopts: [],
+      subargs: [],
+    };
+    this.end.restore();
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
+      let result = buffer.toString();
+      test.equal(result.includes('#!/bin/sh'), true);
+      test.equal(result.includes('exec node '), true);
+      test.equal(result.includes(' /app/remote-script/index.js'), true);
+      test.done();
+    });
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      return callback(null, this.tessel._rps);
+    });
+
+    deploy.createShellScript(this.tessel, opts);
+  },
+
+  createShellScriptDefaultEntryPointNoExtraargs(test) {
+    test.expect(3);
+
+    var opts = {
+      lang: deployment.js,
+      resolvedEntryPoint: 'index.js',
+      binopts: [],
+      subargs: [],
+    };
+    this.end.restore();
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
+      let result = buffer.toString();
+      test.equal(result.includes('#!/bin/sh'), true);
+      test.equal(result.includes('exec node '), true);
+      test.equal(result.includes(' /app/remote-script/index.js'), true);
+      test.done();
+    });
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+      return callback(null, this.tessel._rps);
+    });
+
+    deploy.createShellScript(this.tessel, opts);
+  },
+
+  createShellScriptSendsCorrectEntryPoint(test) {
+    test.expect(4);
+    var opts = {
+      lang: deployment.js,
+      resolvedEntryPoint: 'index.js',
+      binopts: [],
       subargs: ['--key=value'],
     };
     this.end.restore();
     this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
-      test.equal(buffer.toString(), shellScript);
+      let result = buffer.toString();
+      test.equal(result.includes('#!/bin/sh'), true);
+      test.equal(result.includes('exec node '), true);
+      test.equal(result.includes(' /app/remote-script/index.js '), true);
+      test.equal(result.includes('--key=value'), true);
       test.done();
     });
 
@@ -173,7 +226,7 @@ exports['Deployment: JavaScript'] = {
     deploy.createShellScript(this.tessel, opts);
   },
 
-  processCompletionOrder: function(test) {
+  processCompletionOrder(test) {
     // Array of processes we've started but haven't completed yet
     var processesAwaitingCompletion = [];
     this.tessel._rps.on('control', (data) => {
@@ -1882,16 +1935,16 @@ var fixtures = {
 };
 
 exports['deploy.findProject'] = {
-  setUp: function(done) {
+  setUp(done) {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     sandbox.restore();
     done();
   },
 
-  home: function(test) {
+  home(test) {
     test.expect(1);
 
     var fake = path.normalize('/fake/test/home/dir');
@@ -1920,7 +1973,7 @@ exports['deploy.findProject'] = {
     });
   },
 
-  byFile: function(test) {
+  byFile(test) {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/index.js';
 
@@ -1938,7 +1991,7 @@ exports['deploy.findProject'] = {
     });
   },
 
-  byDirectory: function(test) {
+  byDirectory(test) {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/';
 
@@ -1955,7 +2008,7 @@ exports['deploy.findProject'] = {
     });
   },
 
-  byDirectoryBWExplicitMain: function(test) {
+  byDirectoryBWExplicitMain(test) {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project-explicit-main/';
 
@@ -1972,7 +2025,7 @@ exports['deploy.findProject'] = {
     });
   },
 
-  byDirectoryMissingIndex: function(test) {
+  byDirectoryMissingIndex(test) {
     test.expect(1);
 
     var target = 'test/unit/fixtures/find-project-no-index/index.js';
@@ -1989,7 +2042,7 @@ exports['deploy.findProject'] = {
     });
   },
 
-  byFileInSubDirectory: function(test) {
+  byFileInSubDirectory(test) {
     test.expect(1);
     var target = 'test/unit/fixtures/find-project/test/index.js';
 
@@ -2006,7 +2059,7 @@ exports['deploy.findProject'] = {
     });
   },
 
-  noPackageJsonSingle: function(test) {
+  noPackageJsonSingle(test) {
     test.expect(1);
 
     var pushdir = path.normalize('test/unit/fixtures/project-no-package.json/');
@@ -2027,7 +2080,7 @@ exports['deploy.findProject'] = {
     });
   },
 
-  noPackageJsonUseProgramDirname: function(test) {
+  noPackageJsonUseProgramDirname(test) {
     test.expect(1);
 
     // This is no package.json here
@@ -2049,7 +2102,7 @@ exports['deploy.findProject'] = {
 
 
 exports['deploy.sendBundle, error handling'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.tessel = TesselSimulator();
     this.fetchCurrentBuildInfo = sandbox.stub(this.tessel, 'fetchCurrentBuildInfo').returns(Promise.resolve('40b2b46a62a34b5a26170c75f7e717cea673d1eb'));
     this.fetchNodeProcessVersions = sandbox.stub(this.tessel, 'fetchNodeProcessVersions').returns(Promise.resolve(processVersions));
@@ -2061,13 +2114,13 @@ exports['deploy.sendBundle, error handling'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     sandbox.restore();
     done();
   },
 
-  findProject: function(test) {
+  findProject(test) {
     test.expect(1);
 
     this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.reject(this.failure));
@@ -2080,7 +2133,7 @@ exports['deploy.sendBundle, error handling'] = {
     });
   },
 
-  resolveBinaryModules: function(test) {
+  resolveBinaryModules(test) {
     test.expect(1);
 
     this.pathResolve.restore();
@@ -2102,7 +2155,7 @@ exports['deploy.sendBundle, error handling'] = {
     });
   },
 
-  tarBundle: function(test) {
+  tarBundle(test) {
     test.expect(1);
 
     this.pathResolve.restore();
@@ -2129,7 +2182,7 @@ exports['deploy.sendBundle, error handling'] = {
 
 
 exports['deployment.js.preBundle'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.tessel = TesselSimulator();
 
     this.info = sandbox.stub(log, 'info');
@@ -2160,7 +2213,7 @@ exports['deployment.js.preBundle'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     sandbox.restore();
     done();
@@ -3310,18 +3363,18 @@ exports['deployment.js.injectBinaryModules'] = {
 };
 
 exports['deploy.createShellScript'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.info = sandbox.stub(log, 'info');
     this.tessel = TesselSimulator();
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     sandbox.restore();
     done();
   },
 
-  remoteShellScriptPathIsNotPathNormalized: function(test) {
+  remoteShellScriptPathIsNotPathNormalized(test) {
     test.expect(2);
 
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
@@ -3332,6 +3385,7 @@ exports['deploy.createShellScript'] = {
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'foo',
+      binopts: [],
       subargs: [],
     };
 
@@ -3342,7 +3396,7 @@ exports['deploy.createShellScript'] = {
     });
   },
 
-  remoteShellScriptPathIsNotPathNormalizedWithSubargs: function(test) {
+  remoteShellScriptPathIsNotPathNormalizedWithSubargs(test) {
     test.expect(2);
 
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
@@ -3353,6 +3407,7 @@ exports['deploy.createShellScript'] = {
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'foo',
+      binopts: ['--harmony'],
       subargs: ['--key=value'],
     };
 
@@ -3367,15 +3422,15 @@ exports['deploy.createShellScript'] = {
 // Test dependencies are required and exposed in common/bootstrap.js
 
 exports['deployment.js.lists'] = {
-  setUp: function(done) {
+  setUp(done) {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     done();
   },
 
-  checkIncludes: function(test) {
+  checkIncludes(test) {
     test.expect(1);
 
     var includes = [
@@ -3391,7 +3446,7 @@ exports['deployment.js.lists'] = {
     test.done();
   },
 
-  checkIgnores: function(test) {
+  checkIgnores(test) {
     test.expect(1);
 
     var ignores = [
@@ -3402,7 +3457,7 @@ exports['deployment.js.lists'] = {
     test.done();
   },
 
-  checkCompression: function(test) {
+  checkCompression(test) {
     test.expect(1);
 
     /*
@@ -3428,7 +3483,7 @@ exports['deployment.js.lists'] = {
 
 
 exports['deployment.js.postRun'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.info = sandbox.stub(log, 'info');
 
     this.originalProcessStdinProperties = {
@@ -3451,7 +3506,7 @@ exports['deployment.js.postRun'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
 
     process.stdin.pipe = this.originalProcessStdinProperties.pipe;
     process.stdin.setRawMode = this.originalProcessStdinProperties.setRawMode;
@@ -3460,7 +3515,7 @@ exports['deployment.js.postRun'] = {
     done();
   },
 
-  postRunLAN: function(test) {
+  postRunLAN(test) {
     test.expect(2);
 
     deployment.js.postRun(this.notRealTessel, {
@@ -3474,7 +3529,7 @@ exports['deployment.js.postRun'] = {
     });
   },
 
-  postRunUSB: function(test) {
+  postRunUSB(test) {
     test.expect(2);
 
     this.notRealTessel.connection.connectionType = 'USB';
@@ -3491,7 +3546,7 @@ exports['deployment.js.postRun'] = {
 };
 
 exports['deployment.js.logMissingBinaryModuleWarning'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.warn = sandbox.stub(log, 'warn');
     this.details = {
       binName: 'compiled-binary.node',
@@ -3507,19 +3562,19 @@ exports['deployment.js.logMissingBinaryModuleWarning'] = {
     };
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     sandbox.restore();
     done();
   },
 
-  callsThroughToLogWarn: function(test) {
+  callsThroughToLogWarn(test) {
     test.expect(1);
     deployment.js.logMissingBinaryModuleWarning(this.details);
     test.equal(this.warn.callCount, 1);
     test.done();
   },
 
-  includesModuleNameAndVersion: function(test) {
+  includesModuleNameAndVersion(test) {
     test.expect(1);
 
     deployment.js.logMissingBinaryModuleWarning(this.details);

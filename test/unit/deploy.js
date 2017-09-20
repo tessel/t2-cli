@@ -289,6 +289,7 @@ exports['Tessel.prototype.deploy'] = {
     deployTestCode(this.tessel, {
       push: true,
       single: false,
+      binopts: [],
       subargs: [],
     }, (error) => {
       if (error) {
@@ -519,18 +520,18 @@ exports['deploy.start'] = {
 
 
 exports['deploy.run'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.info = sandbox.stub(log, 'info');
     this.tessel = TesselSimulator();
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     sandbox.restore();
     done();
   },
 
-  runResolveEntryPoint: function(test) {
+  runResolveEntryPoint(test) {
     test.expect(1);
 
     var entryPoint = 'foo';
@@ -546,12 +547,13 @@ exports['deploy.run'] = {
       subargs: ['--key=value'],
     }).then(() => {
       test.deepEqual(
-        this.exec.lastCall.args[0], [deployment.js.meta.binary, Tessel.REMOTE_RUN_PATH + entryPoint, '--key=value']);
+        this.exec.lastCall.args[0], ['node', '/tmp/remote-script/foo', '--key=value']
+      );
       test.done();
     });
   },
 
-  runResolveEntryPointWithPreRun: function(test) {
+  runResolveEntryPointWithPreRun(test) {
     test.expect(2);
 
     var entryPoint = 'foo';
@@ -579,13 +581,12 @@ exports['deploy.run'] = {
     deploy.run(this.tessel, {
       entryPoint: entryPoint,
       lang: deployment.rs,
-      subargs: [],
     }).then(() => {
       test.done();
     });
   },
 
-  runPostRunExistsLAN: function(test) {
+  runPostRunExistsLAN(test) {
     test.expect(1);
 
     this.tessel.connection.connectionType = 'LAN';
@@ -599,14 +600,13 @@ exports['deploy.run'] = {
     deploy.run(this.tessel, {
       resolvedEntryPoint: 'foo',
       lang: deployment.js,
-      subargs: [],
     }).then(() => {
       test.equal(this.postRun.callCount, 1);
       test.done();
     });
   },
 
-  runPostRunExistsUSB: function(test) {
+  runPostRunExistsUSB(test) {
     test.expect(1);
 
     this.tessel.connection.connectionType = 'USB';
@@ -628,18 +628,18 @@ exports['deploy.run'] = {
 };
 
 exports['deploy.createShellScript'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.info = sandbox.stub(log, 'info');
     this.tessel = TesselSimulator();
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     sandbox.restore();
     done();
   },
 
-  remoteShellScriptPathIsNotPathNormalized: function(test) {
+  remoteShellScriptPathIsNotPathNormalized(test) {
     test.expect(2);
 
     this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
@@ -650,6 +650,7 @@ exports['deploy.createShellScript'] = {
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'foo',
+      binopts: [],
       subargs: ['--key=value'],
     };
 
@@ -658,9 +659,8 @@ exports['deploy.createShellScript'] = {
       test.deepEqual(this.exec.lastCall.args[0], ['chmod', '+x', '/app/start']);
       test.done();
     });
-  }
+  },
 };
-
 
 exports['Tessel.REMOTE_*_PATH'] = {
   expectedPaths: function(test) {
