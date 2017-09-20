@@ -436,7 +436,7 @@ exports['Tessel (t2: root)'] = {
 };
 
 exports['Tessel (t2: run)'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -447,12 +447,12 @@ exports['Tessel (t2: run)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  defaultOptions: function(test) {
+  defaultOptions(test) {
     test.expect(6);
 
     t2(['run', 'index.js']);
@@ -473,7 +473,7 @@ exports['Tessel (t2: run)'] = {
     setImmediate(test.done);
   },
 
-  fullSetTrue_slimOverriddenLater: function(test) {
+  fullSetTrue_slimOverriddenLater(test) {
     test.expect(5);
 
     t2(['run', 'index.js', '--full=true']);
@@ -492,10 +492,40 @@ exports['Tessel (t2: run)'] = {
 
     setImmediate(test.done);
   },
+
+  binopts(test) {
+    test.expect(3);
+
+    t2(['run', 'index.js', '--binopts="--a"']);
+
+    test.equal(this.deploy.callCount, 1);
+
+    var args = this.deploy.lastCall.args[0];
+
+    test.deepEqual(args.binopts, ['--a']);
+    test.ok(!args.push);
+
+    setImmediate(test.done);
+  },
+
+  binoptsList(test) {
+    test.expect(3);
+
+    t2(['run', 'index.js', '--binopts=--a,--b,--c']);
+
+    test.equal(this.deploy.callCount, 1);
+
+    var args = this.deploy.lastCall.args[0];
+
+    test.deepEqual(args.binopts, ['--a', '--b', '--c']);
+    test.ok(!args.push);
+
+    setImmediate(test.done);
+  },
 };
 
 exports['Tessel (t2: push)'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -506,12 +536,12 @@ exports['Tessel (t2: push)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  defaultOptions: function(test) {
+  defaultOptions(test) {
     test.expect(6);
 
     t2(['push', 'index.js']);
@@ -532,7 +562,7 @@ exports['Tessel (t2: push)'] = {
     setImmediate(test.done);
   },
 
-  fullSetTrue_slimOverriddenLater: function(test) {
+  fullSetTrue_slimOverriddenLater(test) {
     test.expect(5);
 
     t2(['push', 'index.js', '--full=true']);
@@ -547,6 +577,36 @@ exports['Tessel (t2: push)'] = {
     test.ok(args.lanPrefer);
     test.ok(args.push);
     test.ok(args.slim);
+
+    setImmediate(test.done);
+  },
+
+  binopts(test) {
+    test.expect(3);
+
+    t2(['push', 'index.js', '--binopts="--a"']);
+
+    test.equal(this.deploy.callCount, 1);
+
+    var args = this.deploy.lastCall.args[0];
+
+    test.deepEqual(args.binopts, ['--a']);
+    test.ok(args.push);
+
+    setImmediate(test.done);
+  },
+
+  binoptsList(test) {
+    test.expect(3);
+
+    t2(['push', 'index.js', '--binopts=--a,--b,--c']);
+
+    test.equal(this.deploy.callCount, 1);
+
+    var args = this.deploy.lastCall.args[0];
+
+    test.deepEqual(args.binopts, ['--a', '--b', '--c']);
+    test.ok(args.push);
 
     setImmediate(test.done);
   },
