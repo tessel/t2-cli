@@ -42,7 +42,11 @@ global.sshpk = require('sshpk');
 global.ssh = require('ssh2');
 global.tags = require('common-tags');
 global.tar = require('tar');
-global.uglify = require('uglify-es');
+global.uglify = {
+  es: require('uglify-es'),
+  js: require('uglify-js'),
+};
+
 
 // Internal
 // ./lib/tessel/*
