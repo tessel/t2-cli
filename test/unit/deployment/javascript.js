@@ -276,9 +276,9 @@ exports['Deployment: JavaScript'] = {
   }
 };
 
-exports['deployment.js.compress'] = {
+exports['deployment.js.compress with uglify.es.minify()'] = {
   setUp(done) {
-    this.minify = sandbox.spy(uglify, 'minify');
+    this.minify = sandbox.spy(uglify.es, 'minify');
     this.spinnerStart = sandbox.stub(log.spinner, 'start');
     this.spinnerStop = sandbox.stub(log.spinner, 'stop');
 
@@ -292,7 +292,7 @@ exports['deployment.js.compress'] = {
   minifySuccess(test) {
     test.expect(1);
 
-    deployment.js.compress('let f = 1');
+    deployment.js.compress('es', 'let f = 1');
 
     test.equal(this.minify.callCount, 1);
     test.done();
@@ -301,14 +301,14 @@ exports['deployment.js.compress'] = {
   minifyFailureReturnsOriginalSource(test) {
     test.expect(2);
 
-    const result = deployment.js.compress('#$%^');
+    const result = deployment.js.compress('es', '#$%^');
 
-    // Assert that we tried both parsers
+    // Assert that we tried to minify
     test.equal(this.minify.callCount, 1);
 
     // Assert that compress just gave back
     // the source as-is, even though the
-    // parsers failed.
+    // parser failed.
     test.equal(result, '#$%^');
 
     test.done();
@@ -329,7 +329,7 @@ exports['deployment.js.compress'] = {
       // compress operation to fail. This
       // will ensure that that the uglify
       // attempt is made.
-      deployment.js.compress('#$%^');
+      deployment.js.compress('es', '#$%^');
     } catch (error) {
       // there is nothing we can about this.
     }
@@ -377,7 +377,7 @@ exports['deployment.js.compress'] = {
 
     const optionsCompressKeys = Object.keys(optionsCompress);
 
-    deployment.js.compress('var a = 1;', {});
+    deployment.js.compress('es', 'var a = 1;', {});
 
     const optionsSeen = this.minify.lastCall.args[1].compress;
 
@@ -422,7 +422,7 @@ exports['deployment.js.compress'] = {
 
     const ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
 
-    deployment.js.compress('var a = 1;');
+    deployment.js.compress('es', 'var a = 1;');
 
     const optionsSeen = this.minify.lastCall.args[1].compress;
 
@@ -464,7 +464,7 @@ exports['deployment.js.compress'] = {
 
     var theirExplicitSettingsKeys = Object.keys(theirExplicitSettings);
 
-    deployment.js.compress('var a = 1;', {
+    deployment.js.compress('es', 'var a = 1;', {
       compress: theirExplicitSettings
     });
 
@@ -479,20 +479,20 @@ exports['deployment.js.compress'] = {
 
   minifyFromBuffer(test) {
     test.expect(1);
-    test.equal(deployment.js.compress(new Buffer(codeContents)), codeContents);
+    test.equal(deployment.js.compress('es', new Buffer(codeContents)), codeContents);
     test.done();
   },
 
   minifyFromString(test) {
     test.expect(1);
-    test.equal(deployment.js.compress(codeContents), codeContents);
+    test.equal(deployment.js.compress('es', codeContents), codeContents);
     test.done();
   },
 
   minifyWithBareReturns(test) {
     test.expect(1);
 
-    deployment.js.compress('return;');
+    deployment.js.compress('es', 'return;');
     test.equal(this.minify.lastCall.args[1].parse.bare_returns, true);
     test.done();
   },
@@ -501,18 +501,258 @@ exports['deployment.js.compress'] = {
     test.expect(1);
 
     this.minify.restore();
-    this.minify = sandbox.stub(uglify, 'minify', () => {
+    this.minify = sandbox.stub(uglify.es, 'minify', () => {
       return {
         error: new SyntaxError('whatever')
       };
     });
 
-    const result = deployment.js.compress('return;');
+    const result = deployment.js.compress('es', 'return;');
 
     test.equal(result, 'return;');
 
     test.done();
   },
+};
+
+exports['deployment.js.compress with uglify.js.minify()'] = {
+  setUp(done) {
+    this.minify = sandbox.spy(uglify.js, 'minify');
+    this.spinnerStart = sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = sandbox.stub(log.spinner, 'stop');
+
+    done();
+  },
+  tearDown(done) {
+    sandbox.restore();
+    done();
+  },
+
+  minifySuccess(test) {
+    test.expect(1);
+
+    deployment.js.compress('js', 'let f = 1');
+
+    test.equal(this.minify.callCount, 1);
+    test.done();
+  },
+
+  minifyFailureReturnsOriginalSource(test) {
+    test.expect(2);
+
+    const result = deployment.js.compress('js', '#$%^');
+
+    // Assert that we tried to minify
+    test.equal(this.minify.callCount, 1);
+
+    // Assert that compress just gave back
+    // the source as-is, even though the
+    // parser failed.
+    test.equal(result, '#$%^');
+
+    test.done();
+  },
+
+  ourOptionsParse(test) {
+    test.expect(2);
+
+    const ourExplicitSettings = {
+      toplevel: true,
+      warnings: false,
+    };
+
+    const ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
+
+    try {
+      // Force the acorn parse step of the
+      // compress operation to fail. This
+      // will ensure that that the uglify
+      // attempt is made.
+      deployment.js.compress('js', '#$%^');
+    } catch (error) {
+      // there is nothing we can about this.
+    }
+
+    const optionsSeen = this.minify.lastCall.args[1];
+
+    ourExplicitSettingsKeys.forEach(key => {
+      test.equal(optionsSeen[key], ourExplicitSettings[key]);
+    });
+
+    test.done();
+  },
+
+  noOptionsCompress(test) {
+    test.expect(15);
+
+    const optionsCompress = {
+      // ------
+      booleans: true,
+      cascade: true,
+      conditionals: true,
+      comparisons: true,
+      hoist_funs: true,
+      if_return: true,
+      join_vars: true,
+      loops: true,
+      passes: 2,
+      properties: true,
+      sequences: true,
+      // ------ explicitly false
+      keep_fargs: false,
+      keep_fnames: false,
+      warnings: false,
+      drop_console: false,
+    };
+
+    const optionsCompressKeys = Object.keys(optionsCompress);
+
+    deployment.js.compress('js', 'var a = 1;', {});
+
+    const optionsSeen = this.minify.lastCall.args[1].compress;
+
+    optionsCompressKeys.forEach(key => {
+      test.equal(optionsSeen[key], optionsCompress[key]);
+    });
+
+    test.done();
+  },
+
+  ourOptionsCompress(test) {
+    test.expect(15);
+
+    const ourExplicitSettings = {
+      // ------
+      booleans: true,
+      cascade: true,
+      conditionals: true,
+      comparisons: true,
+      hoist_funs: true,
+      if_return: true,
+      join_vars: true,
+      loops: true,
+      passes: 2,
+      properties: true,
+      sequences: true,
+      // ------ explicitly false
+      keep_fargs: false,
+      keep_fnames: false,
+      warnings: false,
+      drop_console: false,
+    };
+
+    const ourExplicitSettingsKeys = Object.keys(ourExplicitSettings);
+
+    deployment.js.compress('js', 'var a = 1;');
+
+    const optionsSeen = this.minify.lastCall.args[1].compress;
+
+    ourExplicitSettingsKeys.forEach(key => {
+      test.equal(optionsSeen[key], ourExplicitSettings[key]);
+    });
+
+    test.done();
+  },
+
+  theirOptionsCompress(test) {
+    test.expect(15);
+
+    var theirExplicitSettings = {
+      // ------
+      booleans: true,
+      cascade: true,
+      conditionals: true,
+      comparisons: true,
+      hoist_funs: true,
+      if_return: true,
+      join_vars: true,
+      loops: true,
+      passes: 2,
+      properties: true,
+      sequences: true,
+      // ------ explicitly false
+      keep_fargs: false,
+      keep_fnames: false,
+      warnings: false,
+      drop_console: false,
+    };
+
+    var theirExplicitSettingsKeys = Object.keys(theirExplicitSettings);
+
+    deployment.js.compress('js', 'var a = 1;', {
+      compress: theirExplicitSettings
+    });
+
+    const optionsSeen = this.minify.lastCall.args[1].compress;
+
+    theirExplicitSettingsKeys.forEach(key => {
+      test.equal(optionsSeen[key], theirExplicitSettings[key]);
+    });
+
+    test.done();
+  },
+
+  minifyFromBuffer(test) {
+    test.expect(1);
+    test.equal(deployment.js.compress('js', new Buffer(codeContents)), codeContents);
+    test.done();
+  },
+
+  minifyFromString(test) {
+    test.expect(1);
+    test.equal(deployment.js.compress('js', codeContents), codeContents);
+    test.done();
+  },
+
+  minifyWithBareReturns(test) {
+    test.expect(1);
+
+    deployment.js.compress('js', 'return;');
+    test.equal(this.minify.lastCall.args[1].parse.bare_returns, true);
+    test.done();
+  },
+
+  avoidCompleteFailure(test) {
+    test.expect(1);
+
+    this.minify.restore();
+    this.minify = sandbox.stub(uglify.js, 'minify', () => {
+      return {
+        error: new SyntaxError('whatever')
+      };
+    });
+
+    const result = deployment.js.compress('js', 'return;');
+
+    test.equal(result, 'return;');
+
+    test.done();
+  },
+
+  theReasonForUsingBothVersionsOfUglify(test) {
+    test.expect(2);
+
+    this.minify.restore();
+    this.es = sandbox.spy(uglify.es, 'minify');
+    this.js = sandbox.spy(uglify.js, 'minify');
+
+    const code = tags.stripIndents `
+    var Class = function() {};
+
+    Class.prototype.method = function() {};
+
+    module.exports = Class;
+    `;
+
+    deployment.js.compress('es', code);
+    deployment.js.compress('js', code);
+
+    test.equal(this.es.callCount, 1);
+    test.equal(this.js.callCount, 1);
+    test.done();
+  },
+
+
 };
 
 exports['deployment.js.tarBundle'] = {
