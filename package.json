@@ -86,7 +86,7 @@
     "unbzip2-stream": "^1.0.10",
     "update-notifier": "^1.0.2",
     "url-join": "0.0.1",
-    "usb": "^1.2.0",
+    "usb": "1.2.0",
     "usb-daemon-parser": "0.0.2"
   },
   "preferGlobal": true,
