@@ -219,7 +219,7 @@ exports['init --lang=rust'] = {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
-    this.copy = this.sandbox.stub(fs, 'copy', (source, target, callback) => {
+    this.copy = this.sandbox.stub(fs, 'copy').callsFake((source, target, callback) => {
       callback();
     });
     done();
@@ -232,7 +232,7 @@ exports['init --lang=rust'] = {
   cargoVerifySucceed: function(test) {
     test.expect(3);
     // Stub our own exec so we don't try running cargo on the host cpu
-    this.exec = this.sandbox.stub(cp, 'exec', (command, callback) => {
+    this.exec = this.sandbox.stub(cp, 'exec').callsFake((command, callback) => {
       // Ensure the command is cargo
       test.equal(command, 'cargo');
       // Reject to simulate no Rust or Cargo install
@@ -262,7 +262,7 @@ exports['init --lang=rust'] = {
     test.expect(4);
 
     // Stub our own exec so we don't try running cargo on the host cpu
-    this.exec = this.sandbox.stub(cp, 'exec', (command, callback) => {
+    this.exec = this.sandbox.stub(cp, 'exec').callsFake((command, callback) => {
       // Ensure the command is cargo
       test.equal(command, 'cargo');
       // Reject to simulate no Rust or Cargo install
@@ -295,11 +295,11 @@ exports['init --lang=rust'] = {
     test.expect(5);
 
     // Does not exist, will be created.
-    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+    this.exists = this.sandbox.stub(fs, 'exists').callsFake((filename, callback) => {
       callback(false);
     });
 
-    this.mkdir = this.sandbox.stub(fs, 'mkdir', (dirname, callback) => {
+    this.mkdir = this.sandbox.stub(fs, 'mkdir').callsFake((dirname, callback) => {
       callback(false);
     });
 
@@ -324,25 +324,25 @@ exports['init --lang=javascript'] = {
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
 
-    this.writeFile = this.sandbox.stub(fs, 'writeFile', (filename, encoding, callback) => {
+    this.writeFile = this.sandbox.stub(fs, 'writeFile').callsFake((filename, encoding, callback) => {
       callback(null, {
         stub: true,
         filename
       });
     });
-    this.readFile = this.sandbox.stub(fs, 'readFile', (filename, encoding, callback) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((filename, encoding, callback) => {
       callback(null, {
         stub: true,
         filename
       });
     });
-    this.copy = this.sandbox.stub(fs, 'copy', (src, dest, callback) => {
+    this.copy = this.sandbox.stub(fs, 'copy').callsFake((src, dest, callback) => {
       callback();
     });
 
     const projectDependencyPath = path.normalize('test/unit/fixtures/project-binary-modules/node_modules/release/package.json');
 
-    this.globSync = this.sandbox.stub(glob, 'sync', () => {
+    this.globSync = this.sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         projectDependencyPath
       ];
@@ -361,7 +361,7 @@ exports['init --lang=javascript'] = {
       }
     };
 
-    this.npmLoad = this.sandbox.stub(npm, 'load', (callback) => {
+    this.npmLoad = this.sandbox.stub(npm, 'load').callsFake((callback) => {
       callback(null, this.npm);
     });
 
@@ -418,7 +418,7 @@ exports['init --lang=javascript'] = {
         this[operation.name].restore();
       }
 
-      this[operation.name] = this.sandbox.stub(init.js, operation.name, () => Promise.resolve('{"a":1}'));
+      this[operation.name] = this.sandbox.stub(init.js, operation.name).callsFake(() => Promise.resolve('{"a":1}'));
     });
 
     init.js.generateProject({})
@@ -444,7 +444,7 @@ exports['init --lang=javascript'] = {
     test.expect(2);
 
     this.npmLoad.restore();
-    this.npmLoad = this.sandbox.stub(npm, 'load', (callback) => {
+    this.npmLoad = this.sandbox.stub(npm, 'load').callsFake((callback) => {
       callback(new Error('npm.load failed?'), {});
     });
 
@@ -459,7 +459,7 @@ exports['init --lang=javascript'] = {
     test.expect(1);
 
     this.readFile.restore();
-    this.readFile = this.sandbox.stub(fs, 'readFile', (file, encoding, callback) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((file, encoding, callback) => {
       callback(null, '{}');
     });
 
@@ -473,7 +473,7 @@ exports['init --lang=javascript'] = {
     test.expect(2);
 
     this.readFile.restore();
-    this.readFile = this.sandbox.stub(fs, 'readFile', (file, encoding, callback) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((file, encoding, callback) => {
       callback(new Error('fs.readFile failed?'), {});
     });
 
@@ -488,7 +488,7 @@ exports['init --lang=javascript'] = {
     test.expect(1);
 
     this.writeFile.restore();
-    this.writeFile = this.sandbox.stub(fs, 'writeFile', (file, data, callback) => {
+    this.writeFile = this.sandbox.stub(fs, 'writeFile').callsFake((file, data, callback) => {
       callback(null, '{}');
     });
 
@@ -502,7 +502,7 @@ exports['init --lang=javascript'] = {
     test.expect(2);
 
     this.writeFile.restore();
-    this.writeFile = this.sandbox.stub(fs, 'writeFile', (file, data, callback) => {
+    this.writeFile = this.sandbox.stub(fs, 'writeFile').callsFake((file, data, callback) => {
       callback(new Error('fs.writeFile failed?'), {});
     });
 
@@ -536,7 +536,7 @@ exports['init --lang=javascript'] = {
   npmInstallRegistryLogLevel(test) {
     test.expect(3);
 
-    this.loadNpm = this.sandbox.stub(init.js, 'loadNpm', () => {
+    this.loadNpm = this.sandbox.stub(init.js, 'loadNpm').callsFake(() => {
       return Promise.resolve(this.npm);
     });
 
@@ -759,7 +759,7 @@ exports['init --lang=javascript'] = {
   createSampleProgram(test) {
     test.expect(3);
 
-    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+    this.exists = this.sandbox.stub(fs, 'exists').callsFake((filename, callback) => {
       callback(false);
     });
 
@@ -776,7 +776,7 @@ exports['init --lang=javascript'] = {
   createSampleProgramExists(test) {
     test.expect(1);
 
-    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+    this.exists = this.sandbox.stub(fs, 'exists').callsFake((filename, callback) => {
       callback(true);
     });
 
@@ -790,7 +790,7 @@ exports['init --lang=javascript'] = {
   createTesselinclude(test) {
     test.expect(3);
 
-    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+    this.exists = this.sandbox.stub(fs, 'exists').callsFake((filename, callback) => {
       callback(false);
     });
 
@@ -806,7 +806,7 @@ exports['init --lang=javascript'] = {
   createTesselincludeExists(test) {
     test.expect(1);
 
-    this.exists = this.sandbox.stub(fs, 'exists', (filename, callback) => {
+    this.exists = this.sandbox.stub(fs, 'exists').callsFake((filename, callback) => {
       callback(true);
     });
 

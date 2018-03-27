@@ -15,17 +15,17 @@ FakeScanner.prototype.stop = function() {};
 
 
 exports['TesselSeeker'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.seeker = new TesselSeeker();
 
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     done();
   },
 
-  initialization: function(test) {
+  initialization(test) {
     test.expect(2);
     test.equal(this.lanScan, null);
     test.equal(this.usbScan, null);
@@ -34,20 +34,20 @@ exports['TesselSeeker'] = {
 };
 
 exports['TesselSeeker.prototype.start'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.stop = this.sandbox.spy(FakeScanner.prototype, 'stop');
 
-    this.usbStartScan = this.sandbox.stub(usb, 'startScan', function() {
+    this.usbStartScan = this.sandbox.stub(usb, 'startScan').callsFake(function() {
       return new FakeScanner();
     });
-    this.lanStartScan = this.sandbox.stub(lan, 'startScan', function() {
+    this.lanStartScan = this.sandbox.stub(lan, 'startScan').callsFake(function() {
       return new FakeScanner();
     });
-    this.usbStopScan = this.sandbox.stub(usb, 'stopScan', function() {
+    this.usbStopScan = this.sandbox.stub(usb, 'stopScan').callsFake(function() {
       return null;
     });
-    this.lanStopScan = this.sandbox.stub(lan, 'stopScan', function() {
+    this.lanStopScan = this.sandbox.stub(lan, 'stopScan').callsFake(function() {
       return null;
     });
     this.seeker = new TesselSeeker();
@@ -57,12 +57,12 @@ exports['TesselSeeker.prototype.start'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  start: function(test) {
+  start(test) {
     test.expect(3);
 
     test.equal(this.seeker.start(), this.seeker);
@@ -73,7 +73,7 @@ exports['TesselSeeker.prototype.start'] = {
     test.done();
   },
 
-  onlyFindUSBConnectionNoAlternative: function(test) {
+  onlyFindUSBConnectionNoAlternative(test) {
     test.expect(2);
     // Scan for new connections for this period
     var seekerOpts = {
@@ -82,7 +82,7 @@ exports['TesselSeeker.prototype.start'] = {
     };
 
     // Error on name fetch
-    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(function() {
       return Promise.resolve('Frank');
     });
 
@@ -114,22 +114,22 @@ exports['TesselSeeker.prototype.start'] = {
 
 
 exports['TesselSeeker.prototype.stop'] = {
-  setUp: function(done) {
+  setUp(done) {
 
     this.sandbox = sinon.sandbox.create();
 
     this.stop = this.sandbox.spy(FakeScanner.prototype, 'stop');
 
-    this.usbStartScan = this.sandbox.stub(usb, 'startScan', function() {
+    this.usbStartScan = this.sandbox.stub(usb, 'startScan').callsFake(function() {
       return new FakeScanner();
     });
-    this.lanStartScan = this.sandbox.stub(lan, 'startScan', function() {
+    this.lanStartScan = this.sandbox.stub(lan, 'startScan').callsFake(function() {
       return new FakeScanner();
     });
-    this.usbStopScan = this.sandbox.stub(usb, 'stopScan', function() {
+    this.usbStopScan = this.sandbox.stub(usb, 'stopScan').callsFake(function() {
       return null;
     });
-    this.lanStopScan = this.sandbox.stub(lan, 'stopScan', function() {
+    this.lanStopScan = this.sandbox.stub(lan, 'stopScan').callsFake(function() {
       return null;
     });
     this.seeker = new TesselSeeker();
@@ -137,18 +137,18 @@ exports['TesselSeeker.prototype.stop'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  stop: function(test) {
+  stop(test) {
     test.expect(1);
     test.equal(this.seeker.stop(), this.seeker);
     test.done();
   },
 
-  stopAfterStart: function(test) {
+  stopAfterStart(test) {
     test.expect(2);
 
     this.seeker.start();
@@ -161,7 +161,7 @@ exports['TesselSeeker.prototype.stop'] = {
     test.done();
   },
 
-  stopDuplicateCall: function(test) {
+  stopDuplicateCall(test) {
     test.expect(4);
 
     this.seeker.start();
@@ -181,7 +181,7 @@ exports['TesselSeeker.prototype.stop'] = {
     test.done();
   },
 
-  stopOnlyUsb: function(test) {
+  stopOnlyUsb(test) {
     test.expect(2);
 
     this.seeker.start();
@@ -196,7 +196,7 @@ exports['TesselSeeker.prototype.stop'] = {
     test.done();
   },
 
-  stopOnlyLan: function(test) {
+  stopOnlyLan(test) {
     test.expect(2);
 
     this.seeker.start();
@@ -213,26 +213,26 @@ exports['TesselSeeker.prototype.stop'] = {
 };
 
 exports['TesselSeeker Scan Time'] = {
-  setUp: function(done) {
+  setUp(done) {
 
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
-    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
-    this.logBasic = this.sandbox.stub(log, 'error', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn');
+    this.logInfo = this.sandbox.stub(log, 'info');
+    this.logBasic = this.sandbox.stub(log, 'basic');
+    this.logBasic = this.sandbox.stub(log, 'error');
 
     this.stop = this.sandbox.spy(FakeScanner.prototype, 'stop');
 
-    this.usbStartScan = this.sandbox.stub(usb, 'startScan', function() {
+    this.usbStartScan = this.sandbox.stub(usb, 'startScan').callsFake(function() {
       return new FakeScanner();
     });
-    this.lanStartScan = this.sandbox.stub(lan, 'startScan', function() {
+    this.lanStartScan = this.sandbox.stub(lan, 'startScan').callsFake(function() {
       return new FakeScanner();
     });
-    this.usbStopScan = this.sandbox.stub(usb, 'stopScan', function() {
+    this.usbStopScan = this.sandbox.stub(usb, 'stopScan').callsFake(function() {
       return null;
     });
-    this.lanStopScan = this.sandbox.stub(lan, 'stopScan', function() {
+    this.lanStopScan = this.sandbox.stub(lan, 'stopScan').callsFake(function() {
       return null;
     });
     this.seeker = new TesselSeeker();
@@ -242,14 +242,14 @@ exports['TesselSeeker Scan Time'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     // Remove sigint listeners once we finish with the Tessels
     process.removeAllListeners('SIGINT');
     this.sandbox.restore();
     done();
   },
 
-  oneUnauthorizedLANPending: function(test) {
+  oneUnauthorizedLANPending(test) {
     test.expect(1);
     // Scan for new connections for this period
     var seekerOpts = {
@@ -277,13 +277,13 @@ exports['TesselSeeker Scan Time'] = {
     emitConnectionInMs(this.seeker, lan.connection, this.scanTime / 2);
   },
 
-  oneAuthorizedLANPending: function(test) {
+  oneAuthorizedLANPending(test) {
     test.expect(2);
     // Spy on the seeker stop
     this.seekerStop = this.sandbox.spy(TesselSeeker.prototype, 'stop');
 
     // Give it a name
-    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(function() {
       return new Promise(function(resolve) {
         resolve('Tessel-Test_Subject');
       });
@@ -316,11 +316,11 @@ exports['TesselSeeker Scan Time'] = {
     emitConnectionInMs(this.seeker, lan.connection, this.scanTime / 2);
   },
 
-  oneAuthorizedLANPendingFails: function(test) {
+  oneAuthorizedLANPendingFails(test) {
     test.expect(1);
 
     // Error on name fetch
-    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(function() {
       return Promise.reject('Could not get name for some reason...');
     });
 
@@ -350,11 +350,11 @@ exports['TesselSeeker Scan Time'] = {
   },
 
   // A test with multiple kinds of connections emitted at different times
-  usbAndLANConnections: function(test) {
+  usbAndLANConnections(test) {
     test.expect(1);
 
     // Give it a name
-    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(function() {
       return Promise.resolve('Tessel-AndFriends');
     });
 
@@ -403,11 +403,11 @@ exports['TesselSeeker Scan Time'] = {
   },
 
   // A test where seeker.stop is explicitly called instead of waiting for timeout
-  explicitStop: function(test) {
+  explicitStop(test) {
     test.expect(1);
 
     // Error on name fetch
-    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(function() {
       return Promise.resolve('Frank');
     });
 
@@ -438,7 +438,7 @@ exports['TesselSeeker Scan Time'] = {
 
     setTimeout(() => this.seeker.stop(), this.scanTime);
   },
-  onlyFindUSBConnections: function(test) {
+  onlyFindUSBConnections(test) {
     test.expect(2);
     // Scan for new connections for this period
     var seekerOpts = {
@@ -447,7 +447,7 @@ exports['TesselSeeker Scan Time'] = {
     };
 
     // Error on name fetch
-    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(function() {
       return Promise.resolve('Frank');
     });
 
@@ -489,7 +489,7 @@ exports['TesselSeeker Scan Time'] = {
 
     setTimeout(() => this.seeker.stop(), this.scanTime);
   },
-  onlyFindLANConnections: function(test) {
+  onlyFindLANConnections(test) {
     test.expect(3);
     // Scan for new connections for this period
     var seekerOpts = {
@@ -498,7 +498,7 @@ exports['TesselSeeker Scan Time'] = {
     };
 
     // Error on name fetch
-    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(function() {
       return Promise.resolve('Frank');
     });
 

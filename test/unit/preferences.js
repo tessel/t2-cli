@@ -18,10 +18,10 @@ exports['Preferences.load'] = {
     this.error = this.sandbox.stub(log, 'error');
     this.info = this.sandbox.stub(log, 'info');
 
-    this.exists = this.sandbox.stub(fs, 'exists', (file, handler) => {
+    this.exists = this.sandbox.stub(fs, 'exists').callsFake((file, handler) => {
       handler(true);
     });
-    this.readFile = this.sandbox.stub(fs, 'readFile', (file, handler) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((file, handler) => {
       handler(null, '{}');
     });
     done();
@@ -57,7 +57,7 @@ exports['Preferences.read'] = {
     this.error = this.sandbox.stub(log, 'error');
     this.info = this.sandbox.stub(log, 'info');
 
-    this.exists = this.sandbox.stub(fs, 'exists', (file, handler) => {
+    this.exists = this.sandbox.stub(fs, 'exists').callsFake((file, handler) => {
       handler(true);
     });
     done();
@@ -71,7 +71,7 @@ exports['Preferences.read'] = {
     test.expect(1);
 
     var defaultValue = 'value';
-    this.readFile = this.sandbox.stub(fs, 'readFile', (file, handler) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((file, handler) => {
       handler(null, '');
     });
 
@@ -85,7 +85,7 @@ exports['Preferences.read'] = {
     test.expect(1);
 
     var defaultValue = 'value';
-    this.readFile = this.sandbox.stub(fs, 'readFile', (file, handler) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((file, handler) => {
       handler(new Error('this should not matter'));
     });
 
@@ -99,7 +99,7 @@ exports['Preferences.read'] = {
     test.expect(1);
 
     var defaultValue = 'value';
-    this.readFile = this.sandbox.stub(fs, 'readFile', (file, handler) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((file, handler) => {
       handler(null, '{}');
     });
 
@@ -114,7 +114,7 @@ exports['Preferences.read'] = {
 
     var defaultValue = null;
     var value = 'value';
-    this.readFile = this.sandbox.stub(fs, 'readFile', (file, handler) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((file, handler) => {
       handler(null, `{"key": "${value}"}`);
     });
 
@@ -131,16 +131,16 @@ exports['Preferences.write'] = {
     this.state = {};
     this.error = this.sandbox.stub(log, 'error');
     this.info = this.sandbox.stub(log, 'info');
-    this.exists = this.sandbox.stub(fs, 'exists', (file, handler) => {
+    this.exists = this.sandbox.stub(fs, 'exists').callsFake((file, handler) => {
       handler(true);
     });
-    this.ensureFile = this.sandbox.stub(fs, 'ensureFile', (file, handler) => {
+    this.ensureFile = this.sandbox.stub(fs, 'ensureFile').callsFake((file, handler) => {
       handler(null);
     });
-    this.readFile = this.sandbox.stub(fs, 'readFile', (file, handler) => {
+    this.readFile = this.sandbox.stub(fs, 'readFile').callsFake((file, handler) => {
       handler(null, JSON.stringify(this.state));
     });
-    this.writeFile = this.sandbox.stub(fs, 'writeFile', (file, data, handler) => {
+    this.writeFile = this.sandbox.stub(fs, 'writeFile').callsFake((file, data, handler) => {
       this.state = JSON.parse(data);
       handler(null);
     });
@@ -173,7 +173,7 @@ exports['Preferences.write'] = {
     var error = 'error';
 
     this.ensureFile.restore();
-    this.ensureFile = this.sandbox.stub(fs, 'ensureFile', (file, handler) => handler(error));
+    this.ensureFile = this.sandbox.stub(fs, 'ensureFile').callsFake((file, handler) => handler(error));
 
     Preferences.write(key, value).catch(rejection => {
       test.equal(rejection, error);

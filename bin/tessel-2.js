@@ -41,6 +41,10 @@ if (!isRoot()) {
   }
 }
 
+const flag = true;
+const hidden = true;
+const required = true;
+
 function makeCommand(commandName) {
   return parser.command(commandName)
     .option('timeout', {
@@ -60,15 +64,15 @@ function makeCommand(commandName) {
       help: 'The name of the tessel on which the command will be executed'
     })
     .option('lan', {
-      flag: true,
+      flag,
       help: 'Use only a LAN connection'
     })
     .option('usb', {
-      flag: true,
+      flag,
       help: 'Use only a USB connection'
     })
     .option('lanPrefer', {
-      flag: true,
+      flag,
       default: false,
       help: 'Prefer a LAN connection when available, otherwise use USB.'
     })
@@ -99,7 +103,7 @@ parser.command('install')
   })
   .option('operation', {
     position: 1,
-    required: true,
+    required,
     choices: ['drivers', 'homedir']
   })
   .help(`
@@ -116,15 +120,15 @@ parser.command('crash-reporter')
     callControllerWith('crashReporter', options);
   })
   .option('off', {
-    flag: true,
+    flag,
     help: 'Disable the Crash Reporter.'
   })
   .option('on', {
-    flag: true,
+    flag,
     help: 'Enable the Crash Reporter.'
   })
   .option('test', {
-    flag: true,
+    flag,
     help: 'Test the Crash Reporter.'
   })
   .help('Configure the Crash Reporter.');
@@ -133,11 +137,11 @@ parser.command('provision')
   .callback(options => {
     log.level(options.loglevel);
 
-    callControllerWith('provisionTessel', options);
+    callControllerWith('provision', options);
   })
   .option('force', {
     abbr: 'f',
-    flag: true,
+    flag,
     help: 'Delete existing .tessel authorization and reprovision.'
   })
   .help('Authorize your computer to control the USB-connected Tessel');
@@ -145,11 +149,12 @@ parser.command('provision')
 makeCommand('restore')
   .callback(options => {
     log.level(options.loglevel);
-    callControllerWith('restoreTessel', options);
+
+    callControllerWith('restore', options);
   })
   .option('force', {
     abbr: 'f',
-    flag: true,
+    flag,
     help: 'Skip the Device ID check and restore. Including this flag is not recommended, but may be necessary if Tessel memory device contents are corrupt.'
   })
   .help('Restore your Tessel by installing the factory version of OpenWrt.');
@@ -157,7 +162,6 @@ makeCommand('restore')
 makeCommand('restart')
   .callback(options => {
     log.level(options.loglevel);
-
 
     // 1. Check that the type is a valid type
     if (options.type !== 'ram' && options.type !== 'flash') {
@@ -208,43 +212,42 @@ makeCommand('run')
     options.slim = true;
     // binopts will come from an actual option,
     // whereas subargs are custom parsed
-    options.binopts = options.binopts || [];
     options.subargs = parser.subargs || [];
 
     callControllerWith('deploy', options);
   })
   .option('entryPoint', {
     position: 1,
-    required: true,
+    required,
     help: 'The program entry point file to deploy to Tessel'
   })
   .option('single', {
-    flag: true,
+    flag,
     abbr: 's',
     help: 'Deploy only the specified entry point file. Previously deployed files are preserved. Program is started from specified file.'
   })
   .option('verbose', {
-    flag: true,
+    flag,
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
   .option('slim', {
-    flag: true,
+    flag,
     default: true,
     help: 'Deploy a project containing only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.',
   })
   .option('full', {
-    flag: true,
+    flag,
     default: false,
     help: 'Deploy a project containing all files within, including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.'
   })
   .option('compress', {
-    flag: true,
+    flag,
     default: true,
     help: 'Compression steps during deployment. To skip compression, use --compress=false.'
   })
   .option('rustcc', {
-    flag: true,
+    flag,
     help: 'Specify the location and port of the Rust cross-compilation server.'
   })
   .option('binopts', {
@@ -275,43 +278,42 @@ makeCommand('push')
     options.slim = true;
     // binopts will come from an actual option,
     // whereas subargs are custom parsed
-    options.binopts = options.binopts || [];
     options.subargs = parser.subargs || [];
 
     callControllerWith('deploy', options);
   })
   .option('entryPoint', {
     position: 1,
-    required: true,
+    required,
     help: 'The program entry point file to deploy to Tessel'
   })
   .option('single', {
-    flag: true,
+    flag,
     abbr: 's',
     help: 'Deploy only the specified entry point file. Previously deployed files are preserved. Program is started from specified file.'
   })
   .option('verbose', {
-    flag: true,
+    flag,
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
   .option('slim', {
-    flag: true,
+    flag,
     default: true,
     help: 'Deploy a project containing only the required files, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.',
   })
   .option('full', {
-    flag: true,
+    flag,
     default: false,
     help: 'Deploy a project containing all files within, including those not used by the program, excluding any files matched by non-negated rules in .tesselignore and including any files matched by rules in .tesselinclude. Program is started from specified file.'
   })
   .option('compress', {
-    flag: true,
+    flag,
     default: true,
     help: 'Compression steps during deployment. To skip compression, use --compress=false.'
   })
   .option('rustcc', {
-    flag: true,
+    flag,
     help: 'Specify the location and port of the Rust cross-compilation server.'
   })
   .option('binopts', {
@@ -340,7 +342,7 @@ makeCommand('erase')
     callControllerWith('eraseScript', options);
   })
   .option('verbose', {
-    flag: true,
+    flag,
     abbr: 'v',
     help: 'Choose to view more debugging information'
   })
@@ -361,7 +363,7 @@ parser.command('init')
     callControllerWith('createNewProject', options);
   })
   .option('interactive', {
-    flag: true,
+    flag,
     abbr: 'i',
     help: 'Run in interactive mode'
   })
@@ -381,6 +383,7 @@ makeCommand('wifi')
     if (options.list) {
       callControllerWith('printAvailableNetworks', options);
     } else if (options.off || options.on) {
+      /* istanbul ignore else */
       if (options.off) {
         options.on = false;
       }
@@ -393,7 +396,7 @@ makeCommand('wifi')
   })
   .option('list', {
     abbr: 'l',
-    flag: true,
+    flag,
     help: 'List available Wifi networks'
   })
   .option('ssid', {
@@ -412,11 +415,11 @@ makeCommand('wifi')
     help: 'Set the encryption of the network to connect to (i.e. wep, psk, psk2, wpa, wpa2).'
   })
   .option('off', {
-    flag: true,
+    flag,
     help: 'Disable the wireless network'
   })
   .option('on', {
-    flag: true,
+    flag,
     help: 'Enable the wireless network'
   })
   .help('Configure the wireless connection');
@@ -428,8 +431,8 @@ parser.command('key')
     callControllerWith('setupLocal', options);
   })
   .option('generate', {
+    required,
     position: 1,
-    required: true,
     help: 'Generate a local SSH keypair for authenticating to a Tessel'
   })
   .help('Manage ssh keys for connecting to a Tessel');
@@ -438,15 +441,15 @@ makeCommand('rename')
   .callback(options => {
     log.level(options.loglevel);
 
-    callControllerWith('renameTessel', options);
+    callControllerWith('rename', options);
   })
   .option('newName', {
-    help: 'The new name for the selected Tessel',
     position: 1,
+    help: 'The new name for the selected Tessel',
   })
   .option('reset', {
+    flag,
     abbr: 'r',
-    flag: true
   })
   .help('Change the name of a Tessel to something new');
 
@@ -466,21 +469,21 @@ makeCommand('update')
     help: 'Specify a build version.'
   })
   .option('list', {
+    flag,
     abbr: 'l',
     required: false,
-    flag: true,
     help: 'List the available builds.'
   })
   .option('force', {
+    flag,
     abbr: 'f',
     required: false,
-    flag: true,
     help: 'Update to the latest version regardless of current version.'
   })
   .option('n', {
+    flag,
     abbr: 'n',
     required: false,
-    flag: true,
     help: 'Do not save configuration during update.'
   })
   .option('openwrt-path', {
@@ -500,7 +503,7 @@ makeCommand('version')
   .callback(options => {
     log.level(options.loglevel);
 
-    callControllerWith('tesselEnvVersions', options);
+    callControllerWith('envVersions', options);
   })
   .help('Display a list of present Tessel 2 environment versions (CLI, Firmware, Node)');
 
@@ -533,11 +536,11 @@ makeCommand('ap')
     help: 'Encryption to use on network (i.e. wep, psk, psk2, wpa, wpa2).'
   })
   .option('off', {
-    flag: true,
+    flag,
     help: 'Disable the access point'
   })
   .option('on', {
-    flag: true,
+    flag,
     help: 'Enable the access point'
   })
   .help('Configure the Tessel as an access point');
@@ -549,16 +552,16 @@ makeCommand('root')
     callControllerWith('root', options);
   })
   .option('lan', {
-    flag: true,
-    hidden: true
+    flag,
+    hidden,
   })
   .option('lanPrefer', {
-    flag: true,
-    hidden: true
+    flag,
+    hidden,
   })
   .option('usb', {
-    flag: true,
-    hidden: true
+    flag,
+    hidden,
   })
   .help('Gain SSH root access to one of your authorized tessels');
 
@@ -619,6 +622,7 @@ module.exports = function(args) {
     //
     if (parser.subargs.length === 1) {
       // Removes errant leading `[`
+      /* istanbul ignore else */
       if (parser.subargs[0].startsWith('[')) {
         parser.subargs[0] = parser.subargs[0].slice(1);
       }
@@ -640,15 +644,13 @@ module.exports.closeSuccessfulCommand = function() {
 };
 
 // Allow options to be partially applied
-module.exports.closeFailedCommand = function(status, options) {
+module.exports.closeFailedCommand = function(status, options = {}) {
   var code = 1;
-
-  options = options || {};
-
 
   if (status instanceof Error) {
     log.error(status.toString());
   } else {
+    /* istanbul ignore else */
     if (status !== undefined) {
       // Print a stern warning by default
       options.type = options.type || 'warn';
@@ -660,11 +662,12 @@ module.exports.closeFailedCommand = function(status, options) {
   process.exit(options.code || (status && status.code) || code);
 };
 
-
+/* istanbul ignore if */
 if (require.main === module) {
   module.exports(process.argv.slice(2));
 }
 
+/* istanbul ignore else */
 if (global.IS_TEST_ENV) {
   module.exports.makeCommand = makeCommand;
   module.exports.nomnom = parser;

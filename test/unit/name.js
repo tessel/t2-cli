@@ -2,28 +2,28 @@
 require('../common/bootstrap');
 
 exports['Tessel.prototype.rename'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
 
-    this.getName = this.sandbox.stub(Tessel.prototype, 'getName', function() {
+    this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(() => {
       return Promise.resolve('TheFakeName');
     });
-    this._getMACAddress = this.sandbox.stub(Tessel.prototype, '_getMACAddress', function() {
+    this._getMACAddress = this.sandbox.stub(Tessel.prototype, '_getMACAddress').callsFake(() => {
       return Promise.resolve('TheFakeMACAddress');
     });
-    this.resetMDNS = this.sandbox.stub(Tessel.prototype, 'resetMDNS', function() {
+    this.resetMDNS = this.sandbox.stub(Tessel.prototype, 'resetMDNS').callsFake(() => {
       return Promise.resolve();
     });
     this.setName = this.sandbox.spy(Tessel.prototype, 'setName');
 
     this.isValidName = this.sandbox.spy(Tessel, 'isValidName');
-    this.renameTessel = this.sandbox.spy(controller, 'renameTessel');
+    this.rename = this.sandbox.spy(controller, 'rename');
     this.commitHostname = this.sandbox.spy(commands, 'commitHostname');
     this.openStdinToFile = this.sandbox.spy(commands, 'openStdinToFile');
     this.setHostname = this.sandbox.spy(commands, 'setHostname');
     this.getHostname = this.sandbox.spy(commands, 'getHostname');
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn');
+    this.logInfo = this.sandbox.stub(log, 'info');
     this.tessel = TesselSimulator();
     this.exec = this.sandbox.spy(this.tessel.connection, 'exec');
     this.closeTesselConnections = this.sandbox.stub(controller, 'closeTesselConnections');
@@ -41,14 +41,14 @@ exports['Tessel.prototype.rename'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.tessel._rps.removeAllListeners('newListener');
     this.sandbox.restore();
     done();
   },
 
-  isValidName: function(test) {
+  isValidName(test) {
     test.expect(2);
 
     // This needs more fleshing out.
@@ -59,20 +59,20 @@ exports['Tessel.prototype.rename'] = {
     test.done();
   },
 
-  renameTesselNoOpts: function(test) {
+  renameNoOpts(test) {
     test.expect(2);
 
-    this.renameTessel().catch((err) => {
+    this.rename().catch((err) => {
       test.equal(err, 'A new name must be provided.');
       test.equal(this.closeTesselConnections.callCount, 0);
       test.done();
     });
   },
 
-  renameTesselInvalid: function(test) {
+  renameInvalid(test) {
     test.expect(2);
 
-    this.renameTessel({
+    this.rename({
       newName: '!@#$'
     }).catch((err) => {
       test.equal(err, 'Invalid name: !@#$. The name must be a valid hostname string. See http://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names.');
@@ -81,7 +81,7 @@ exports['Tessel.prototype.rename'] = {
     });
   },
 
-  resetName: function(test) {
+  resetName(test) {
     test.expect(7);
 
     this.tessel.rename({
@@ -107,7 +107,7 @@ exports['Tessel.prototype.rename'] = {
       });
   },
 
-  validRename: function(test) {
+  validRename(test) {
     test.expect(6);
 
     this.tessel.rename({
@@ -129,7 +129,7 @@ exports['Tessel.prototype.rename'] = {
       });
   },
 
-  validRenameSameAsCurrent: function(test) {
+  validRenameSameAsCurrent(test) {
     test.expect(1);
 
     this.tessel.rename({
@@ -143,7 +143,7 @@ exports['Tessel.prototype.rename'] = {
       });
   },
 
-  invalidRename: function(test) {
+  invalidRename(test) {
     test.expect(2);
 
     this.tessel.rename({
@@ -163,7 +163,7 @@ exports['Tessel.prototype.rename'] = {
       });
   },
 
-  invalidSetName: function(test) {
+  invalidSetName(test) {
     test.expect(2);
 
     this.tessel.setName('...')

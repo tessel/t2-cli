@@ -1,10 +1,10 @@
 // System Objects
-var cp = require('child_process');
-var path = require('path');
+const cp = require('child_process');
+const path = require('path');
 
 // Third Party Dependencies
-var tags = require('common-tags');
-var glob = require('glob');
+const tags = require('common-tags');
+const glob = require('glob');
 
 module.exports = (grunt) => {
 
@@ -12,8 +12,7 @@ module.exports = (grunt) => {
     nodeunit: {
       tests: [
         'test/unit/*.js',
-        '!test/unit/cargo-tessel.js',
-        'test/unit/deployment/*.js',
+        'test/unit/deployment/*.js'
       ]
     },
     jshint: {
@@ -96,8 +95,8 @@ module.exports = (grunt) => {
   grunt.loadNpmTasks('grunt-jsbeautifier');
 
 
-  grunt.registerTask('test', ['jshint', 'jscs', 'nodeunit', 'nodeunit:files:cargo-tessel']);
-  grunt.registerTask('all', ['jsbeautifier', 'jshint', 'jscs', 'nodeunit', 'nodeunit:files:cargo-tessel']);
+  grunt.registerTask('test', ['jshint', 'jscs', 'nodeunit']);
+  grunt.registerTask('all', ['jsbeautifier', 'jshint', 'jscs', 'nodeunit']);
 
   // Default task.
   grunt.registerTask('default', ['all']);
@@ -108,7 +107,7 @@ module.exports = (grunt) => {
     if (file) {
       grunt.config('nodeunit.tests', [
         'test/common/bootstrap.js',
-        'test/unit/' + file + '.js'
+        `test/unit/${file}.js`
       ]);
     }
 
@@ -118,19 +117,19 @@ module.exports = (grunt) => {
   // This new runner will eventually supersede "nodeunit:only"
   grunt.registerTask('nodeunit:file', 'Run a subset of tests by specifying a file name or glob expression. Usage: "grunt nodeunit:file:<file.ext>" or "grunt nodeunit:file:<expr>"', (input) => {
 
-    var config = [
+    const config = [
       'test/common/bootstrap.js',
     ];
 
     if (input) {
       if (!input.endsWith('.js')) {
         if (!input.endsWith('*') || !input.endsWith('**/*')) {
-          input = `{${path.normalize(input + '*')},${path.normalize(input + '**/*')}}`;
+          input = `{${path.normalize(`${input}*`)},${path.normalize(`${input}**/*`)}}`;
         }
       }
 
-      var expr = 'test/unit/' + input;
-      var inputs = glob.sync(expr).filter((file) => file.endsWith('.js'));
+      const expr = `test/unit/${input}`;
+      const inputs = glob.sync(expr).filter((file) => file.endsWith('.js'));
 
       if (inputs) {
         inputs.forEach(input => config.push(input));
@@ -143,17 +142,17 @@ module.exports = (grunt) => {
 
 
   grunt.registerTask('nodeunit:files', 'Run a subset of tests by specifying a file name, bracket list of file names, or glob expression. Usage: "grunt nodeunit:file:<file.ext>" or "grunt nodeunit:file:<expr>"', (file) => {
-    grunt.task.run('nodeunit:file:' + file);
+    grunt.task.run(`nodeunit:file:${file}`);
   });
 
 
 
   grunt.registerTask('changelog', '"changelog", "changelog:v0.0.0..v0.0.2" or "changelog:v0.0.0"', (arg) => {
-    var done = grunt.task.current.async();
-    var tags = cp.execSync('git tag --sort version:refname').toString().split('\n');
-    var tagIndex = -1;
-    var range;
-    var revisionRange;
+    const done = grunt.task.current.async();
+    const tags = cp.execSync('git tag --sort version:refname').toString().split('\n');
+    let tagIndex = -1;
+    let range;
+    let revisionRange;
 
     if (!arg) {
       // grunt changelog
@@ -192,7 +191,7 @@ module.exports = (grunt) => {
         return;
       }
 
-      var rows = result.split('\n').filter(commit => {
+      const rows = result.split('\n').filter(commit => {
         return !commit.includes('|Merge ') && !commit.includes(range[0]);
       });
 

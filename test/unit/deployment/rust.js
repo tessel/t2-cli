@@ -15,7 +15,7 @@ exports['deploy.rust'] = {
     this.outgoingResponse._read = () => {};
 
     this.ifReachable = sandbox.stub(remote, 'ifReachable').returns(Promise.resolve());
-    this.httpRequest = sandbox.stub(http, 'request', (options, cb) => {
+    this.httpRequest = sandbox.stub(http, 'request').callsFake((options, cb) => {
       setImmediate(() => cb(this.outgoingResponse));
       return this.incomingRequest;
     });
@@ -173,7 +173,7 @@ exports['deploy.rust'] = {
     test.expect(1);
 
     this.httpRequest.restore();
-    this.httpRequest = sandbox.stub(http, 'request', (options, handler) => {
+    this.httpRequest = sandbox.stub(http, 'request').callsFake((options, handler) => {
       var emitter = new Emitter();
 
       handler(emitter);
@@ -218,7 +218,7 @@ exports['deploy.rust'] = {
     test.expect(1);
 
     this.httpRequest.restore();
-    this.httpRequest = sandbox.stub(http, 'request', (options, handler) => {
+    this.httpRequest = sandbox.stub(http, 'request').callsFake((options, handler) => {
       var emitter = new Emitter();
 
       handler(emitter);
@@ -351,9 +351,9 @@ exports['deploy.rust'] = {
 
     test.expect(1);
 
-    this.checkSdk = sandbox.stub(rust, 'checkSdk', () => Promise.resolve());
-    this.checkRust = sandbox.stub(rust, 'checkRust', () => Promise.resolve());
-    this.checkBinaryName = sandbox.stub(rust, 'checkBinaryName', () => Promise.resolve());
+    this.checkSdk = sandbox.stub(rust, 'checkSdk').returns(Promise.resolve());
+    this.checkRust = sandbox.stub(rust, 'checkRust').returns(Promise.resolve());
+    this.checkBinaryName = sandbox.stub(rust, 'checkBinaryName').returns(Promise.resolve());
 
     var opts = {
       target: DEPLOY_DIR_RS,
@@ -373,9 +373,9 @@ exports['deploy.rust'] = {
   rustTarBundleLocal(test) {
     test.expect(4);
 
-    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(null));
+    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation').callsFake(() => Promise.resolve(null));
 
-    this.runBuild = sandbox.stub(rust, 'runBuild', () => Promise.resolve(__filename));
+    this.runBuild = sandbox.stub(rust, 'runBuild').callsFake(() => Promise.resolve(__filename));
 
     var opts = {
       rustcc: false,
@@ -401,9 +401,9 @@ exports['deploy.rust'] = {
   rustTarBundleRemote(test) {
     test.expect(4);
 
-    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation', () => Promise.resolve(new Buffer([])));
+    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation').callsFake(() => Promise.resolve(new Buffer([])));
 
-    this.runBuild = sandbox.stub(rust, 'runBuild', () => Promise.resolve(null));
+    this.runBuild = sandbox.stub(rust, 'runBuild').callsFake(() => Promise.resolve(null));
 
     var opts = {
       rustcc: true,
@@ -425,7 +425,7 @@ exports['deploy.rust'] = {
   checkBinaryNames(test) {
     test.expect(2);
 
-    this.cargoMetadata = sandbox.stub(rust, 'cargoMetadata', () => Promise.resolve({
+    this.cargoMetadata = sandbox.stub(rust, 'cargoMetadata').callsFake(() => Promise.resolve({
       'packages': [{
         'name': 'blinky',
         'version': '0.0.1',

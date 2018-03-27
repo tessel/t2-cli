@@ -3,19 +3,19 @@ require('../common/bootstrap');
 /*global Menu */
 
 exports['Menu.prompt'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
-    this.logBasic = this.sandbox.stub(log, 'basic', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn');
+    this.logInfo = this.sandbox.stub(log, 'info');
+    this.logBasic = this.sandbox.stub(log, 'basic');
 
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
-  selectItem: function(test) {
+  selectItem(test) {
     test.expect(2);
     var a = new TesselSimulator({
       type: 'LAN',
@@ -30,7 +30,7 @@ exports['Menu.prompt'] = {
     var tessels = [a, b];
     var map = {};
 
-    this.prompt = this.sandbox.stub(inquirer, 'prompt', function(questions, callback) {
+    this.prompt = this.sandbox.stub(inquirer, 'prompt').callsFake(function(questions, callback) {
       // This matches the inquirer.prompt return value. Do not change.
       callback({
         selected: questions[0].choices[0]
@@ -42,22 +42,22 @@ exports['Menu.prompt'] = {
         name: 'selected',
         type: 'list',
         message: 'Pick one',
-        choices: tessels.map(function(tessel, i) {
+        choices: tessels.map((tessel, i) => {
           map[tessel.name] = i;
           return tessel.name;
         })
       },
-      translate: function(answer) {
+      translate(answer) {
         test.ok(true);
         return tessels[map[answer.selected]];
       }
-    }).then(function(tessel) {
+    }).then((tessel) => {
       test.equal(tessel, a);
       test.done();
     });
   },
 
-  noSelectedItem: function(test) {
+  noSelectedItem(test) {
     test.expect(2);
     var a = new TesselSimulator({
       type: 'LAN',
@@ -72,7 +72,7 @@ exports['Menu.prompt'] = {
     var tessels = [a, b];
     var map = {};
 
-    this.prompt = this.sandbox.stub(inquirer, 'prompt', function(questions, callback) {
+    this.prompt = this.sandbox.stub(inquirer, 'prompt').callsFake(function(questions, callback) {
       // This matches the inquirer.prompt return value. Do not change.
       // controller.menu adds an "Exit" choice
       callback({
@@ -85,16 +85,16 @@ exports['Menu.prompt'] = {
         name: 'selected',
         type: 'list',
         message: 'Pick one',
-        choices: tessels.map(function(tessel, i) {
+        choices: tessels.map((tessel, i) => {
           map[tessel.name] = i;
           return tessel.name;
         })
       },
-      translate: function(answer) {
+      translate(answer) {
         test.equal(answer.selected, '\tExit');
         return tessels[map[answer.selected]];
       }
-    }).then(function(tessel) {
+    }).then((tessel) => {
       test.equal(tessels.indexOf(tessel), -1);
       test.done();
     });

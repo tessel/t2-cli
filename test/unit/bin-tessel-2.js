@@ -42,7 +42,7 @@ var defaults = {
 };
 
 exports['Tessel (t2: makeCommand)'] = {
-  any: function(test) {
+  any(test) {
     test.expect(16);
 
     t2.makeCommand('any')
@@ -75,7 +75,7 @@ exports['Tessel (t2: makeCommand)'] = {
 };
 
 exports['Tessel (t2: restart)'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -90,12 +90,12 @@ exports['Tessel (t2: restart)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  noError: function(test) {
+  noError(test) {
     test.expect(1);
 
     t2(['restart', '--entryPoint=index.js', '--type=ram']);
@@ -106,7 +106,7 @@ exports['Tessel (t2: restart)'] = {
     setImmediate(test.done);
   },
 
-  exitCodeOne: function(test) {
+  exitCodeOne(test) {
     test.expect(4);
 
     var error = new Error('Some error happened.');
@@ -125,7 +125,22 @@ exports['Tessel (t2: restart)'] = {
     });
   },
 
-  entryPointFallbackToPrevious: function(test) {
+  invalidType(test) {
+    test.expect(4);
+
+    t2(['restart', '--entryPoint=index.js', '--type=any']);
+
+    setImmediate(() => {
+      // Calling restart should not be reached
+      test.equal(this.restart.callCount, 0);
+      test.equal(this.closeFailedCommand.callCount, 1);
+      test.equal(this.closeFailedCommand.lastCall.args[0].trim(), '--type Invalid');
+      test.equal(this.processExit.lastCall.args[0], 1);
+      test.done();
+    });
+  },
+
+  entryPointFallbackToPrevious(test) {
     test.expect(1);
 
     var restartOp = Promise.resolve();
@@ -141,7 +156,7 @@ exports['Tessel (t2: restart)'] = {
     });
   },
 
-  entryPointFallbackNoPrevious: function(test) {
+  entryPointFallbackNoPrevious(test) {
     test.expect(1);
 
     this.closeFailedCommand.restore();
@@ -158,7 +173,7 @@ exports['Tessel (t2: restart)'] = {
     });
   },
 
-  entryPointFallbackNoPreviousUndefined: function(test) {
+  entryPointFallbackNoPreviousUndefined(test) {
     test.expect(1);
 
     this.closeFailedCommand.restore();
@@ -174,11 +189,10 @@ exports['Tessel (t2: restart)'] = {
       test.done();
     });
   },
-
 };
 
 exports['Tessel (t2: update)'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -192,12 +206,12 @@ exports['Tessel (t2: update)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  optsForwarding: function(test) {
+  optsForwarding(test) {
     test.expect(4);
 
     t2(['update', '--version', '42']);
@@ -223,7 +237,7 @@ exports['Tessel (t2: update)'] = {
     setImmediate(test.done);
   },
 
-  noError: function(test) {
+  noError(test) {
     test.expect(1);
 
     t2(['update']);
@@ -235,7 +249,7 @@ exports['Tessel (t2: update)'] = {
     setImmediate(test.done);
   },
 
-  exitCodeOne: function(test) {
+  exitCodeOne(test) {
     test.expect(4);
 
     var error = new Error('Some error happened.');
@@ -255,61 +269,324 @@ exports['Tessel (t2: update)'] = {
   },
 };
 
-exports['Tessel (t2: provision)'] = {
-  setUp: function(done) {
+exports['Tessel (t2: restore)'] = {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
     this.error = this.sandbox.stub(log, 'error');
     this.warn = this.sandbox.stub(log, 'warn');
-    this.info = this.sandbox.stub(log, 'info');
-    this.provisionTessel = this.sandbox.stub(controller, 'provisionTessel').returns(Promise.resolve());
+    this.restore = this.sandbox.stub(controller, 'restore').returns(Promise.resolve());
     this.closeFailedCommand = this.sandbox.spy(t2, 'closeFailedCommand');
     this.processExit = this.sandbox.stub(process, 'exit');
 
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  noError: function(test) {
+  noError(test) {
+    test.expect(1);
+
+    t2(['restore']);
+
+    setImmediate(() => {
+      test.equal(this.restore.callCount, 1);
+      test.done();
+    });
+  },
+};
+
+exports['Tessel (t2: version)'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.error = this.sandbox.stub(log, 'error');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.envVersions = this.sandbox.stub(controller, 'envVersions').returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(t2, 'closeFailedCommand');
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  noError(test) {
+    test.expect(1);
+
+    t2(['version']);
+
+    setImmediate(() => {
+      test.equal(this.envVersions.callCount, 1);
+      test.done();
+    });
+  },
+};
+
+exports['Tessel (t2: rename)'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.error = this.sandbox.stub(log, 'error');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.rename = this.sandbox.stub(controller, 'rename').returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(t2, 'closeFailedCommand');
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  noError(test) {
+    test.expect(1);
+
+    t2(['rename']);
+
+    setImmediate(() => {
+      test.equal(this.rename.callCount, 1);
+      test.done();
+    });
+  },
+};
+
+exports['Tessel (t2: key)'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.error = this.sandbox.stub(log, 'error');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.setupLocal = this.sandbox.stub(controller, 'setupLocal').returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(t2, 'closeFailedCommand');
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  noError(test) {
+    test.expect(1);
+
+    t2(['key', '--generate=1']);
+
+    setImmediate(() => {
+      test.equal(this.setupLocal.callCount, 1);
+      test.done();
+    });
+  },
+};
+
+exports['Tessel (t2: ap)'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.error = this.sandbox.stub(log, 'error');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.enableAccessPoint = this.sandbox.stub(controller, 'enableAccessPoint')
+      .returns(Promise.resolve());
+    this.disableAccessPoint = this.sandbox.stub(controller, 'disableAccessPoint')
+      .returns(Promise.resolve());
+    this.createAccessPoint = this.sandbox.stub(controller, 'createAccessPoint')
+      .returns(Promise.resolve());
+    this.getAccessPointInfo = this.sandbox.stub(controller, 'getAccessPointInfo')
+      .returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(t2, 'closeFailedCommand');
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  onNoError(test) {
+    test.expect(1);
+
+    t2(['ap', '--on']);
+
+    setImmediate(() => {
+      test.equal(this.enableAccessPoint.callCount, 1);
+      test.done();
+    });
+  },
+
+  offNoError(test) {
+    test.expect(1);
+
+    t2(['ap', '--off']);
+
+    setImmediate(() => {
+      test.equal(this.disableAccessPoint.callCount, 1);
+      test.done();
+    });
+  },
+
+  ssidNoError(test) {
+    test.expect(1);
+
+    t2(['ap', '--ssid=foo']);
+
+    setImmediate(() => {
+      test.equal(this.createAccessPoint.callCount, 1);
+      test.done();
+    });
+  },
+
+  requestSSIDNoError(test) {
+    test.expect(1);
+
+    t2(['ap']);
+
+    setImmediate(() => {
+      test.equal(this.getAccessPointInfo.callCount, 1);
+      test.done();
+    });
+  },
+};
+
+exports['Tessel (t2: provision)'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.error = this.sandbox.stub(log, 'error');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.provision = this.sandbox.stub(controller, 'provision').returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(t2, 'closeFailedCommand');
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  noError(test) {
     test.expect(1);
 
     t2(['provision']);
 
-    test.equal(this.provisionTessel.callCount, 1);
-
     // We must wait for the command to complete
     // or else the sandbox will be cleared to early
-    setImmediate(test.done);
+    setImmediate(() => {
+      test.equal(this.provision.callCount, 1);
+      test.done();
+    });
   },
 
-  exitCodeOne: function(test) {
+  exitCodeOne(test) {
     test.expect(4);
 
     var error = new Error('Some error happened.');
     var provisionOp = Promise.reject(error);
 
-    this.provisionTessel.returns(provisionOp);
+    this.provision.returns(provisionOp);
 
     t2(['provision']);
 
     provisionOp.catch(() => {
-      test.equal(this.provisionTessel.callCount, 1);
+      test.equal(this.provision.callCount, 1);
       test.equal(this.closeFailedCommand.callCount, 1);
       test.equal(this.closeFailedCommand.lastCall.args[0], error);
       test.equal(this.processExit.lastCall.args[0], 1);
       test.done();
     });
   },
+};
 
+exports['Tessel (t2: reboot)'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.error = this.sandbox.stub(log, 'error');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.reboot = this.sandbox.stub(controller, 'reboot').returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(t2, 'closeFailedCommand');
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  noError(test) {
+    test.expect(1);
+
+    t2(['reboot']);
+
+    // We must wait for the command to complete
+    // or else the sandbox will be cleared to early
+    setImmediate(() => {
+      test.equal(this.reboot.callCount, 1);
+      test.done();
+    });
+  },
+};
+
+exports['Tessel (t2: erase)'] = {
+  setUp(done) {
+    this.sandbox = sinon.sandbox.create();
+    this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
+    this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
+    this.error = this.sandbox.stub(log, 'error');
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.eraseScript = this.sandbox.stub(controller, 'eraseScript').returns(Promise.resolve());
+    this.closeFailedCommand = this.sandbox.spy(t2, 'closeFailedCommand');
+    this.processExit = this.sandbox.stub(process, 'exit');
+
+    done();
+  },
+
+  tearDown(done) {
+    this.sandbox.restore();
+    done();
+  },
+
+  noError(test) {
+    test.expect(1);
+
+    t2(['erase']);
+
+    // We must wait for the command to complete
+    // or else the sandbox will be cleared to early
+    setImmediate(() => {
+      test.equal(this.eraseScript.callCount, 1);
+      test.done();
+    });
+  },
 };
 
 exports['Tessel (t2: wifi)'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -324,12 +601,12 @@ exports['Tessel (t2: wifi)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  noOpts: function(test) {
+  noOpts(test) {
     test.expect(3);
     t2(['wifi']);
     // We should not call either of these functions if no args were passed
@@ -340,7 +617,7 @@ exports['Tessel (t2: wifi)'] = {
     test.done();
   },
 
-  listNoError: function(test) {
+  listNoError(test) {
     test.expect(1);
 
     var resolve = Promise.resolve();
@@ -354,7 +631,39 @@ exports['Tessel (t2: wifi)'] = {
     });
   },
 
-  listErrorExitCodeOne: function(test) {
+  offNoError(test) {
+    test.expect(2);
+
+    var resolve = Promise.resolve();
+    this.printAvailableNetworks.returns(resolve);
+    this.setWiFiState = this.sandbox.stub(controller, 'setWiFiState').returns(Promise.resolve());
+
+    t2(['wifi', '--off']);
+
+    resolve.then(() => {
+      test.equal(this.setWiFiState.callCount, 1);
+      test.equal(this.successfulCommand.callCount, 1);
+      test.done();
+    });
+  },
+
+  onNoError(test) {
+    test.expect(2);
+
+    var resolve = Promise.resolve();
+    this.printAvailableNetworks.returns(resolve);
+    this.setWiFiState = this.sandbox.stub(controller, 'setWiFiState').returns(Promise.resolve());
+
+    t2(['wifi', '--on']);
+
+    resolve.then(() => {
+      test.equal(this.setWiFiState.callCount, 1);
+      test.equal(this.successfulCommand.callCount, 1);
+      test.done();
+    });
+  },
+
+  listErrorExitCodeOne(test) {
     test.expect(1);
 
     var reject = Promise.reject();
@@ -370,7 +679,7 @@ exports['Tessel (t2: wifi)'] = {
     });
   },
 
-  ssidPassNoError: function(test) {
+  ssidPassNoError(test) {
     test.expect(1);
 
     var resolve = Promise.resolve();
@@ -384,7 +693,7 @@ exports['Tessel (t2: wifi)'] = {
     });
   },
 
-  ssidPassErrorExitCodeOne: function(test) {
+  ssidPassErrorExitCodeOne(test) {
     test.expect(1);
 
     var reject = Promise.reject();
@@ -402,7 +711,7 @@ exports['Tessel (t2: wifi)'] = {
 };
 
 exports['Tessel (t2: root)'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -413,12 +722,12 @@ exports['Tessel (t2: root)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  callThrough: function(test) {
+  callThrough(test) {
     test.expect(2);
 
     var resolve = Promise.resolve();
@@ -613,7 +922,7 @@ exports['Tessel (t2: push)'] = {
 };
 
 exports['Tessel (t2: list)'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -628,12 +937,12 @@ exports['Tessel (t2: list)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  listStandard: function(test) {
+  listStandard(test) {
 
     test.expect(4);
 
@@ -652,7 +961,7 @@ exports['Tessel (t2: list)'] = {
     });
   },
 
-  listKey: function(test) {
+  listKey(test) {
 
     test.expect(4);
 
@@ -676,7 +985,7 @@ exports['Tessel (t2: list)'] = {
 };
 
 exports['closeFailedCommand'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -687,12 +996,12 @@ exports['closeFailedCommand'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  warningJustAString: function(test) {
+  warningJustAString(test) {
     test.expect(3);
 
     t2.closeFailedCommand('a string');
@@ -704,7 +1013,7 @@ exports['closeFailedCommand'] = {
     test.done();
   },
 
-  errorIsAnErrorObject: function(test) {
+  errorIsAnErrorObject(test) {
     test.expect(3);
     var error = new Error('for real');
 
@@ -717,7 +1026,7 @@ exports['closeFailedCommand'] = {
     test.done();
   },
 
-  errorCode: function(test) {
+  errorCode(test) {
     test.expect(4);
     var error = new Error('for real');
 
@@ -733,7 +1042,7 @@ exports['closeFailedCommand'] = {
     test.done();
   },
 
-  errorCodeInOptions: function(test) {
+  errorCodeInOptions(test) {
     test.expect(4);
     var error = new Error('for real');
     t2.closeFailedCommand(error, {
@@ -750,7 +1059,7 @@ exports['closeFailedCommand'] = {
 };
 
 exports['--output true/false'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -758,7 +1067,7 @@ exports['--output true/false'] = {
     this.info = this.sandbox.stub(log, 'info');
     this.error = this.sandbox.stub(log, 'error');
     this.controllerList = this.sandbox.spy(controller, 'listTessels');
-    this.tesselList = this.sandbox.stub(Tessel, 'list', () => {
+    this.tesselList = this.sandbox.stub(Tessel, 'list').callsFake(() => {
       // Simulating what actually happens in Tessel.list
       // without the complexity of mocking a seeker
       log.info('Searching for devices...');
@@ -771,12 +1080,12 @@ exports['--output true/false'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  defaultOutputTrue: function(test) {
+  defaultOutputTrue(test) {
     test.expect(5);
 
     t2(['list', '--timeout', '0.001']);
@@ -796,7 +1105,7 @@ exports['--output true/false'] = {
     });
   },
 
-  outputFalse: function(test) {
+  outputFalse(test) {
     test.expect(5);
 
     t2(['list', '--timeout', '0.001', '--output=false']);
@@ -821,7 +1130,7 @@ exports['--output true/false'] = {
 
 exports['Tessel (t2: crash-reporter)'] = {
 
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -841,12 +1150,12 @@ exports['Tessel (t2: crash-reporter)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  callThroughNoOptions: function(test) {
+  callThroughNoOptions(test) {
     test.expect(4);
 
     var resolve = Promise.resolve();
@@ -865,7 +1174,7 @@ exports['Tessel (t2: crash-reporter)'] = {
     });
   },
 
-  on: function(test) {
+  on(test) {
     test.expect(4);
 
     t2(['crash-reporter', '--on=true']);
@@ -878,7 +1187,7 @@ exports['Tessel (t2: crash-reporter)'] = {
     test.done();
   },
 
-  off: function(test) {
+  off(test) {
     test.expect(4);
 
     t2(['crash-reporter', '--off=true']);
@@ -891,7 +1200,7 @@ exports['Tessel (t2: crash-reporter)'] = {
     test.done();
   },
 
-  test: function(test) {
+  test(test) {
     test.expect(4);
 
     var resolve = Promise.resolve();
@@ -910,7 +1219,7 @@ exports['Tessel (t2: crash-reporter)'] = {
     });
   },
 
-  onAndTest: function(test) {
+  onAndTest(test) {
     test.expect(4);
 
     var resolve = Promise.resolve();
@@ -929,7 +1238,7 @@ exports['Tessel (t2: crash-reporter)'] = {
     });
   },
 
-  onNoTestThrough: function(test) {
+  onNoTestThrough(test) {
     test.expect(4);
 
     var resolve = Promise.resolve();
@@ -948,7 +1257,7 @@ exports['Tessel (t2: crash-reporter)'] = {
     });
   },
 
-  unsuccessful: function(test) {
+  unsuccessful(test) {
     test.expect(4);
 
     var resolve = Promise.resolve();
@@ -968,7 +1277,7 @@ exports['Tessel (t2: crash-reporter)'] = {
 };
 
 exports['Tessel (init)'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
@@ -980,12 +1289,12 @@ exports['Tessel (init)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  'defaults to --lang=js': function(test) {
+  'defaults to --lang=js' (test) {
     test.expect(3);
 
     var resolve = Promise.resolve();
@@ -1002,7 +1311,7 @@ exports['Tessel (init)'] = {
     });
   },
 
-  'explicit --lang=js': function(test) {
+  'explicit --lang=js' (test) {
     test.expect(3);
 
     var resolve = Promise.resolve();
@@ -1018,7 +1327,7 @@ exports['Tessel (init)'] = {
       test.done();
     });
   },
-  'explicit --lang=javascript': function(test) {
+  'explicit --lang=javascript' (test) {
     test.expect(3);
 
     var resolve = Promise.resolve();
@@ -1034,7 +1343,7 @@ exports['Tessel (init)'] = {
       test.done();
     });
   },
-  'explicit --lang=rs': function(test) {
+  'explicit --lang=rs' (test) {
     test.expect(3);
 
     var resolve = Promise.resolve();
@@ -1050,7 +1359,7 @@ exports['Tessel (init)'] = {
       test.done();
     });
   },
-  'explicit --lang=rust': function(test) {
+  'explicit --lang=rust' (test) {
     test.expect(3);
 
     var resolve = Promise.resolve();
@@ -1071,7 +1380,7 @@ exports['Tessel (init)'] = {
 
 exports['Tessel (t2: installer-*)'] = {
 
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -1086,12 +1395,12 @@ exports['Tessel (t2: installer-*)'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  npmScriptPostinstall: function(test) {
+  npmScriptPostinstall(test) {
     test.expect(1);
 
     test.equal(
@@ -1102,7 +1411,7 @@ exports['Tessel (t2: installer-*)'] = {
     test.done();
   },
 
-  callThroughNoOptions: function(test) {
+  callThroughNoOptions(test) {
     test.expect(8);
 
     var dresolve = Promise.resolve();
@@ -1137,19 +1446,19 @@ exports['Tessel (t2: installer-*)'] = {
 
 exports['Tessel (t2: [subargs])'] = {
 
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.parse = this.sandbox.stub(t2.nomnom, 'parse');
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     t2.nomnom.subargs = undefined;
     done();
   },
 
-  emptyNoWhitespace: function(test) {
+  emptyNoWhitespace(test) {
     test.expect(3);
 
     // t2 run foo.js []
@@ -1161,7 +1470,7 @@ exports['Tessel (t2: [subargs])'] = {
     test.done();
   },
 
-  emptyWithWhitespace: function(test) {
+  emptyWithWhitespace(test) {
     test.expect(3);
 
     // t2 run foo.js [ ]
@@ -1173,7 +1482,7 @@ exports['Tessel (t2: [subargs])'] = {
     test.done();
   },
 
-  emptySingleNoWhitespace: function(test) {
+  emptySingleNoWhitespace(test) {
     test.expect(3);
 
     // t2 run foo.js [0]
@@ -1185,7 +1494,7 @@ exports['Tessel (t2: [subargs])'] = {
     test.done();
   },
 
-  emptySingleWithWhitespace: function(test) {
+  emptySingleWithWhitespace(test) {
     test.expect(3);
 
     // t2 run foo.js [0 ]
@@ -1197,7 +1506,7 @@ exports['Tessel (t2: [subargs])'] = {
     test.done();
   },
 
-  emptyMultipleWithWhitespace: function(test) {
+  emptyMultipleWithWhitespace(test) {
     test.expect(3);
 
     // t2 run foo.js [0 0  0    0]
@@ -1209,7 +1518,7 @@ exports['Tessel (t2: [subargs])'] = {
     test.done();
   },
 
-  emptyMultipleMixed: function(test) {
+  emptyMultipleMixed(test) {
     test.expect(3);
 
     // t2 run foo.js [--foo=bar   0 x y z   --a true 1  2 3 ]

@@ -12,7 +12,7 @@ var builds = [{
 }];
 
 exports['controller.update'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -22,19 +22,19 @@ exports['controller.update'] = {
 
     this.tessel = TesselSimulator();
 
-    this.getTessel = this.sandbox.stub(Tessel, 'get', (opts) => {
+    this.getTessel = this.sandbox.stub(Tessel, 'get').callsFake((opts) => {
       this.tessel.setLANConnectionPreference(opts.lanPrefer);
       return Promise.resolve(this.tessel);
     });
 
-    this.update = this.sandbox.stub(Tessel.prototype, 'update', () => Promise.resolve());
+    this.update = this.sandbox.stub(Tessel.prototype, 'update').callsFake(() => Promise.resolve());
 
-    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', () => {
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo').callsFake(() => {
       return Promise.resolve('9a85c84f5a03c715908921baaaa9e7397985bc7f');
     });
 
     // resolve requestBuildList with a copy of the stubbed data, otherwise the original stub is mutated when sorted
-    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', () => Promise.resolve(builds.slice()));
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList').callsFake(() => Promise.resolve(builds.slice()));
 
     this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
@@ -42,7 +42,7 @@ exports['controller.update'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     this.tessel.mockClose();
 
@@ -53,7 +53,7 @@ exports['controller.update'] = {
     done();
   },
 
-  listBuilds: function(test) {
+  listBuilds(test) {
     test.expect(7);
 
     controller.printAvailableUpdates()
@@ -83,13 +83,13 @@ exports['controller.update'] = {
       });
   },
 
-  listBuildFetchError: function(test) {
+  listBuildFetchError(test) {
     test.expect(2);
 
     var errMessage = 'Could not fetch builds';
 
     this.requestBuildList.restore();
-    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', function() {
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList').callsFake(function() {
       return Promise.reject(new Error(errMessage));
     });
 
@@ -107,7 +107,7 @@ exports['controller.update'] = {
       });
   },
 
-  buildOptionValid: function(test) {
+  buildOptionValid(test) {
     test.expect(9);
 
     // Create a Tessel sim
@@ -121,7 +121,7 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
@@ -157,7 +157,7 @@ exports['controller.update'] = {
       });
   },
 
-  buildOptionInvalid: function(test) {
+  buildOptionInvalid(test) {
     test.expect(3);
 
     // Create a Tessel sim
@@ -168,7 +168,7 @@ exports['controller.update'] = {
 
     var errMessage = 'No such build exists';
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.reject(new Error(errMessage));
     });
 
@@ -187,7 +187,7 @@ exports['controller.update'] = {
       });
   },
 
-  buildLatest: function(test) {
+  buildLatest(test) {
     test.expect(8);
 
     // Create a Tessel sim
@@ -201,12 +201,12 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
     this.fetchCurrentBuildInfo.restore();
-    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo').callsFake(function() {
       return Promise.resolve('ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29');
     });
 
@@ -239,7 +239,7 @@ exports['controller.update'] = {
       });
   },
 
-  buildLatestAlreadyCurrent: function(test) {
+  buildLatestAlreadyCurrent(test) {
     test.expect(7);
 
     // Create a Tessel sim
@@ -253,7 +253,7 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
@@ -280,7 +280,7 @@ exports['controller.update'] = {
       });
   },
 
-  buildLatestUpdateFailed: function(test) {
+  buildLatestUpdateFailed(test) {
     test.expect(7);
 
     // Create a Tessel sim
@@ -294,18 +294,18 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
     this.fetchCurrentBuildInfo.restore();
-    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo').callsFake(function() {
       return Promise.resolve('ac4d8d8a5bfd671f7f174c2eaa258856bd82fe29');
     });
 
     var errMessage = 'Something absolutely dreadful happened. Your Tessel is bricked.';
     this.update.restore();
-    this.update = this.sandbox.stub(Tessel.prototype, 'update', () => {
+    this.update = this.sandbox.stub(Tessel.prototype, 'update').callsFake(() => {
       return Promise.reject(new Error(errMessage));
     });
 
@@ -332,7 +332,7 @@ exports['controller.update'] = {
       });
   },
 
-  buildLatestForce: function(test) {
+  buildLatestForce(test) {
     test.expect(7);
 
     // Create a Tessel sim
@@ -346,7 +346,7 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
@@ -379,7 +379,7 @@ exports['controller.update'] = {
       });
   },
 
-  buildLatestNoConfigSave: function(test) {
+  buildLatestNoConfigSave(test) {
     test.expect(8);
 
     // Create a Tessel sim
@@ -393,7 +393,7 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
@@ -429,7 +429,7 @@ exports['controller.update'] = {
       });
   },
 
-  explicitLatestDoesntImmediatelyUpdate: function(test) {
+  explicitLatestDoesntImmediatelyUpdate(test) {
     test.expect(3);
 
     // Create a Tessel sim
@@ -443,7 +443,7 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
@@ -467,7 +467,7 @@ exports['controller.update'] = {
       });
   },
 
-  noVerifiedVersion: function(test) {
+  noVerifiedVersion(test) {
     test.expect(2);
 
     // Create a Tessel sim
@@ -489,7 +489,7 @@ exports['controller.update'] = {
       });
   },
 
-  noVersionForcedUpdate: function(test) {
+  noVersionForcedUpdate(test) {
     test.expect(4);
 
     // Create a Tessel sim
@@ -499,7 +499,7 @@ exports['controller.update'] = {
     });
 
     this.fetchCurrentBuildInfo.restore();
-    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo').callsFake(function() {
       return Promise.reject(new Error('[Error: cat: can\'t open \'/etc/tessel-version\': No such file or directory]'));
     });
 
@@ -508,7 +508,7 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
@@ -533,7 +533,7 @@ exports['controller.update'] = {
       });
   },
 
-  noVersionUnknownError: function(test) {
+  noVersionUnknownError(test) {
     test.expect(4);
 
     // Create a Tessel sim
@@ -545,7 +545,7 @@ exports['controller.update'] = {
     var unknownError = new Error('Something totally weird happened.');
 
     this.fetchCurrentBuildInfo.restore();
-    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo').callsFake(function() {
       return Promise.reject(unknownError);
     });
 
@@ -554,7 +554,7 @@ exports['controller.update'] = {
       openwrt: new Buffer(0)
     };
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
@@ -579,7 +579,7 @@ exports['controller.update'] = {
       });
   },
 
-  properBuildCompare: function(test) {
+  properBuildCompare(test) {
 
     // use builds where the string compare of the versions
     // would lead to incorrect comparison ('0.0.7 > 0.0.10')
@@ -605,19 +605,19 @@ exports['controller.update'] = {
     };
 
     this.fetchCurrentBuildInfo.restore();
-    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo', function() {
+    this.fetchCurrentBuildInfo = this.sandbox.stub(Tessel.prototype, 'fetchCurrentBuildInfo').callsFake(function() {
       // Resolve with earlier build (0.0.7)
       return Promise.resolve(mixedBuilds[0].sha);
     });
 
 
     this.requestBuildList.restore();
-    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList', function() {
+    this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList').callsFake(function() {
       // Return our two mixed builds
       return Promise.resolve(mixedBuilds);
     });
 
-    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild', function() {
+    this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
       return Promise.resolve(binaries);
     });
 
@@ -634,7 +634,7 @@ exports['controller.update'] = {
         test.done();
       });
   },
-  updateWithLocalBuilds: function(test) {
+  updateWithLocalBuilds(test) {
     test.expect(3);
 
     // Create a Tessel sim
@@ -666,7 +666,7 @@ exports['controller.update'] = {
         test.done();
       });
   },
-  failLocalBadPath: function(test) {
+  failLocalBadPath(test) {
     test.expect(4);
 
     // Create a Tessel sim
@@ -700,7 +700,7 @@ exports['controller.update'] = {
         test.done();
       });
   },
-  onlyFirmwareImageUpdate: function(test) {
+  onlyFirmwareImageUpdate(test) {
     test.expect(3);
 
     // Create a Tessel sim
@@ -731,7 +731,7 @@ exports['controller.update'] = {
         test.done();
       });
   },
-  onlyOpenWRTImageUpdate: function(test) {
+  onlyOpenWRTImageUpdate(test) {
     test.expect(3);
 
     // Create a Tessel sim
@@ -765,7 +765,7 @@ exports['controller.update'] = {
 };
 
 exports['update-fetch'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -788,20 +788,20 @@ exports['update-fetch'] = {
       version: '0.0.1'
     }];
 
-    this.requestGet = this.sandbox.stub(request, 'get', function(url, cb) {
+    this.requestGet = this.sandbox.stub(request, 'get').callsFake(function(url, cb) {
       cb(null, {
         statusCode: 200
       }, JSON.stringify(mixedBuilds));
     });
 
-    this.ifReachable = this.sandbox.stub(remote, 'ifReachable', () => Promise.resolve());
+    this.ifReachable = this.sandbox.stub(remote, 'ifReachable').callsFake(() => Promise.resolve());
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
-  buildsSorted: function(test) {
+  buildsSorted(test) {
     test.expect(4);
 
     // Request the out of order builds
@@ -822,7 +822,7 @@ exports['update-fetch'] = {
 };
 
 exports['Tessel.update'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
@@ -846,18 +846,18 @@ exports['Tessel.update'] = {
 
     done();
   },
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
     done();
   },
 
-  updatePathMustNotByPathNormalized: function(test) {
+  updatePathMustNotByPathNormalized(test) {
     test.expect(4);
 
     var updatePath = `/tmp/${updates.OPENWRT_BINARY_FILE}`;
 
-    this.exec = this.sandbox.stub(this.tessel.connection, 'exec', (command, handler) => {
+    this.exec = this.sandbox.stub(this.tessel.connection, 'exec').callsFake((command, handler) => {
       handler(null, this.tessel._rps);
       setImmediate(() => {
         this.tessel._rps.stdout.emit('data', new Buffer('Upgrade completed'));
@@ -880,10 +880,10 @@ exports['Tessel.update'] = {
     });
   },
 
-  configurationShouldNotBeSaved: function(test) {
+  configurationShouldNotBeSaved(test) {
     var updatePath = `/tmp/${updates.OPENWRT_BINARY_FILE}`;
 
-    this.exec = this.sandbox.stub(this.tessel.connection, 'exec', (command, handler) => {
+    this.exec = this.sandbox.stub(this.tessel.connection, 'exec').callsFake((command, handler) => {
       handler(null, this.tessel._rps);
       setImmediate(() => {
         this.tessel._rps.stdout.emit('data', new Buffer('Upgrade completed'));
@@ -908,7 +908,7 @@ exports['Tessel.update'] = {
     });
   },
 
-  standardUpdate: function(test) {
+  standardUpdate(test) {
     // Set the amount of time Tessel waits for the OpenWRT update
     // to complete to 1ms so we don't wait forever
     Tessel.openWRTUpdateTime = 1;
