@@ -2,11 +2,11 @@
 require('../common/bootstrap');
 
 exports['reboot *'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.warn = this.sandbox.stub(log, 'warn', function() {});
-    this.info = this.sandbox.stub(log, 'info', function() {});
-    this.basic = this.sandbox.stub(log, 'basic', function() {});
+    this.warn = this.sandbox.stub(log, 'warn');
+    this.info = this.sandbox.stub(log, 'info');
+    this.basic = this.sandbox.stub(log, 'basic');
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
 
@@ -15,14 +15,14 @@ exports['reboot *'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
 
     done();
   },
 
-  'Tessel.prototype.reboot': function(test) {
+  'Tessel.prototype.reboot' (test) {
     test.expect(2);
 
     this.simpleExec = this.sandbox.stub(this.tessel, 'simpleExec').returns(Promise.resolve());

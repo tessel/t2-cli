@@ -7,7 +7,7 @@ exports['tessel.root'] = {
     this.sandbox = sinon.sandbox.create();
     this.spinnerStart = this.sandbox.stub(log.spinner, 'start');
     this.spinnerStop = this.sandbox.stub(log.spinner, 'stop');
-    this.spawn = this.sandbox.stub(cp, 'spawn', () => {
+    this.spawn = this.sandbox.stub(cp, 'spawn').callsFake(() => {
       var child = new Emitter();
 
       setImmediate(() => {
@@ -17,10 +17,10 @@ exports['tessel.root'] = {
       return child;
     });
     this.standardTesselCommand = this.sandbox.spy(controller, 'standardTesselCommand');
-    this.logWarn = this.sandbox.stub(log, 'warn', function() {});
-    this.logInfo = this.sandbox.stub(log, 'info', function() {});
+    this.logWarn = this.sandbox.stub(log, 'warn');
+    this.logInfo = this.sandbox.stub(log, 'info');
 
-    this.seeker = this.sandbox.stub(discover, 'TesselSeeker', function Seeker() {
+    this.seeker = this.sandbox.stub(discover, 'TesselSeeker').callsFake(function Seeker() {
       this.start = function(options) {
         testContext.activeSeeker = this;
         setTimeout(() => this.stop(), options.timeout);
@@ -44,7 +44,7 @@ exports['tessel.root'] = {
     test.expect(2);
 
     // Root should call closeFailed Command if no Tessels were found
-    this.finishWithError = this.sandbox.stub(t2, 'closeFailedCommand', () => {
+    this.finishWithError = this.sandbox.stub(t2, 'closeFailedCommand').callsFake(() => {
       // We called standardTesselCommand to fetch the Tessel
       test.equal(this.standardTesselCommand.callCount, 1);
       // We did not spawn a root process because we did not have a Tessel
@@ -60,7 +60,7 @@ exports['tessel.root'] = {
     test.expect(3);
 
     // Root should call closeFailed Command if no Tessels were found
-    this.finishWithSuccess = this.sandbox.stub(t2, 'closeSuccessfulCommand', () => {
+    this.finishWithSuccess = this.sandbox.stub(t2, 'closeSuccessfulCommand').callsFake(() => {
       // We called standardTesselCommand to fetch the Tessel
       test.ok(this.standardTesselCommand.calledOnce);
       // We did not spawn a root process because we did not have a Tessel

@@ -1,5 +1,7 @@
 # t2-cli
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/tessel/t2-cli.svg)](https://greenkeeper.io/)
+
 [![Code of Conduct](https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat)](https://github.com/tessel/project/blob/master/CONDUCT.md)
 [![Slack](http://tessel-slack.herokuapp.com/badge.svg)](https://tessel-slack.herokuapp.com/)
 [![Travis-CI Build Status](https://travis-ci.org/tessel/t2-cli.svg?branch=master)](https://travis-ci.org/tessel/t2-cli)
@@ -81,7 +83,7 @@ Unit tests are found in the [`test/unit/`](https://github.com/tessel/t2-cli/tree
 // The module name is usually the name of the function being tested, i.e. Tessel.prototype.findAvailableNetworks
 exports['functionName'] = {
   // this is called before the each test is run
-  setUp: function(done) {
+  setUp(done) {
     // sinon is used to watch and mock parts of the Tessel codebase used by the tested function
     this.sandbox = sinon.sandbox.create();
     this.functionName = this.sandbox.spy(Tessel.prototype, 'functionName');
@@ -93,14 +95,14 @@ exports['functionName'] = {
   },
 
   // this is called after each test is run, should cleanup all mocks
-  tearDown: function(done) {
+  tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
     done();
   },
 
   // this should be something recognizable and clearly states what outcome of the function is being tested
-  testName: function(test) {
+  testName(test) {
     // the number of assertions the test should expect
     test.expect(1);
 

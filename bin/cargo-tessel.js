@@ -13,6 +13,7 @@ var parser = require('nomnom');
 var log = require('../lib/log');
 var rust = require('../lib/install/rust');
 
+/* istanbul ignore next */
 function closeCommand(error) {
   // TODO: refactor into closeSuccessfulCommand and closeFailedCommand,
   // similar to tessel-2.js
@@ -61,6 +62,7 @@ module.exports = function(args) {
   parser.parse(args);
 };
 
+/* istanbul ignore if */
 if (require.main === module) {
   if (process.argv[2] === 'tessel') {
     /*
@@ -96,6 +98,7 @@ if (require.main === module) {
   }
 }
 
+/* istanbul ignore else */
 if (global.IS_TEST_ENV) {
   module.exports.nomnom = parser;
 }

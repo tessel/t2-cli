@@ -112,7 +112,7 @@ exports['Tessel.prototype.simpleExec'] = {
     this.tessel = new TesselSimulator();
 
     this.receive = this.sandbox.spy(this.tessel, 'receive');
-    this.connectionExec = this.sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.connectionExec = this.sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       return callback(null, this.rps);
     });
 

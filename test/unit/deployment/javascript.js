@@ -30,12 +30,12 @@ exports['Deployment: JavaScript'] = {
     this.push = sandbox.spy(deploy, 'push');
     this.createShellScript = sandbox.spy(deploy, 'createShellScript');
 
-    this.injectBinaryModules = sandbox.stub(deployment.js, 'injectBinaryModules', () => Promise.resolve());
-    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.resolve());
-    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', () => Promise.resolve(reference));
+    this.injectBinaryModules = sandbox.stub(deployment.js, 'injectBinaryModules').callsFake(() => Promise.resolve());
+    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules').callsFake(() => Promise.resolve());
+    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle').callsFake(() => Promise.resolve(reference));
 
-    this.warn = sandbox.stub(log, 'warn', () => {});
-    this.info = sandbox.stub(log, 'info', () => {});
+    this.warn = sandbox.stub(log, 'warn');
+    this.info = sandbox.stub(log, 'info');
 
     this.tessel = TesselSimulator();
     this.end = sandbox.spy(this.tessel._rps.stdin, 'end');
@@ -45,7 +45,7 @@ exports['Deployment: JavaScript'] = {
     this.requestBuildList = sandbox.stub(updates, 'requestBuildList').returns(Promise.resolve(tesselBuilds));
 
     this.pWrite = sandbox.stub(Preferences, 'write').returns(Promise.resolve());
-    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
+    this.exists = sandbox.stub(fs, 'exists').callsFake((fpath, callback) => callback(true));
 
     this.spinnerStart = sandbox.stub(log.spinner, 'start');
     this.spinnerStop = sandbox.stub(log.spinner, 'stop');
@@ -99,8 +99,10 @@ exports['Deployment: JavaScript'] = {
   },
 
   createShellScriptDefaultEntryPoint(test) {
-    test.expect(5);
+    test.expect(1);
 
+    var shellScript = `#!/bin/sh
+exec node --harmony /app/remote-script/index.js --key=value`;
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'index.js',
@@ -108,17 +110,12 @@ exports['Deployment: JavaScript'] = {
       subargs: ['--key=value'],
     };
     this.end.restore();
-    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
-      let result = buffer.toString();
-      test.equal(result.includes('#!/bin/sh'), true);
-      test.equal(result.includes('exec node '), true);
-      test.equal(result.includes(' --harmony '), true);
-      test.equal(result.includes(' /app/remote-script/index.js '), true);
-      test.equal(result.includes(' --key=value'), true);
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end').callsFake((buffer) => {
+      test.equal(buffer.toString(), shellScript);
       test.done();
     });
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       return callback(null, this.tessel._rps);
     });
 
@@ -126,8 +123,10 @@ exports['Deployment: JavaScript'] = {
   },
 
   createShellScriptDefaultEntryPointNoSubargs(test) {
-    test.expect(4);
+    test.expect(1);
 
+    var shellScript = `#!/bin/sh
+exec node --harmony /app/remote-script/index.js`;
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'index.js',
@@ -135,41 +134,12 @@ exports['Deployment: JavaScript'] = {
       subargs: [],
     };
     this.end.restore();
-    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
-      let result = buffer.toString();
-      test.equal(result.includes('#!/bin/sh'), true);
-      test.equal(result.includes('exec node '), true);
-      test.equal(result.includes(' --harmony '), true);
-      test.equal(result.includes(' /app/remote-script/index.js'), true);
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end').callsFake((buffer) => {
+      test.equal(buffer.toString(), shellScript);
       test.done();
     });
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
-      return callback(null, this.tessel._rps);
-    });
-
-    deploy.createShellScript(this.tessel, opts);
-  },
-
-  createShellScriptDefaultEntryPointNoNodeargs(test) {
-    test.expect(3);
-
-    var opts = {
-      lang: deployment.js,
-      resolvedEntryPoint: 'index.js',
-      binopts: [],
-      subargs: [],
-    };
-    this.end.restore();
-    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
-      let result = buffer.toString();
-      test.equal(result.includes('#!/bin/sh'), true);
-      test.equal(result.includes('exec node '), true);
-      test.equal(result.includes(' /app/remote-script/index.js'), true);
-      test.done();
-    });
-
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       return callback(null, this.tessel._rps);
     });
 
@@ -177,8 +147,10 @@ exports['Deployment: JavaScript'] = {
   },
 
   createShellScriptDefaultEntryPointNoExtraargs(test) {
-    test.expect(3);
+    test.expect(1);
 
+    var shellScript = `#!/bin/sh
+exec node  /app/remote-script/index.js`;
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'index.js',
@@ -186,15 +158,12 @@ exports['Deployment: JavaScript'] = {
       subargs: [],
     };
     this.end.restore();
-    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
-      let result = buffer.toString();
-      test.equal(result.includes('#!/bin/sh'), true);
-      test.equal(result.includes('exec node '), true);
-      test.equal(result.includes(' /app/remote-script/index.js'), true);
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end').callsFake((buffer) => {
+      test.equal(buffer.toString(), shellScript);
       test.done();
     });
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       return callback(null, this.tessel._rps);
     });
 
@@ -202,7 +171,9 @@ exports['Deployment: JavaScript'] = {
   },
 
   createShellScriptSendsCorrectEntryPoint(test) {
-    test.expect(4);
+    test.expect(1);
+    var shellScript = `#!/bin/sh
+exec node  /app/remote-script/index.js --key=value`;
     var opts = {
       lang: deployment.js,
       resolvedEntryPoint: 'index.js',
@@ -210,16 +181,12 @@ exports['Deployment: JavaScript'] = {
       subargs: ['--key=value'],
     };
     this.end.restore();
-    this.end = sandbox.stub(this.tessel._rps.stdin, 'end', (buffer) => {
-      let result = buffer.toString();
-      test.equal(result.includes('#!/bin/sh'), true);
-      test.equal(result.includes('exec node '), true);
-      test.equal(result.includes(' /app/remote-script/index.js '), true);
-      test.equal(result.includes('--key=value'), true);
+    this.end = sandbox.stub(this.tessel._rps.stdin, 'end').callsFake((buffer) => {
+      test.equal(buffer.toString(), shellScript);
       test.done();
     });
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       return callback(null, this.tessel._rps);
     });
 
@@ -501,16 +468,13 @@ exports['deployment.js.compress with uglify.es.minify()'] = {
     test.expect(1);
 
     this.minify.restore();
-    this.minify = sandbox.stub(uglify.es, 'minify', () => {
+    this.minify = sandbox.stub(uglify.js, 'minify').callsFake(() => {
       return {
         error: new SyntaxError('whatever')
       };
     });
 
-    const result = deployment.js.compress('es', 'return;');
-
-    test.equal(result, 'return;');
-
+    test.equal(deployment.js.compress('es', 'return;'), 'return;');
     test.done();
   },
 };
@@ -716,7 +680,7 @@ exports['deployment.js.compress with uglify.js.minify()'] = {
     test.expect(1);
 
     this.minify.restore();
-    this.minify = sandbox.stub(uglify.js, 'minify', () => {
+    this.minify = sandbox.stub(uglify.js, 'minify').callsFake(() => {
       return {
         error: new SyntaxError('whatever')
       };
@@ -772,8 +736,8 @@ exports['deployment.js.tarBundle'] = {
     this.project = sandbox.spy(deployment.js, 'project');
     this.compress = sandbox.spy(deployment.js, 'compress');
 
-    this.warn = sandbox.stub(log, 'warn', function() {});
-    this.info = sandbox.stub(log, 'info', function() {});
+    this.warn = sandbox.stub(log, 'warn');
+    this.info = sandbox.stub(log, 'info');
 
     this.spinnerStart = sandbox.stub(log.spinner, 'start');
     this.spinnerStop = sandbox.stub(log.spinner, 'stop');
@@ -952,7 +916,7 @@ exports['deployment.js.tarBundle'] = {
     // Need to stub function in _actual_ fs (but we use fs-extra)
     const fs = require('fs');
 
-    sandbox.stub(fs, 'readFile', (file, callback) => {
+    sandbox.stub(fs, 'readFile').callsFake((file, callback) => {
       callback('foo');
     });
 
@@ -1056,7 +1020,7 @@ exports['deployment.js.tarBundle'] = {
     const pipe = fstream.Reader.prototype.pipe;
 
     // Need to stub function in _actual_ fs (but we use fs-extra)
-    this.readerPipe = sandbox.stub(fstream.Reader.prototype, 'pipe', function() {
+    this.readerPipe = sandbox.stub(fstream.Reader.prototype, 'pipe').callsFake(function() {
       this.emit('error', new Error('foo'));
       return pipe.apply(this, arguments);
     });
@@ -1084,7 +1048,7 @@ exports['deployment.js.tarBundle'] = {
     test.expect(1);
 
     this.remove.restore();
-    this.remove = sandbox.stub(fs, 'remove', (temp, handler) => {
+    this.remove = sandbox.stub(fs, 'remove').callsFake((temp, handler) => {
       handler(new Error('foo'));
     });
 
@@ -1112,7 +1076,7 @@ exports['deployment.js.tarBundle'] = {
     test.expect(1);
 
     this.compress.restore();
-    this.compress = sandbox.stub(deployment.js, 'compress', () => {
+    this.compress = sandbox.stub(deployment.js, 'compress').callsFake(() => {
       throw new Error('foo');
     });
 
@@ -1139,7 +1103,7 @@ exports['deployment.js.tarBundle'] = {
     test.expect(1);
 
     this.collect.restore();
-    this.collect = sandbox.stub(Project.prototype, 'collect', (handler) => {
+    this.collect = sandbox.stub(Project.prototype, 'collect').callsFake((handler) => {
       handler(new Error('foo'));
     });
 
@@ -1166,7 +1130,7 @@ exports['deployment.js.tarBundle'] = {
     test.expect(1);
 
     this.collect.restore();
-    this.collect = sandbox.stub(Project.prototype, 'collect', function() {
+    this.collect = sandbox.stub(Project.prototype, 'collect').callsFake(function() {
       this.emit('error', new Error('foo'));
     });
 
@@ -2132,13 +2096,13 @@ exports['deployment.js.tarBundle'] = {
 
     this.minimatch = sandbox.stub(deployment.js, 'minimatch').returns(true);
 
-    this.rules = sandbox.stub(glob, 'rules', () => {
+    this.rules = sandbox.stub(glob, 'rules').callsFake(() => {
       return [
         'a', 'b',
       ];
     });
 
-    this.forEach = sandbox.stub(Map.prototype, 'forEach', (handler) => {
+    this.forEach = sandbox.stub(Map.prototype, 'forEach').callsFake((handler) => {
       handler(details);
     });
 
@@ -2190,7 +2154,7 @@ exports['deploy.findProject'] = {
     var fake = path.normalize('/fake/test/home/dir');
 
     this.homedir = sandbox.stub(os, 'homedir').returns(fake);
-    this.lstatSync = sandbox.stub(fs, 'lstatSync', (file) => {
+    this.lstatSync = sandbox.stub(fs, 'lstatSync').callsFake((file) => {
       return {
         isDirectory: () => {
           // naive for testing.
@@ -2199,7 +2163,7 @@ exports['deploy.findProject'] = {
       };
     });
 
-    this.realpathSync = sandbox.stub(fs, 'realpathSync', (arg) => {
+    this.realpathSync = sandbox.stub(fs, 'realpathSync').callsFake((arg) => {
       // Ensure that "~" was transformed
       test.equal(arg, path.normalize('/fake/test/home/dir/foo'));
       test.done();
@@ -2363,7 +2327,7 @@ exports['deploy.sendBundle, error handling'] = {
   findProject(test) {
     test.expect(1);
 
-    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.reject(this.failure));
+    this.findProject = sandbox.stub(deploy, 'findProject').callsFake(() => Promise.reject(this.failure));
 
     deploy.sendBundle(this.tessel, {
       lang: deployment.js
@@ -2378,14 +2342,14 @@ exports['deploy.sendBundle, error handling'] = {
 
     this.pathResolve.restore();
     this.pathResolve = sandbox.stub(path, 'resolve').returns('');
-    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
+    this.exists = sandbox.stub(fs, 'exists').callsFake((fpath, callback) => callback(true));
 
-    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
+    this.findProject = sandbox.stub(deploy, 'findProject').callsFake(() => Promise.resolve({
       pushdir: '',
       entryPoint: ''
     }));
 
-    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.reject(this.failure));
+    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules').callsFake(() => Promise.reject(this.failure));
 
     deploy.sendBundle(this.tessel, {
       lang: deployment.js
@@ -2400,16 +2364,16 @@ exports['deploy.sendBundle, error handling'] = {
 
     this.pathResolve.restore();
     this.pathResolve = sandbox.stub(path, 'resolve').returns('');
-    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
+    this.exists = sandbox.stub(fs, 'exists').callsFake((fpath, callback) => callback(true));
 
-    this.findProject = sandbox.stub(deploy, 'findProject', () => Promise.resolve({
+    this.findProject = sandbox.stub(deploy, 'findProject').callsFake(() => Promise.resolve({
       pushdir: '',
       entryPoint: ''
     }));
 
-    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules', () => Promise.resolve());
+    this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules').callsFake(() => Promise.resolve());
 
-    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle', () => Promise.reject(this.failure));
+    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle').callsFake(() => Promise.reject(this.failure));
 
     deploy.sendBundle(this.tessel, {
       lang: deployment.js
@@ -2426,11 +2390,11 @@ exports['deployment.js.preBundle'] = {
     this.tessel = TesselSimulator();
 
     this.info = sandbox.stub(log, 'info');
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       callback(null, this.tessel._rps);
     });
 
-    this.receive = sandbox.stub(this.tessel, 'receive', (rps, callback) => {
+    this.receive = sandbox.stub(this.tessel, 'receive').callsFake((rps, callback) => {
       rps.emit('close');
       callback();
     });
@@ -2469,7 +2433,7 @@ exports['deployment.js.preBundle'] = {
 
     Once complete, retry:`;
 
-    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(false));
+    this.exists = sandbox.stub(fs, 'exists').callsFake((fpath, callback) => callback(false));
 
     deployment.js.preBundle({
       target: '/',
@@ -2484,7 +2448,7 @@ exports['deployment.js.preBundle'] = {
 
     this.pathResolve.restore();
     this.pathResolve = sandbox.stub(path, 'resolve').returns('');
-    this.exists = sandbox.stub(fs, 'exists', (fpath, callback) => callback(true));
+    this.exists = sandbox.stub(fs, 'exists').callsFake((fpath, callback) => callback(true));
 
     deploy.sendBundle(this.tessel, {
       target: '/',
@@ -2561,21 +2525,21 @@ exports['deployment.js.resolveBinaryModules'] = {
   setUp(done) {
 
     this.target = path.normalize('test/unit/fixtures/project-binary-modules');
-    this.relative = sandbox.stub(path, 'relative', () => {
+    this.relative = sandbox.stub(path, 'relative').callsFake(() => {
       return path.join(FIXTURE_PATH, '/project-binary-modules/');
     });
     this.globFiles = sandbox.spy(glob, 'files');
-    this.globSync = sandbox.stub(glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
       ];
     });
 
-    this.readGypFileSync = sandbox.stub(deployment.js.resolveBinaryModules, 'readGypFileSync', () => {
+    this.readGypFileSync = sandbox.stub(deployment.js.resolveBinaryModules, 'readGypFileSync').callsFake(() => {
       return '{"targets": [{"target_name": "missing"}]}';
     });
 
-    this.getRoot = sandbox.stub(bindings, 'getRoot', (file) => {
+    this.getRoot = sandbox.stub(bindings, 'getRoot').callsFake((file) => {
       var pathPart = '';
 
       if (file.includes('debug')) {
@@ -2597,7 +2561,7 @@ exports['deployment.js.resolveBinaryModules'] = {
       return path.normalize(`node_modules/${pathPart}/`);
     });
 
-    this.ifReachable = sandbox.stub(remote, 'ifReachable', () => Promise.resolve());
+    this.ifReachable = sandbox.stub(remote, 'ifReachable').callsFake(() => Promise.resolve());
 
     done();
   },
@@ -2613,7 +2577,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.target = path.normalize('test/unit/fixtures/project-skip-binary');
 
     this.relative.restore();
-    this.relative = sandbox.stub(path, 'relative', () => {
+    this.relative = sandbox.stub(path, 'relative').callsFake(() => {
       return path.join(FIXTURE_PATH, '/project-skip-binary/');
     });
 
@@ -2623,7 +2587,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     // We WANT to glob the actual target directory
     this.globSync.restore();
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
 
     deployment.js.resolveBinaryModules({
       target: this.target,
@@ -2665,11 +2629,11 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.match = sandbox.spy(String.prototype, 'match');
     this.target = path.normalize('test/unit/fixtures/project-skip-binary');
     this.relative.restore();
-    this.relative = sandbox.stub(path, 'relative', () => {
+    this.relative = sandbox.stub(path, 'relative').callsFake(() => {
       return path.join(FIXTURE_PATH, '/project-skip-binary/');
     });
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
 
     deployment.js.resolveBinaryModules({
       target: this.target,
@@ -2700,7 +2664,7 @@ exports['deployment.js.resolveBinaryModules'] = {
 
     sandbox.stub(process, 'cwd').returns(target);
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
 
     deployment.js.resolveBinaryModules({
       tessel: {
@@ -2725,7 +2689,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.relative.restore();
     this.relative = sandbox.stub(path, 'relative').returns('');
     this.cwd = sandbox.stub(process, 'cwd').returns('');
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
 
     deployment.js.resolveBinaryModules({
       tessel: {
@@ -2753,7 +2717,7 @@ exports['deployment.js.resolveBinaryModules'] = {
 
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/release/binding.gyp'),
@@ -2761,7 +2725,7 @@ exports['deployment.js.resolveBinaryModules'] = {
       ];
     });
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
 
     deployment.js.resolveBinaryModules({
       target: this.target,
@@ -2792,7 +2756,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.readGypFileSync = sandbox.spy(deployment.js.resolveBinaryModules, 'readGypFileSync');
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/release/binding.gyp'),
@@ -2800,8 +2764,8 @@ exports['deployment.js.resolveBinaryModules'] = {
       ];
     });
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
-    this.spawnSync = sandbox.stub(cp, 'spawnSync', () => {
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
+    this.spawnSync = sandbox.stub(cp, 'spawnSync').callsFake(() => {
       return {
         output: null
       };
@@ -2829,7 +2793,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.readGypFileSync = sandbox.spy(deployment.js.resolveBinaryModules, 'readGypFileSync');
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/release/binding.gyp'),
@@ -2837,8 +2801,8 @@ exports['deployment.js.resolveBinaryModules'] = {
       ];
     });
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
-    this.spawnSync = sandbox.stub(cp, 'spawnSync', () => {
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
+    this.spawnSync = sandbox.stub(cp, 'spawnSync').callsFake(() => {
       return {
         output: [
           null, new Buffer('{"targets": [{"target_name": "missing","sources": ["capture.c", "missing.cc"]}]}', 'utf8')
@@ -2880,19 +2844,19 @@ exports['deployment.js.resolveBinaryModules'] = {
     test.expect(1);
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         path.normalize('node_modules/missing/binding.gyp'),
       ];
     });
     this.readGypFileSync.restore();
-    this.readGypFileSync = sandbox.stub(deployment.js.resolveBinaryModules, 'readGypFileSync', () => {
+    this.readGypFileSync = sandbox.stub(deployment.js.resolveBinaryModules, 'readGypFileSync').callsFake(() => {
       return '{"targets": [{"target_name": "missing",}]}';
       //                                            ^
       //                                     That's intentional.
     });
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
 
     deployment.js.resolveBinaryModules({
       target: this.target,
@@ -2913,7 +2877,7 @@ exports['deployment.js.resolveBinaryModules'] = {
   existsInLocalCache(test) {
     test.expect(2);
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
 
     deployment.js.resolveBinaryModules({
       target: this.target,
@@ -2938,14 +2902,14 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.readGypFileSync.restore();
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
         path.normalize('node_modules/linked/build/bindings/linked.node'),
       ];
     });
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
 
     deployment.js.resolveBinaryModules({
       target: this.target,
@@ -2975,7 +2939,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     // make the program think these things are already
     // cached. The test to pass is that it calls fs.existsSync
     // with the correct things from the project directory (this.target)
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
 
     deployment.js.resolveBinaryModules({
       target: this.target,
@@ -3011,8 +2975,8 @@ exports['deployment.js.resolveBinaryModules'] = {
   requestsRemote(test) {
     test.expect(12);
 
-    this.exists = sandbox.stub(fs, 'existsSync', () => false);
-    this.mkdirp = sandbox.stub(fs, 'mkdirp', (dir, handler) => {
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => false);
+    this.mkdirp = sandbox.stub(fs, 'mkdirp').callsFake((dir, handler) => {
       handler();
     });
 
@@ -3020,7 +2984,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.transform.stubsUsed = [];
     this.rstream = null;
 
-    this.pipe = sandbox.stub(stream.Stream.prototype, 'pipe', () => {
+    this.pipe = sandbox.stub(stream.Stream.prototype, 'pipe').callsFake(() => {
       // After the second transform is piped, emit the end
       // event on the request stream;
       if (this.pipe.callCount === 2) {
@@ -3029,17 +2993,17 @@ exports['deployment.js.resolveBinaryModules'] = {
       return this.rstream;
     });
 
-    this.createGunzip = sandbox.stub(zlib, 'createGunzip', () => {
+    this.createGunzip = sandbox.stub(zlib, 'createGunzip').callsFake(() => {
       this.transform.stubsUsed.push('createGunzip');
       return this.transform;
     });
 
-    this.Extract = sandbox.stub(tar, 'Extract', () => {
+    this.Extract = sandbox.stub(tar, 'Extract').callsFake(() => {
       this.transform.stubsUsed.push('Extract');
       return this.transform;
     });
 
-    this.request = sandbox.stub(request, 'Request', (opts) => {
+    this.request = sandbox.stub(request, 'Request').callsFake((opts) => {
       this.rstream = new Request(opts);
       return this.rstream;
     });
@@ -3080,8 +3044,8 @@ exports['deployment.js.resolveBinaryModules'] = {
     test.expect(9);
 
     this.removeSync = sandbox.stub(fs, 'removeSync');
-    this.exists = sandbox.stub(fs, 'existsSync', () => false);
-    this.mkdirp = sandbox.stub(fs, 'mkdirp', (dir, handler) => {
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => false);
+    this.mkdirp = sandbox.stub(fs, 'mkdirp').callsFake((dir, handler) => {
       handler();
     });
 
@@ -3089,7 +3053,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.transform.stubsUsed = [];
     this.rstream = null;
 
-    this.pipe = sandbox.stub(stream.Stream.prototype, 'pipe', () => {
+    this.pipe = sandbox.stub(stream.Stream.prototype, 'pipe').callsFake(() => {
       // After the second transform is piped, emit the end
       // event on the request stream;
       if (this.pipe.callCount === 2) {
@@ -3098,24 +3062,24 @@ exports['deployment.js.resolveBinaryModules'] = {
       return this.rstream;
     });
 
-    this.createGunzip = sandbox.stub(zlib, 'createGunzip', () => {
+    this.createGunzip = sandbox.stub(zlib, 'createGunzip').callsFake(() => {
       this.transform.stubsUsed.push('createGunzip');
       return this.transform;
     });
 
-    this.Extract = sandbox.stub(tar, 'Extract', () => {
+    this.Extract = sandbox.stub(tar, 'Extract').callsFake(() => {
       this.transform.stubsUsed.push('Extract');
       return this.transform;
     });
 
-    this.request = sandbox.stub(request, 'Request', (opts) => {
+    this.request = sandbox.stub(request, 'Request').callsFake((opts) => {
       this.rstream = new Request(opts);
       return this.rstream;
     });
 
     // Hook into the ifReachable call to trigger an error at the gunzip stream
     this.ifReachable.restore();
-    this.ifReachable = sandbox.stub(remote, 'ifReachable', () => {
+    this.ifReachable = sandbox.stub(remote, 'ifReachable').callsFake(() => {
       this.transform.emit('error', {
         code: 'Z_DATA_ERROR',
       });
@@ -3154,17 +3118,17 @@ exports['deployment.js.resolveBinaryModules'] = {
 exports['deployment.js.injectBinaryModules'] = {
   setUp(done) {
     this.target = path.normalize('test/unit/fixtures/project-binary-modules');
-    this.relative = sandbox.stub(path, 'relative', () => {
+    this.relative = sandbox.stub(path, 'relative').callsFake(() => {
       return path.join(FIXTURE_PATH, '/project-binary-modules/');
     });
     this.globFiles = sandbox.spy(glob, 'files');
-    this.globSync = sandbox.stub(glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         path.normalize('node_modules/release/build/Release/release.node'),
       ];
     });
 
-    this.getRoot = sandbox.stub(bindings, 'getRoot', (file) => {
+    this.getRoot = sandbox.stub(bindings, 'getRoot').callsFake((file) => {
       var pathPart = '';
 
       if (file.includes('debug')) {
@@ -3188,7 +3152,7 @@ exports['deployment.js.injectBinaryModules'] = {
 
     this.globRoot = path.join(FIXTURE_PATH, '/project-binary-modules/');
     this.copySync = sandbox.stub(fs, 'copySync');
-    this.exists = sandbox.stub(fs, 'existsSync', () => true);
+    this.exists = sandbox.stub(fs, 'existsSync').callsFake(() => true);
     done();
   },
 
@@ -3202,7 +3166,7 @@ exports['deployment.js.injectBinaryModules'] = {
 
 
     this.globSync.restore();
-    this.globSync = sandbox.stub(glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         path.normalize('node_modules/debug/build/Debug/debug.node'),
         path.normalize('node_modules/debug/binding.gyp'),
@@ -3357,7 +3321,7 @@ exports['deployment.js.injectBinaryModules'] = {
     test.expect(1);
     this.target = path.normalize('test/unit/fixtures/project-ignore-binary');
     this.relative.restore();
-    this.relative = sandbox.stub(path, 'relative', () => {
+    this.relative = sandbox.stub(path, 'relative').callsFake(() => {
       return path.join(FIXTURE_PATH, '/project-ignore-binary/');
     });
 
@@ -3381,7 +3345,7 @@ exports['deployment.js.injectBinaryModules'] = {
     test.expect(6);
     this.target = path.normalize('test/unit/fixtures/project-binary-modules-duplicate-lower-deps');
     this.relative.restore();
-    this.relative = sandbox.stub(path, 'relative', () => {
+    this.relative = sandbox.stub(path, 'relative').callsFake(() => {
       return path.join(FIXTURE_PATH, '/project-binary-modules-duplicate-lower-deps/');
     });
 
@@ -3453,7 +3417,7 @@ exports['deployment.js.injectBinaryModules'] = {
     test.expect(1);
     // This would normally result in 8 calls to this.copySync
     this.globSync.restore();
-    this.globSync = sandbox.stub(glob, 'sync', () => {
+    this.globSync = sandbox.stub(glob, 'sync').callsFake(() => {
       return [
         path.normalize('node_modules/debug/build/Debug/debug.node'),
         path.normalize('node_modules/debug/binding.gyp'),
@@ -3487,7 +3451,7 @@ exports['deployment.js.injectBinaryModules'] = {
   rewriteBinaryBuildPlatformPaths(test) {
     test.expect(2);
 
-    this.forEach = sandbox.stub(Map.prototype, 'forEach', (handler) => {
+    this.forEach = sandbox.stub(Map.prototype, 'forEach').callsFake((handler) => {
       handler({
         binName: 'serialport.node',
         buildPath: path.normalize('/build/Release/node-v46-FAKE_PLATFORM-FAKE_ARCH/'),
@@ -3523,14 +3487,14 @@ exports['deployment.js.injectBinaryModules'] = {
     test.expect(3);
 
     this.copySync.restore();
-    this.copySync = sandbox.stub(fs, 'copySync', () => {
+    this.copySync = sandbox.stub(fs, 'copySync').callsFake(() => {
       // Fail the first try/catch on THEIR PATH
       if (this.copySync.callCount === 1) {
         throw new Error('ENOENT: no such file or directory');
       }
     });
 
-    this.forEach = sandbox.stub(Map.prototype, 'forEach', (handler) => {
+    this.forEach = sandbox.stub(Map.prototype, 'forEach').callsFake((handler) => {
       handler({
         binName: 'node_sqlite3.node',
         // This path doesn't match our precompiler's output paths.
@@ -3564,11 +3528,11 @@ exports['deployment.js.injectBinaryModules'] = {
     test.expect(4);
 
     this.copySync.restore();
-    this.copySync = sandbox.stub(fs, 'copySync', () => {
+    this.copySync = sandbox.stub(fs, 'copySync').callsFake(() => {
       throw new Error('E_THIS_IS_NOT_REAL');
     });
 
-    this.forEach = sandbox.stub(Map.prototype, 'forEach', (handler) => {
+    this.forEach = sandbox.stub(Map.prototype, 'forEach').callsFake((handler) => {
       handler({
         binName: 'not-a-thing.node',
         // This path doesn't match our precompiler's output paths.
@@ -3617,7 +3581,7 @@ exports['deploy.createShellScript'] = {
   remoteShellScriptPathIsNotPathNormalized(test) {
     test.expect(2);
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       callback(null, this.tessel._rps);
       this.tessel._rps.emit('close');
     });
@@ -3639,7 +3603,7 @@ exports['deploy.createShellScript'] = {
   remoteShellScriptPathIsNotPathNormalizedWithSubargs(test) {
     test.expect(2);
 
-    this.exec = sandbox.stub(this.tessel.connection, 'exec', (command, callback) => {
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
       callback(null, this.tessel._rps);
       this.tessel._rps.emit('close');
     });

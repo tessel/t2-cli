@@ -2,9 +2,9 @@
 require('../common/bootstrap');
 
 exports['LAN.Connection'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.readFileSync = this.sandbox.stub(fs, 'readFileSync', function() {
+    this.readFileSync = this.sandbox.stub(fs, 'readFileSync').callsFake(function() {
       return 'this is the contents of id_rsa';
     });
     this.lanConnection = new LAN.Connection({});
@@ -12,18 +12,18 @@ exports['LAN.Connection'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  connectionType: function(test) {
+  connectionType(test) {
     test.expect(1);
     test.equal(this.lanConnection.connectionType, 'LAN');
     test.done();
   },
 
-  ipWhenIpV6: function(test) {
+  ipWhenIpV6(test) {
     test.expect(1);
     this.lanConnection = new LAN.Connection({
       addresses: ['fc00::', '172.16.2.5'],
@@ -34,7 +34,7 @@ exports['LAN.Connection'] = {
     test.done();
   },
 
-  ipWhenIpV6LinkLocal: function(test) {
+  ipWhenIpV6LinkLocal(test) {
     test.expect(1);
     this.lanConnection = new LAN.Connection({
       addresses: ['fc00::', '172.16.2.5'],
@@ -46,7 +46,7 @@ exports['LAN.Connection'] = {
     test.done();
   },
 
-  ipWhenIpV4: function(test) {
+  ipWhenIpV4(test) {
     test.expect(1);
     this.lanConnection = new LAN.Connection({
       addresses: ['172.16.2.5', 'fc00::'],
@@ -59,7 +59,7 @@ exports['LAN.Connection'] = {
   },
 
   // no ip addresses were found, fallback to the host
-  ipWhenNoIps: function(test) {
+  ipWhenNoIps(test) {
     test.expect(1);
     this.lanConnection = new LAN.Connection({
       networkInterface: 'en0',
@@ -71,22 +71,22 @@ exports['LAN.Connection'] = {
 };
 
 exports['LAN.Scanner'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.scanner = new LAN.Scanner();
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     done();
   },
 
-  emitterSubclass: function(test) {
+  emitterSubclass(test) {
     test.expect(1);
     test.ok(this.scanner instanceof Emitter);
     test.done();
   },
 
-  properties: function(test) {
+  properties(test) {
     test.expect(2);
     test.equal(this.scanner.browser, undefined);
     test.deepEqual(this.scanner.discovered, []);
@@ -95,9 +95,9 @@ exports['LAN.Scanner'] = {
 };
 
 exports['LAN.Connection.prototype.exec'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.isProvisioned = this.sandbox.stub(Tessel, 'isProvisioned', function() {
+    this.isProvisioned = this.sandbox.stub(Tessel, 'isProvisioned').callsFake(function() {
       return false;
     });
 
@@ -108,12 +108,12 @@ exports['LAN.Connection.prototype.exec'] = {
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  // closed: function(test) {
+  // closed(test) {
   //   test.expect(1);
   //
   //   this.lanConnection.closed = true;
@@ -123,7 +123,7 @@ exports['LAN.Connection.prototype.exec'] = {
   //   });
   // },
 
-  emitClose: function(test) {
+  emitClose(test) {
     test.expect(2);
 
     this.lanConnection.open()
@@ -140,28 +140,28 @@ exports['LAN.Connection.prototype.exec'] = {
 };
 
 exports['LAN.Scanner.prototype.start'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.setImmediate = this.sandbox.stub(global, 'setImmediate', (cb) => cb());
-    this.createBrowser = this.sandbox.stub(mdns, 'createBrowser', () => {
+    this.setImmediate = this.sandbox.stub(global, 'setImmediate').callsFake((cb) => cb());
+    this.createBrowser = this.sandbox.stub(mdns, 'createBrowser').callsFake(() => {
       var emitter = new Emitter();
       emitter.discover = this.sandbox.spy();
       return emitter;
     });
 
-    this.readFileSync = this.sandbox.stub(fs, 'readFileSync', () => 'this is the contents of id_rsa');
+    this.readFileSync = this.sandbox.stub(fs, 'readFileSync').callsFake(() => 'this is the contents of id_rsa');
 
     this.scanner = new LAN.Scanner();
 
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  createBrowser: function(test) {
+  createBrowser(test) {
     test.expect(1);
 
     this.scanner.start();
@@ -170,7 +170,7 @@ exports['LAN.Scanner.prototype.start'] = {
     test.done();
   },
 
-  readyDiscover: function(test) {
+  readyDiscover(test) {
     test.expect(1);
 
     this.scanner.start();
@@ -180,7 +180,7 @@ exports['LAN.Scanner.prototype.start'] = {
     test.done();
   },
 
-  readyDiscoverThrows: function(test) {
+  readyDiscoverThrows(test) {
     test.expect(1);
 
     this.scanner.start();
@@ -199,7 +199,7 @@ exports['LAN.Scanner.prototype.start'] = {
     this.scanner.browser.emit('ready');
   },
 
-  updateDiscovered: function(test) {
+  updateDiscovered(test) {
     test.expect(3);
 
     var data = {};
@@ -215,7 +215,7 @@ exports['LAN.Scanner.prototype.start'] = {
     test.done();
   },
 
-  updateDiscoveredExists: function(test) {
+  updateDiscoveredExists(test) {
     test.expect(4);
 
     var connectionHandler = this.sandbox.spy();
@@ -266,12 +266,12 @@ exports['LAN.Scanner.prototype.start'] = {
     test.done();
   },
 
-  updateDiscoveredThrows: function(test) {
+  updateDiscoveredThrows(test) {
     test.expect(1);
 
     this.scanner.start();
 
-    this.LANConnection = this.sandbox.stub(LAN, 'Connection', function() {
+    this.LANConnection = this.sandbox.stub(LAN, 'Connection').callsFake(function() {
       throw new Error('get outta here!');
     });
 
@@ -291,18 +291,18 @@ exports['LAN.Scanner.prototype.start'] = {
 
 
 exports['LAN.Scanner.prototype.stop'] = {
-  setUp: function(done) {
+  setUp(done) {
     this.sandbox = sinon.sandbox.create();
     this.scanner = new LAN.Scanner();
     done();
   },
 
-  tearDown: function(done) {
+  tearDown(done) {
     this.sandbox.restore();
     done();
   },
 
-  callStopSafely: function(test) {
+  callStopSafely(test) {
     test.expect(1);
     this.scanner.browser = undefined;
     test.doesNotThrow(() => {

@@ -202,14 +202,20 @@ global.extract = function(bundle, callback) {
 };
 
 global.processVersions = {
-  http_parser: '2.5.2',
-  node: '4.4.3',
-  v8: '4.5.103.35',
-  uv: '1.8.0',
-  zlib: '1.2.8',
+  http_parser: '2.8.0',
+  node: '8.11.3',
+  v8: '6.2.414.54',
+  uv: '1.19.1',
+  zlib: '1.2.11',
   ares: '1.10.1-DEV',
-  modules: '46',
-  openssl: '1.0.2d',
+  modules: '57',
+  nghttp2: '1.32.0',
+  napi: '3',
+  openssl: '1.0.2o',
+  icu: '60.1',
+  unicode: '10.0',
+  cldr: '32.0',
+  tz: '2017c',
 };
 
 global.tesselBuilds = [{
@@ -221,3 +227,41 @@ global.tesselBuilds = [{
   released: '2017-05-12T03:01:57.856Z',
   version: '0.0.17'
 }];
+
+global.networkInfo = {
+  phy: 'phy0',
+  ssid: 'skynet',
+  bssid: '05:95:E8:BD:E6:72',
+  country: '00',
+  mode: 'Client',
+  channel: 4,
+  frequency: 2427,
+  txpower: 20,
+  quality: 70,
+  quality_max: 70,
+  signal: -31,
+  bitrate: 21700,
+  encryption: {
+    enabled: true,
+    wpa: [2],
+    authentication: ['psk'],
+    ciphers: ['ccmp']
+  },
+  htmodes: ['HT20', 'HT40'],
+  hwmodes: ['b', 'g', 'n'],
+  hardware: {
+    name: 'Generic MAC80211'
+  },
+  ips: [
+    'wlan0     Link encap:Ethernet  HWaddr 03:B4:F8:44:C7:18  ',
+    '          inet addr:000.000.000.000  Bcast:000.000.000.000  Mask:255.255.255.0',
+    '          inet6 addr: fe80::3d70:c490:a0a4:2209/64 Scope:Link',
+    '          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1',
+    '          RX packets:0 errors:0 dropped:0 overruns:0 frame:0',
+    '          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0',
+    '          collisions:0 txqueuelen:1000 ',
+    '          RX bytes:58600 (57.2 KiB)  TX bytes:23960 (23.3 KiB)',
+    '',
+    '',
+  ]
+};
