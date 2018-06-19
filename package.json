@@ -7,7 +7,9 @@
     "test": "grunt test",
     "postinstall": "t2 install drivers --loglevel=error || true; t2 install homedir --loglevel=error || true;",
     "test-cover": "nyc grunt nodeunit",
-    "coveralls": "nyc --reporter=lcov grunt nodeunit && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "nyc --reporter=lcov grunt nodeunit && cat ./coverage/lcov.info | coveralls",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "bin": {
     "t2": "./bin/tessel-2.js",
@@ -87,7 +89,8 @@
     "update-notifier": "^1.0.2",
     "url-join": "0.0.1",
     "usb": "^1.2.0",
-    "usb-daemon-parser": "0.0.2"
+    "usb-daemon-parser": "0.0.2",
+    "snyk": "^1.83.0"
   },
   "preferGlobal": true,
   "engines": {
@@ -122,5 +125,6 @@
     "Thomas Jansen <thojansen@gmail.com>",
     "Scott González <scott.gonzalez@gmail.com>",
     "Chris Lewis <cflewis@google.com>"
-  ]
+  ],
+  "snyk": true
 }
