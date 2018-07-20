@@ -97,13 +97,16 @@ exports['LAN.Scanner'] = {
 exports['LAN.Connection.prototype.exec'] = {
   setUp(done) {
     this.sandbox = sinon.sandbox.create();
-    this.isProvisioned = this.sandbox.stub(Tessel, 'isProvisioned').callsFake(function() {
-      return false;
+    this.isProvisioned = this.sandbox.stub(Tessel, 'isProvisioned').returns(true);
+
+    const emitter = new Emitter();
+    emitter.connect = () => emitter.emit('ready');
+
+    this.Client = this.sandbox.stub(ssh, 'Client').returns(emitter);
+
+    this.lanConnection = new LAN.Connection({
+      privateKey: 'foo'
     });
-
-    this.Client = this.sandbox.spy(ssh, 'Client');
-
-    this.lanConnection = new LAN.Connection({});
 
     done();
   },
@@ -113,15 +116,15 @@ exports['LAN.Connection.prototype.exec'] = {
     done();
   },
 
-  // closed(test) {
-  //   test.expect(1);
-  //
-  //   this.lanConnection.closed = true;
-  //   this.lanConnection.exec(undefined, (error) => {
-  //     test.equal(error.message, 'Remote SSH connection has already been closed');
-  //     test.done();
-  //   });
-  // },
+  closed(test) {
+    test.expect(1);
+
+    this.lanConnection.closed = true;
+    this.lanConnection.exec(undefined, (error) => {
+      test.equal(error.message, 'Remote SSH connection has already been closed');
+      test.done();
+    });
+  },
 
   emitClose(test) {
     test.expect(2);
