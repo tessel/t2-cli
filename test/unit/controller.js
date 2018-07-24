@@ -2041,13 +2041,14 @@ exports['controller.updateWithRemoteBuilds'] = {
       );
     });
 
-
+    colors.enabled = false;
     done();
   },
 
   tearDown(done) {
     this.tessel.mockClose();
     this.sandbox.restore();
+    colors.enabled = true;
     done();
   },
 
@@ -2070,11 +2071,6 @@ exports['controller.updateWithRemoteBuilds'] = {
     });
 
     this.fetchCurrentBuildInfo = this.sandbox.stub(this.tessel, 'fetchCurrentBuildInfo').returns(Promise.reject(new Error('No such file or directory')));
-
-    this.magenta = this.sandbox.stub(colors, 'magenta').callsFake(x => {
-      console.log('?');
-      return x;
-    });
 
     controller.updateWithRemoteBuilds({
         force: false

@@ -397,12 +397,14 @@ exports['Tessel.prototype.restart'] = {
     this.tessel = TesselSimulator();
     this.simpleExec = sandbox.spy(this.tessel, 'simpleExec');
 
+    colors.enabled = false;
     done();
   },
 
   tearDown: function(done) {
     this.tessel.mockClose();
     sandbox.restore();
+    colors.enabled = true;
     done();
   },
 
