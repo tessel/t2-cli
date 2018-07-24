@@ -39,6 +39,7 @@ exports['controller.update'] = {
     this.updateTesselWithVersion = this.sandbox.spy(controller, 'updateTesselWithVersion');
     this.closeTesselConnections = this.sandbox.spy(controller, 'closeTesselConnections');
 
+    this.processExit = this.sandbox.stub(process, 'exit');
     done();
   },
 
@@ -795,6 +796,7 @@ exports['update-fetch'] = {
     });
 
     this.ifReachable = this.sandbox.stub(remote, 'ifReachable').callsFake(() => Promise.resolve());
+    this.processExit = this.sandbox.stub(process, 'exit');
     done();
   },
   tearDown(done) {
@@ -844,6 +846,7 @@ exports['Tessel.update'] = {
       firmware: new Buffer(1)
     };
 
+    this.processExit = this.sandbox.stub(process, 'exit');
     done();
   },
   tearDown(done) {
