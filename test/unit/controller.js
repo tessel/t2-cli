@@ -2442,6 +2442,23 @@ exports['controller.rename'] = {
     done();
   },
 
+  willNotRenameSameAsCurrent(test) {
+    test.expect(2);
+
+    var options = {
+      newName: this.tessel.name,
+    };
+
+    controller.rename(options)
+      .then(() => {
+        // Assert that a warning was logged when
+        // the new name is the same as the old name
+        test.equal(this.warn.callCount, 1);
+        test.equal(this.warn.lastCall.args[0], 'Name of device is already TestTessel');
+        test.done();
+      });
+  },
+
   renameCallPipeline(test) {
     test.expect(4);
 

@@ -8,7 +8,7 @@ exports['Tessel.prototype.rename'] = {
     this.getName = this.sandbox.stub(Tessel.prototype, 'getName').callsFake(() => {
       return Promise.resolve('TheFakeName');
     });
-    this._getMACAddress = this.sandbox.stub(Tessel.prototype, '_getMACAddress').callsFake(() => {
+    this.getMACAddress = this.sandbox.stub(Tessel.prototype, 'getMACAddress').callsFake(() => {
       return Promise.resolve('TheFakeMACAddress');
     });
     this.resetMDNS = this.sandbox.stub(Tessel.prototype, 'resetMDNS').callsFake(() => {
@@ -92,7 +92,7 @@ exports['Tessel.prototype.rename'] = {
         // - the mac address is requested
         // - setName is called
         // - the connection executes the setHostName command
-        test.equal(this._getMACAddress.callCount, 1);
+        test.equal(this.getMACAddress.callCount, 1);
         test.equal(this.setName.callCount, 1);
         test.equal(this.setHostname.callCount, 1);
         test.equal(this.commitHostname.callCount, 1);
@@ -125,20 +125,6 @@ exports['Tessel.prototype.rename'] = {
         test.equal(this.openStdinToFile.callCount, 1);
         test.ok(this.setHostname.lastCall.calledWith('ValidAndUnique'));
 
-        test.done();
-      });
-  },
-
-  validRenameSameAsCurrent(test) {
-    test.expect(1);
-
-    this.tessel.rename({
-        newName: 'TheFakeName'
-      })
-      .then(() => {
-        // When renamed with same current name:
-        // - warning is logged
-        test.equal(this.logWarn.callCount, 1);
         test.done();
       });
   },
