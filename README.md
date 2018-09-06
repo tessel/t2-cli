@@ -8,6 +8,8 @@
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/9a6l5gwswuhqgk99?svg=true)](https://ci.appveyor.com/project/rwaldron/t2-cli)
 [![Coverage Status](https://coveralls.io/repos/github/tessel/t2-cli/badge.svg?branch=master)](https://coveralls.io/github/tessel/t2-cli?branch=master)
 [![Open Source Helpers](https://www.codetriage.com/tessel/t2-cli/badges/users.svg)](https://www.codetriage.com/tessel/t2-cli)
+[![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/tessel/t2-cli.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tessel/t2-cli/context:javascript)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/tessel/t2-cli.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tessel/t2-cli/alerts)
 
 The starting point for the Tessel 2 command line interface.
 
