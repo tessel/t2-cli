@@ -10,7 +10,7 @@ process.on('uncaughtException', function(err) {
 var codeContents = 'console.log("testing deploy");';
 var reference = new Buffer(codeContents);
 var lists = deployment.js.lists;
-var listRuleLength = lists.includes.length + lists.ignores.length + lists.blacklist.length;
+var listRuleLength = lists.includes.length + lists.ignores.length + lists.disallowed.length;
 var sandbox = sinon.sandbox.create();
 
 var FIXTURE_PATH = path.join(__dirname, '/../../../test/unit/fixtures');
@@ -2045,14 +2045,14 @@ exports['deployment.js.tarBundle'] = {
     });
   },
 
-  detectAndEliminateBlacklistedAssets(test) {
+  detectAndEliminateDisallowedAssets(test) {
     test.expect(1);
 
     const entryPoint = 'index.js';
-    const target = 'test/unit/fixtures/project-ignore-blacklisted';
+    const target = 'test/unit/fixtures/project-ignore-disallowed';
 
     /*
-      project-ignore-blacklisted
+      project-ignore-disallowed
       ├── index.js
       ├── node_modules
       │   └── tessel
