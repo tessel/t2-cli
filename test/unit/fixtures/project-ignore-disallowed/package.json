@@ -1,7 +1,7 @@
 {
-  "name": "project-ignore-blacklisted",
+  "name": "project-ignore-disallowed",
   "version": "0.0.1",
-  "description": "project-ignore-blacklisted",
+  "description": "project-ignore-disallowed",
   "main": "index.js",
   "dependencies": {
     "release": "1.1.1"
