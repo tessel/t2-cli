@@ -43,7 +43,7 @@ exports['deploy.rust'] = {
       error: undefined,
       stderr: '',
       stdout: 'Compilation was wildly successful',
-      binary: new Buffer('compiled binary', 'base64'),
+      binary: Buffer.from('compiled binary', 'base64'),
     });
 
     // Buffer to store incoming chunks of the tarred project directory
@@ -178,7 +178,7 @@ exports['deploy.rust'] = {
 
       handler(emitter);
 
-      emitter.emit('data', new Buffer('{'));
+      emitter.emit('data', Buffer.from('{'));
       emitter.emit('end');
 
       var duplex = stream.Duplex();
@@ -223,7 +223,7 @@ exports['deploy.rust'] = {
 
       handler(emitter);
 
-      emitter.emit('data', new Buffer('{}'));
+      emitter.emit('data', Buffer.from('{}'));
       emitter.emit('error', 'DEAD!');
 
       var duplex = stream.Duplex();
@@ -312,7 +312,7 @@ exports['deploy.rust'] = {
     var result = JSON.stringify({
       stderr: stderr,
       stdout: '',
-      binary: new Buffer(0),
+      binary: Buffer.alloc(0),
     });
 
     // When we get a write to the post request
@@ -401,7 +401,7 @@ exports['deploy.rust'] = {
   rustTarBundleRemote(test) {
     test.expect(4);
 
-    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation').callsFake(() => Promise.resolve(new Buffer([])));
+    this.remoteRustCompilation = sandbox.stub(deployment.rs, 'remoteRustCompilation').callsFake(() => Promise.resolve(Buffer.from([])));
 
     this.runBuild = sandbox.stub(rust, 'runBuild').callsFake(() => Promise.resolve(null));
 

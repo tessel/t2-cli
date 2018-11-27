@@ -87,7 +87,7 @@ exports['Tessel.prototype.receive'] = {
       test.done();
     });
 
-    this.rps.stderr.emit('data', new Buffer('Some Error'));
+    this.rps.stderr.emit('data', Buffer.from('Some Error'));
     this.rps.emit('close');
   },
 
@@ -99,7 +99,7 @@ exports['Tessel.prototype.receive'] = {
       test.done();
     });
 
-    this.rps.stdout.emit('data', new Buffer('Some Data'));
+    this.rps.stdout.emit('data', Buffer.from('Some Data'));
     this.rps.emit('close');
   },
 };
@@ -151,7 +151,7 @@ exports['Tessel.prototype.simpleExec'] = {
     });
 
     setImmediate(() => {
-      this.rps.stderr.emit('data', new Buffer('Some Error'));
+      this.rps.stderr.emit('data', Buffer.from('Some Error'));
       this.rps.emit('close');
     });
   },
@@ -167,7 +167,7 @@ exports['Tessel.prototype.simpleExec'] = {
     });
 
     setImmediate(() => {
-      this.rps.stdout.emit('data', new Buffer('Some Data'));
+      this.rps.stdout.emit('data', Buffer.from('Some Data'));
       this.rps.emit('close');
     });
   },

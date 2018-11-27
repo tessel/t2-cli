@@ -69,13 +69,40 @@ exports['Tessel.prototype.erase'] = {
       })
       // If it fails (as it should)
       .catch((err) => {
-        test.ok(err);
+        test.ok(err.includes('No files have been pushed'));
         // Pass the test
         test.done();
       });
 
     // Write the error message we get when there is no code in flash
     this.tessel._rps.stderr.push('Command failed: Not found');
+
+    // End the process once the error has time to propogate
+    setImmediate(() => {
+      this.tessel._rps.emit('close');
+    });
+  },
+
+  unexpectedError(test) {
+    test.expect(1);
+
+    // Attempt to erase the script
+    this.tessel.eraseScript()
+      // If it completes without issue
+      .then(() => {
+        // Fail the test
+        test.ok(false, 'Error should have been returned on useless flash erase');
+        test.done();
+      })
+      // If it fails (as it should)
+      .catch((err) => {
+        test.ok(err.includes('An unexpected error occurred'));
+        // Pass the test
+        test.done();
+      });
+
+    // Write the error message we get when there is no code in flash
+    this.tessel._rps.stderr.push('Unexpected');
 
     // End the process once the error has time to propogate
     setImmediate(() => {

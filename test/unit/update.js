@@ -118,8 +118,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
@@ -198,8 +198,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
@@ -250,8 +250,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
@@ -291,8 +291,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
@@ -343,8 +343,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
@@ -390,8 +390,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
@@ -440,8 +440,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
@@ -505,8 +505,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
@@ -551,8 +551,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchBuild = this.sandbox.stub(updates, 'fetchBuild').callsFake(function() {
@@ -601,8 +601,8 @@ exports['controller.update'] = {
     });
 
     var binaries = {
-      firmware: new Buffer(0),
-      openwrt: new Buffer(0)
+      firmware: Buffer.alloc(0),
+      openwrt: Buffer.alloc(0)
     };
 
     this.fetchCurrentBuildInfo.restore();
@@ -644,7 +644,7 @@ exports['controller.update'] = {
       end: () => Promise.resolve()
     });
 
-    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.resolve(new Buffer(0)));
+    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.resolve(Buffer.alloc(0)));
 
     var opts = {
       lanPrefer: true,
@@ -710,7 +710,7 @@ exports['controller.update'] = {
       end: () => Promise.resolve()
     });
 
-    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.resolve(new Buffer(0)));
+    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.resolve(Buffer.alloc(0)));
 
     var opts = {
       lanPrefer: true,
@@ -741,7 +741,7 @@ exports['controller.update'] = {
       end: () => Promise.resolve()
     });
 
-    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.resolve(new Buffer(0)));
+    this.loadLocalBinary = this.sandbox.stub(updates, 'loadLocalBinary').returns(Promise.resolve(Buffer.alloc(0)));
 
     var opts = {
       lanPrefer: true,
@@ -842,8 +842,8 @@ exports['Tessel.update'] = {
     this.fixOldUpdateScripts = sinon.stub(this.tessel, 'fixOldUpdateScripts').returns(Promise.resolve());
 
     this.newImage = {
-      openwrt: new Buffer(1),
-      firmware: new Buffer(1)
+      openwrt: Buffer.alloc(1),
+      firmware: Buffer.alloc(1)
     };
 
     this.processExit = this.sandbox.stub(process, 'exit');
@@ -863,7 +863,7 @@ exports['Tessel.update'] = {
     this.exec = this.sandbox.stub(this.tessel.connection, 'exec').callsFake((command, handler) => {
       handler(null, this.tessel._rps);
       setImmediate(() => {
-        this.tessel._rps.stdout.emit('data', new Buffer('Upgrade completed'));
+        this.tessel._rps.stdout.emit('data', Buffer.from('Upgrade completed'));
         this.tessel._rps.emit('close');
       });
     });
@@ -889,7 +889,7 @@ exports['Tessel.update'] = {
     this.exec = this.sandbox.stub(this.tessel.connection, 'exec').callsFake((command, handler) => {
       handler(null, this.tessel._rps);
       setImmediate(() => {
-        this.tessel._rps.stdout.emit('data', new Buffer('Upgrade completed'));
+        this.tessel._rps.stdout.emit('data', Buffer.from('Upgrade completed'));
         this.tessel._rps.emit('close');
       });
     });

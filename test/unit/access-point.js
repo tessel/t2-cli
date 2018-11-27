@@ -68,7 +68,7 @@ exports['Tessel.prototype.createAccessPoint'] = {
         count++;
         return callback(new Error('uci: Entry not found'));
       } else {
-        return callback(null, new Buffer(0));
+        return callback(null, Buffer.alloc(0));
       }
     });
 
@@ -239,7 +239,7 @@ exports['Tessel.prototype.enableAccessPoint'] = {
 
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
-        var info = new Buffer(tags.stripIndent `
+        var info = Buffer.from(tags.stripIndent `
           wireless.cfg053579.ssid='${results.ssid}'
           wireless.cfg053579.key='${results.key}'
           wireless.cfg053579.encryption='${results.encryption}'
@@ -250,7 +250,7 @@ exports['Tessel.prototype.enableAccessPoint'] = {
           this.tessel._rps.emit('close');
         });
       } else if (command.toString() === 'uci get network.lan.ipaddr') {
-        var ipInfo = new Buffer(`${results.ip}\n`);
+        var ipInfo = Buffer.from(`${results.ip}\n`);
 
         setImmediate(() => {
           this.tessel._rps.stdout.emit('data', ipInfo);
@@ -290,7 +290,7 @@ exports['Tessel.prototype.enableAccessPoint'] = {
     // Test is expecting two closes...;
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
-        var info = new Buffer(tags.stripIndent `
+        var info = Buffer.from(tags.stripIndent `
           wireless.cfg053579.key='${results.key}'
           wireless.cfg053579.encryption='${results.encryption}'
           wireless.cfg053579.disabled='1'`);
@@ -300,7 +300,7 @@ exports['Tessel.prototype.enableAccessPoint'] = {
           this.tessel._rps.emit('close');
         });
       } else if (command.toString() === 'uci get network.lan.ipaddr') {
-        var ipInfo = new Buffer(`${results.ip}\n`);
+        var ipInfo = Buffer.from(`${results.ip}\n`);
 
         setImmediate(() => {
           this.tessel._rps.stdout.emit('data', ipInfo);
@@ -402,7 +402,7 @@ exports['Tessel.prototype.getAccessPointInfo'] = {
     // Test is expecting two closes...;
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
-        var info = new Buffer(tags.stripIndent `
+        var info = Buffer.from(tags.stripIndent `
           wireless.cfg053579.ssid='${results.ssid}'
           wireless.cfg053579.key='${results.key}'
           wireless.cfg053579.encryption='${results.encryption}'
@@ -413,7 +413,7 @@ exports['Tessel.prototype.getAccessPointInfo'] = {
           this.tessel._rps.emit('close');
         });
       } else if (command.toString() === 'uci get network.lan.ipaddr') {
-        var ipInfo = new Buffer(`${results.ip}\n`);
+        var ipInfo = Buffer.from(`${results.ip}\n`);
 
         setImmediate(() => {
           this.tessel._rps.stdout.emit('data', ipInfo);
@@ -428,13 +428,13 @@ exports['Tessel.prototype.getAccessPointInfo'] = {
     });
 
     this.tessel.getAccessPointInfo()
-      .then((info) => {
+      .then(info => {
         test.equal(this.getAccessPointConfig.callCount, 1);
         test.equal(this.getAccessPointIP.callCount, 1);
         test.deepEqual(info, results);
         test.done();
       })
-      .catch(function(error) {
+      .catch(error => {
         test.fail(error);
         test.done();
       });
@@ -453,14 +453,14 @@ exports['Tessel.prototype.getAccessPointInfo'] = {
     // Test is expecting two closes...;
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === 'uci show wireless.@wifi-iface[1]') {
-        var info = new Buffer(`wireless.cfg053579.disabled='1'`);
+        var info = Buffer.from(`wireless.cfg053579.disabled='1'`);
 
         setImmediate(() => {
           this.tessel._rps.stdout.emit('data', info);
           this.tessel._rps.emit('close');
         });
       } else if (command.toString() === 'uci get network.lan.ipaddr') {
-        var ipInfo = new Buffer(`${results.ip}\n`);
+        var ipInfo = Buffer.from(`${results.ip}\n`);
 
         setImmediate(() => {
           this.tessel._rps.stdout.emit('data', ipInfo);
@@ -475,13 +475,13 @@ exports['Tessel.prototype.getAccessPointInfo'] = {
     });
 
     this.tessel.getAccessPointInfo()
-      .then((info) => {
+      .then(info => {
         test.equal(this.getAccessPointConfig.callCount, 1);
         test.equal(this.getAccessPointIP.callCount, 1);
         test.deepEqual(info, results);
         test.done();
       })
-      .catch(function(error) {
+      .catch(error => {
         test.fail(error);
         test.done();
       });

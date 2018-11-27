@@ -112,7 +112,7 @@ util.inherits(global.Request, global.Stream);
 global.DEPLOY_DIR_JS = path.join(process.cwd(), 'test/unit/', 'tmp');
 global.DEPLOY_FILE_JS = path.join(global.DEPLOY_DIR_JS, 'app.js');
 global.jsCodeContents = 'console.log("testing deploy");';
-global.jsCodeReference = new Buffer(global.jsCodeContents);
+global.jsCodeReference = Buffer.from(global.jsCodeContents);
 
 global.DEPLOY_DIR_RS = path.join(process.cwd(), 'test/unit/fixtures', 'rust-deploy-template');
 

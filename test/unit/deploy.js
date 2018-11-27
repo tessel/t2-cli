@@ -477,7 +477,7 @@ exports['Tessel.prototype.restart'] = {
       });
 
     setImmediate(() => {
-      this.tessel._rps.stderr.emit('data', new Buffer('No such file or directory'));
+      this.tessel._rps.stderr.emit('data', Buffer.from('No such file or directory'));
       this.tessel._rps.emit('close');
     });
   },
