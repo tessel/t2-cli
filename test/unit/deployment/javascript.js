@@ -8,7 +8,7 @@ process.on('uncaughtException', function(err) {
 });
 
 var codeContents = 'console.log("testing deploy");';
-var reference = new Buffer(codeContents);
+var reference = Buffer.from(codeContents);
 var lists = deployment.js.lists;
 var listRuleLength = lists.includes.length + lists.ignores.length + lists.disallowed.length;
 var sandbox = sinon.sandbox.create();
@@ -446,7 +446,7 @@ exports['deployment.js.compress with uglify.es.minify()'] = {
 
   minifyFromBuffer(test) {
     test.expect(1);
-    test.equal(deployment.js.compress('es', new Buffer(codeContents)), codeContents);
+    test.equal(deployment.js.compress('es', Buffer.from(codeContents)), codeContents);
     test.done();
   },
 
@@ -658,7 +658,7 @@ exports['deployment.js.compress with uglify.js.minify()'] = {
 
   minifyFromBuffer(test) {
     test.expect(1);
-    test.equal(deployment.js.compress('js', new Buffer(codeContents)), codeContents);
+    test.equal(deployment.js.compress('js', Buffer.from(codeContents)), codeContents);
     test.done();
   },
 
@@ -2409,7 +2409,7 @@ exports['deployment.js.preBundle'] = {
       entryPoint: ''
     }));
     this.resolveBinaryModules = sandbox.stub(deployment.js, 'resolveBinaryModules').returns(Promise.resolve());
-    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle').returns(Promise.resolve(new Buffer([0x00])));
+    this.tarBundle = sandbox.stub(deployment.js, 'tarBundle').returns(Promise.resolve(Buffer.from([0x00])));
     this.pathResolve = sandbox.stub(path, 'resolve');
 
 
@@ -2805,7 +2805,7 @@ exports['deployment.js.resolveBinaryModules'] = {
     this.spawnSync = sandbox.stub(cp, 'spawnSync').callsFake(() => {
       return {
         output: [
-          null, new Buffer('{"targets": [{"target_name": "missing","sources": ["capture.c", "missing.cc"]}]}', 'utf8')
+          null, Buffer.from('{"targets": [{"target_name": "missing","sources": ["capture.c", "missing.cc"]}]}', 'utf8')
         ]
       };
     });

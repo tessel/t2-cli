@@ -20,7 +20,7 @@ exports['Cargo Subcommand (cargo tessel ...)'] = {
   build(test) {
     test.expect(4);
 
-    var tarball = new Buffer([0x00]);
+    var tarball = Buffer.from([0x00]);
     var bresolve = Promise.resolve(tarball);
 
     // Prevent the tarball from being logged

@@ -232,7 +232,7 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === commands.scanWiFi().join(' ')) {
         setImmediate(() => {
-          this.tessel._rps.stderr.emit('data', new Buffer(errorMessage));
+          this.tessel._rps.stderr.emit('data', Buffer.from(errorMessage));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -261,7 +261,7 @@ exports['Tessel.prototype.findAvailableNetworks'] = {
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === commands.scanWiFi().join(' ')) {
         setImmediate(() => {
-          this.tessel._rps.stderr.emit('data', new Buffer('No such wireless device'));
+          this.tessel._rps.stderr.emit('data', Buffer.from('No such wireless device'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -321,7 +321,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('signal'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -363,7 +363,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('signal'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -408,7 +408,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('signal'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -452,7 +452,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
           // Is missing the "signal" status key
-          this.tessel._rps.stderr.emit('data', new Buffer('Unable to connect to the network.'));
+          this.tessel._rps.stderr.emit('data', Buffer.from('Unable to connect to the network.'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -497,7 +497,7 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
           // Is missing the "signal" status key
-          this.tessel._rps.stdout.emit('data', new Buffer('{"frequency": 2422,"txpower": 20}'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('{"frequency": 2422,"txpower": 20}'));
           this.tessel._rps.stdout.removeAllListeners();
           this.tessel._rps.stderr.removeAllListeners();
           this.tessel._rps.emit('close');
@@ -546,9 +546,9 @@ module.exports['Tessel.prototype.connectToNetwork'] = {
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
           // First write some random data
-          this.tessel._rps.stdout.emit('data', new Buffer('do not have success yet'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('do not have success yet'));
           // then write the keyword we're looking for for success
-          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('signal'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -636,7 +636,7 @@ module.exports['Tessel.prototype.setWifiState'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('signal'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -677,7 +677,7 @@ module.exports['Tessel.prototype.setWifiState'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('signal'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -718,12 +718,12 @@ module.exports['Tessel.prototype.setWifiState'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('signal'));
           this.tessel._rps.emit('close');
         });
       } else if (command.toString() === 'wifi') {
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer(`'radio0' is disabled`));
+          this.tessel._rps.stdout.emit('data', Buffer.from(`'radio0' is disabled`));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -765,12 +765,12 @@ module.exports['Tessel.prototype.setWifiState'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer('signal'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('signal'));
           this.tessel._rps.emit('close');
         });
       } else if (command.toString() === 'wifi') {
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer(`Some other error`));
+          this.tessel._rps.stdout.emit('data', Buffer.from(`Some other error`));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -809,7 +809,7 @@ module.exports['Tessel.prototype.setWifiState'] = {
         // Write to stderr so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stderr.emit('data', new Buffer('Not found'));
+          this.tessel._rps.stderr.emit('data', Buffer.from('Not found'));
           this.tessel._rps.stderr.removeAllListeners();
           this.tessel._rps.stdout.removeAllListeners();
           this.tessel._rps.emit('close');
@@ -914,7 +914,7 @@ module.exports['Tessel.getWifiInfo'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer(JSON.stringify({
+          this.tessel._rps.stdout.emit('data', Buffer.from(JSON.stringify({
             ssid: ssid
           })));
           this.tessel._rps.emit('close');
@@ -923,7 +923,7 @@ module.exports['Tessel.getWifiInfo'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer(ip));
+          this.tessel._rps.stdout.emit('data', Buffer.from(ip));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -954,7 +954,7 @@ module.exports['Tessel.getWifiInfo'] = {
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === commands.getWifiInfo().join(' ')) {
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer(JSON.stringify({
+          this.tessel._rps.stdout.emit('data', Buffer.from(JSON.stringify({
             noSSID: 'testing'
           })));
           this.tessel._rps.emit('close');
@@ -986,7 +986,7 @@ module.exports['Tessel.getWifiInfo'] = {
     this.tessel._rps.on('control', (command) => {
       if (command.toString() === commands.getWifiInfo().join(' ')) {
         setImmediate(() => {
-          this.tessel._rps.stdout.emit('data', new Buffer('Not JSON'));
+          this.tessel._rps.stdout.emit('data', Buffer.from('Not JSON'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -1019,7 +1019,7 @@ module.exports['Tessel.getWifiInfo'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stderr.emit('data', new Buffer('Command: Not found.'));
+          this.tessel._rps.stderr.emit('data', Buffer.from('Command: Not found.'));
           this.tessel._rps.emit('close');
         });
       } else {
@@ -1052,7 +1052,7 @@ module.exports['Tessel.getWifiInfo'] = {
         // Write to stdout so it completes as expected
         // Wrap in setImmediate to make sure listener is set up before emitting
         setImmediate(() => {
-          this.tessel._rps.stderr.emit('data', new Buffer('Unknown error'));
+          this.tessel._rps.stderr.emit('data', Buffer.from('Unknown error'));
           this.tessel._rps.emit('close');
         });
       } else {

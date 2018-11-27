@@ -9,8 +9,8 @@ exports['Tessel.prototype.restore'] = {
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.images = {
-      uboot: new Buffer('uboot'),
-      squashfs: new Buffer('squashfs'),
+      uboot: Buffer.from('uboot'),
+      squashfs: Buffer.from('squashfs'),
     };
     this.status = this.sandbox.stub(restore, 'status').callsFake(() => Promise.resolve(0));
     this.fetchRestore = this.sandbox.stub(updates, 'fetchRestore').callsFake(() => {
@@ -68,7 +68,7 @@ exports['Tessel.prototype.restore'] = {
     this.flash = this.sandbox.stub(restore, 'flash').callsFake(() => Promise.resolve());
     this.transaction = this.sandbox.stub(restore, 'transaction').callsFake((usb, bytesOrCommand) => {
       if (bytesOrCommand === 0x9F) {
-        return Promise.resolve(new Buffer([0x01, 0x02, 0x19]));
+        return Promise.resolve(Buffer.from([0x01, 0x02, 0x19]));
       }
 
       return Promise.resolve();
@@ -93,8 +93,8 @@ exports['restore.*'] = {
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.images = {
-      uboot: new Buffer('uboot'),
-      squashfs: new Buffer('squashfs'),
+      uboot: Buffer.from('uboot'),
+      squashfs: Buffer.from('squashfs'),
     };
     this.status = this.sandbox.stub(restore, 'status').callsFake(() => Promise.resolve(0));
     this.fetchRestore = this.sandbox.stub(updates, 'fetchRestore').callsFake(() => {
@@ -116,7 +116,7 @@ exports['restore.*'] = {
   validateDeviceIdSuccess(test) {
     test.expect(1);
 
-    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake(() => Promise.resolve(new Buffer([0x01, 0x02, 0x19])));
+    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake(() => Promise.resolve(Buffer.from([0x01, 0x02, 0x19])));
 
     restore.validateDeviceId({})
       .then(() => {
@@ -128,7 +128,7 @@ exports['restore.*'] = {
   validateDeviceIdFailure(test) {
     test.expect(1);
 
-    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake(() => Promise.resolve(new Buffer([0x00, 0x00, 0x00])));
+    this.transaction = this.sandbox.stub(restore, 'transaction').callsFake(() => Promise.resolve(Buffer.from([0x00, 0x00, 0x00])));
 
     restore.validateDeviceId({})
       .catch((error) => {
@@ -193,8 +193,8 @@ exports['restore.transaction'] = {
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.images = {
-      uboot: new Buffer('uboot'),
-      squashfs: new Buffer('squashfs'),
+      uboot: Buffer.from('uboot'),
+      squashfs: Buffer.from('squashfs'),
     };
     this.status = this.sandbox.stub(restore, 'status').callsFake(() => Promise.resolve(0));
     this.fetchRestore = this.sandbox.stub(updates, 'fetchRestore').callsFake(() => {
@@ -213,9 +213,9 @@ exports['restore.transaction'] = {
     this.usb.epIn.transfer = this.sandbox.spy((data, callback) => {
       callback(null, this.usb.epIn._mockbuffer);
     });
-    this.usb.epIn._mockdata = new Buffer('mockbuffer');
+    this.usb.epIn._mockdata = Buffer.from('mockbuffer');
 
-    this.expectedBuffer = new Buffer([0x00, 0x00, 0x00, 0x00, 0xFF]);
+    this.expectedBuffer = Buffer.from([0x00, 0x00, 0x00, 0x00, 0xFF]);
     done();
   },
 
@@ -248,7 +248,7 @@ exports['restore.transaction'] = {
   transactionAcceptsBuffer(test) {
     test.expect(2);
 
-    restore.transaction(this.usb, new Buffer([0xFF])).then(() => {
+    restore.transaction(this.usb, Buffer.from([0xFF])).then(() => {
       test.equal(this.usb.epOut.transfer.lastCall.args[0].equals(this.expectedBuffer), true);
       test.equal(this.usb.epIn.transfer.callCount, 0);
       test.done();
@@ -382,8 +382,8 @@ exports['restore.flash'] = {
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.images = {
-      uboot: new Buffer('uboot'),
-      squashfs: new Buffer('squashfs'),
+      uboot: Buffer.from('uboot'),
+      squashfs: Buffer.from('squashfs'),
     };
     this.partition = this.sandbox.spy(restore, 'partition');
     this.status = this.sandbox.stub(restore, 'status').callsFake(() => Promise.resolve(0));
@@ -402,14 +402,14 @@ exports['restore.flash'] = {
     this.usb.epIn.transfer = this.sandbox.spy((data, callback) => {
       callback(null, this.usb.epIn._mockbuffer);
     });
-    this.usb.epIn._mockdata = new Buffer('mockbuffer');
+    this.usb.epIn._mockdata = Buffer.from('mockbuffer');
 
     this.tessel.usbConnection.device = {
       controlTransfer() {}
     };
 
     this.tick = this.sandbox.stub(Progress.prototype, 'tick');
-    this.expectedBuffer = new Buffer([0x00, 0x00, 0x00, 0x00, 0xFF]);
+    this.expectedBuffer = Buffer.from([0x00, 0x00, 0x00, 0x00, 0xFF]);
     done();
   },
 
@@ -470,8 +470,8 @@ exports['restore.write'] = {
     this.warn = this.sandbox.stub(log, 'warn');
     this.info = this.sandbox.stub(log, 'info');
     this.images = {
-      uboot: new Buffer('uboot'),
-      squashfs: new Buffer('squashfs'),
+      uboot: Buffer.from('uboot'),
+      squashfs: Buffer.from('squashfs'),
     };
     this.writePage = this.sandbox.stub(restore, 'writePage').callsFake(() => Promise.resolve());
     this.waitTransactionComplete = this.sandbox.stub(restore, 'waitTransactionComplete').callsFake(() => Promise.resolve());
@@ -488,7 +488,7 @@ exports['restore.write'] = {
 
     this.tick = this.sandbox.stub(Progress.prototype, 'tick');
 
-    restore.write({}, 0, new Buffer(256)).then(() => {
+    restore.write({}, 0, Buffer.alloc(256)).then(() => {
       test.equal(this.tick.callCount, 1);
       test.equal(this.writePage.callCount, 1);
       test.equal(this.waitTransactionComplete.callCount, 1);

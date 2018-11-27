@@ -366,7 +366,7 @@ exports['USB.Connection.prototype._receiveMessages'] = {
 
     this.usbConnection._receiveMessages();
 
-    this.usbConnection.epIn.emit('data', new Buffer([0xff, 0xff]));
+    this.usbConnection.epIn.emit('data', Buffer.from([0xff, 0xff]));
     test.equal(this.usbConnection._readableState.length, 2);
     test.done();
   },
