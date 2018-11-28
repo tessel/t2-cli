@@ -658,6 +658,33 @@ exports['deploy.createShellScript'] = {
       test.done();
     });
   },
+
+  remoteShellScriptDDErrorsCanBeIgnored(test) {
+    test.expect(2);
+
+    this.exec = sandbox.stub(this.tessel.connection, 'exec').callsFake((command, callback) => {
+      callback(null, this.tessel._rps);
+      this.tessel._rps.emit('close');
+    });
+
+    this.receive = sandbox.stub(this.tessel, 'receive').callsFake((remote, callback) => {
+      const error = new Error('0+1 records in\n0+1 records out\n');
+      callback(error, 0);
+    });
+
+    var opts = {
+      lang: deployment.js,
+      resolvedEntryPoint: 'foo',
+      binopts: [],
+      subargs: ['--key=value'],
+    };
+
+    deploy.createShellScript(this.tessel, opts).then(() => {
+      test.deepEqual(this.exec.firstCall.args[0], ['dd', 'of=/app/start']);
+      test.deepEqual(this.exec.lastCall.args[0], ['chmod', '+x', '/app/start']);
+      test.done();
+    });
+  },
 };
 
 exports['Tessel.REMOTE_*_PATH'] = {
