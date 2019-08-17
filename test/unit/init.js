@@ -353,11 +353,6 @@ exports['init --lang=javascript'] = {
         install(deps, callback) {
           callback();
         }
-      },
-      registry: {
-        log: {
-          level: 'warn'
-        }
       }
     };
 
@@ -533,23 +528,6 @@ exports['init --lang=javascript'] = {
     test.done();
   },
 
-  npmInstallRegistryLogLevel(test) {
-    test.expect(3);
-
-    this.loadNpm = this.sandbox.stub(init.js, 'loadNpm').callsFake(() => {
-      return Promise.resolve(this.npm);
-    });
-
-    test.equal(this.npm.registry.log.level, 'warn');
-
-    init.js.npmInstall(['test@1.1.1'])
-      .then(() => {
-        test.equal(this.npm.registry.log.level, 'silent');
-        test.equal(this.loadNpm.callCount, 1);
-        test.done();
-      });
-  },
-
   npmInstallNoDeps(test) {
     test.expect(1);
 
@@ -578,12 +556,7 @@ exports['init --lang=javascript'] = {
           test.ok(true);
           callback();
         },
-      },
-      registry: {
-        log: {
-          level: 'warn',
-        },
-      },
+      }
     };
 
     this.loadNpm = this.sandbox.stub(init.js, 'loadNpm').returns(Promise.resolve(npm));
@@ -610,12 +583,7 @@ exports['init --lang=javascript'] = {
           test.ok(true);
           callback(new Error('npm.commands.install failed?'));
         },
-      },
-      registry: {
-        log: {
-          level: 'warn',
-        },
-      },
+      }
     };
 
     this.loadNpm = this.sandbox.stub(init.js, 'loadNpm').returns(Promise.resolve(npm));
