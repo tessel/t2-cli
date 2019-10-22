@@ -58,7 +58,7 @@
     "fs-temp": "^1.0.0",
     "fstream": "^1.0.8",
     "fstream-ignore": "1.0.5",
-    "glob": "^5.0.15",
+    "glob": "^7.1.5",
     "inquirer": "^0.12.0",
     "is-root": "^2.1.0",
     "mdns-js": "^1.0.1",
