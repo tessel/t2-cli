@@ -59,7 +59,7 @@
     "fstream": "^1.0.8",
     "fstream-ignore": "1.0.5",
     "glob": "^5.0.15",
-    "inquirer": "^0.12.0",
+    "inquirer": "^7.0.0",
     "is-root": "^2.1.0",
     "mdns-js": "^1.0.1",
     "minimatch": "^3.0.0",
