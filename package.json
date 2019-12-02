@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/tessel/t2-cli",
   "devDependencies": {
-    "concat-stream": "^1.6.2",
+    "concat-stream": "^2.0.0",
     "coveralls": "^3.0.2",
     "grunt": "^1.0.3",
     "grunt-cli": "^1.2.0",
