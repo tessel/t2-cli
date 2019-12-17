@@ -82,7 +82,7 @@
     "tar-fs": "^2.0.0",
     "tar-stream": "^2.1.0",
     "uglify-es": "3.2.0",
-    "uglify-js": "3.1.3",
+    "uglify-js": "3.7.2",
     "unbzip2-stream": "^1.0.10",
     "update-notifier": "^2.2.0",
     "url-join": "2.0.2",
