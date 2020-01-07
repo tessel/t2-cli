@@ -84,7 +84,7 @@
     "uglify-es": "3.2.0",
     "uglify-js": "3.7.2",
     "unbzip2-stream": "^1.0.10",
-    "update-notifier": "^2.2.0",
+    "update-notifier": "^4.0.0",
     "url-join": "4.0.1",
     "usb": "^1.5.0",
     "usb-daemon-parser": "0.0.2"
