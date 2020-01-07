@@ -63,7 +63,7 @@ Just run `t2 update` to make sure you are running the most recent build of OpenW
 ## Testing
 
 ### Overview
-In order to maintain a reliable code base, there is extensive code coverage and style checking involved with adding to or editting this repo. [Grunt](http://gruntjs.com) is used as the task runner, along with plugins for the following tools:
+In order to maintain a reliable code base, there is extensive code coverage and style checking involved with adding to or editing this repo. [Grunt](http://gruntjs.com) is used as the task runner, along with plugins for the following tools:
 
 - [jshint](http://jshint.com/docs/): used to verify our best practices and prevents us from making mistakes that could lead to hard-to-find bugs, see [`.jshintrc`](https://github.com/tessel/t2-cli/blob/master/.jshintrc) for our configuration
 - [jscs](http://jscs.info): used to maintain the project's preferred code style, see [`.jscsrc`](https://github.com/tessel/t2-cli/blob/master/.jscsrc) for our configuration
