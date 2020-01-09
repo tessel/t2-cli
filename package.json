@@ -78,7 +78,7 @@
     "stream-to-buffer": "^0.1.0",
     "t2-progress": "^1.4.0",
     "t2-project": "^1.0.1",
-    "tar": "^2.2.2",
+    "tar": "^4.4.2",
     "tar-fs": "^2.0.0",
     "tar-stream": "^2.1.0",
     "uglify-es": "3.2.0",
