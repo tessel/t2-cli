@@ -3,10 +3,10 @@ require('../common/bootstrap');
 
 function newTessel(options) {
   var tessel = new Tessel({
-    connectionType: options.type || 'LAN',
     authorized: options.authorized !== undefined ? options.authorized : true,
-    end: function() {
-      return Promise.resolve();
+    connectionType: options.connectionType || 'LAN',
+    end() {
+      return (options.end && options.end()) || Promise.resolve();
     }
   });
 
@@ -176,19 +176,19 @@ exports['controller.closeTesselConnections'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     var b = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     var c = newTessel({
       sandbox: this.sandbox,
       authorized: false,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     controller.closeTesselConnections([a, b, c])
@@ -205,18 +205,18 @@ exports['controller.closeTesselConnections'] = {
 
     var a = newTessel({
       sandbox: this.sandbox,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     var b = newTessel({
       sandbox: this.sandbox,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     var c = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     controller.closeTesselConnections([a, b, c])
@@ -234,7 +234,7 @@ exports['controller.closeTesselConnections'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: false,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     controller.closeTesselConnections([a])
@@ -250,7 +250,7 @@ exports['controller.closeTesselConnections'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: false,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     a.usbConnection.closed = true;
@@ -288,7 +288,7 @@ exports['controller.runHeuristics'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     controller.runHeuristics({}, [a])
@@ -304,7 +304,7 @@ exports['controller.runHeuristics'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     controller.runHeuristics({}, [a])
@@ -318,22 +318,57 @@ exports['controller.runHeuristics'] = {
     test.expect(1);
 
     var a = newTessel({
+      name: 'a',
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     var b = newTessel({
+      name: 'b',
       sandbox: this.sandbox,
       authorized: true,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     controller.runHeuristics({}, [a, b])
       .then(function(tessel) {
+        // console.log(tessel);
         test.deepEqual(b, tessel);
         test.done();
-      });
+      }).catch(error => console.log(error));
+  },
+
+
+  USBAndLANDevicesButNamedDeviceIsLateInList(test) {
+    test.expect(1);
+
+    var a = newTessel({
+      name: 'a',
+      sandbox: this.sandbox,
+      authorized: true,
+      connectionType: 'LAN'
+    });
+
+    var b = newTessel({
+      name: 'b',
+      sandbox: this.sandbox,
+      authorized: true,
+      connectionType: 'USB'
+    });
+
+    var c = newTessel({
+      name: 'c',
+      sandbox: this.sandbox,
+      authorized: true,
+      connectionType: 'USB'
+    });
+
+    controller.runHeuristics({name: 'c'}, [a, b, c])
+      .then(function(tessel) {
+        test.deepEqual(c, tessel);
+        test.done();
+      }).catch(error => console.log(error));
   },
 
   bothConnectionsAndLAN(test) {
@@ -342,13 +377,13 @@ exports['controller.runHeuristics'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     var b = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     b.addConnection({
@@ -369,19 +404,19 @@ exports['controller.runHeuristics'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     var b = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     var c = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     c.addConnection({
@@ -393,7 +428,7 @@ exports['controller.runHeuristics'] = {
       .then(function(tessel) {
         test.deepEqual(c, tessel);
         test.done();
-      });
+      }).catch(error => console.log(error));
   },
 
   USBAndLANDevicesWithNameOption(test) {
@@ -402,18 +437,16 @@ exports['controller.runHeuristics'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN',
+      name: 'Me!'
     });
-
-    a.name = 'Me!';
 
     var b = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'USB'
+      connectionType: 'USB',
+      name: 'Not Me!'
     });
-
-    b.name = 'Not Me!';
 
     controller.runHeuristics({
         name: a.name
@@ -427,29 +460,29 @@ exports['controller.runHeuristics'] = {
   USBAndLANDevicesWithEnvVariable(test) {
     test.expect(1);
 
-    var winningName = 'Me!';
+    const winningName = 'Me!';
     process.env['Tessel'] = winningName;
 
-    var a = newTessel({
+    const a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     a.name = winningName;
 
-    var b = newTessel({
+    const b = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
-    b.name = 'Not ' + winningName;
+    b.name = `Not ${winningName}`;
 
     controller.runHeuristics({
         name: a.name
       }, [a, b])
-      .then(function(tessel) {
+      .then(tessel => {
         test.deepEqual(a, tessel);
         process.env['Tessel'] = undefined;
         test.done();
@@ -463,13 +496,13 @@ exports['controller.runHeuristics'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     var b = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     controller.runHeuristics({}, [a, b])
@@ -490,13 +523,13 @@ exports['controller.runHeuristics'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     var b = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     controller.runHeuristics({}, [a, b])
@@ -723,7 +756,7 @@ exports['Tessel.list'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'USB'
+      connectionType: 'USB'
     });
 
     Tessel.list(this.standardOpts)
@@ -748,7 +781,7 @@ exports['Tessel.list'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     Tessel.list(this.standardOpts)
@@ -773,7 +806,7 @@ exports['Tessel.list'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: false,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     var customOpts = Object.assign({}, this.standardOpts, {
@@ -821,14 +854,14 @@ exports['Tessel.list'] = {
 
     var usb = newTessel({
       sandbox: this.sandbox,
-      type: 'USB',
+      connectionType: 'USB',
       name: 'samesies'
     });
 
     var lan = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'samesies'
     });
 
@@ -855,14 +888,14 @@ exports['Tessel.list'] = {
 
     var usb = newTessel({
       sandbox: this.sandbox,
-      type: 'USB',
+      connectionType: 'USB',
       name: 'foo'
     });
 
     var lan = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'bar'
     });
 
@@ -895,14 +928,14 @@ exports['Tessel.list'] = {
 
     var usb = newTessel({
       sandbox: this.sandbox,
-      type: 'USB',
+      connectionType: 'USB',
       name: 'foo'
     });
 
     var lan = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'bar'
     });
 
@@ -981,7 +1014,7 @@ exports['Tessel.get'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'the_name'
     });
 
@@ -1018,7 +1051,7 @@ exports['Tessel.get'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'the_name'
     });
 
@@ -1055,7 +1088,7 @@ exports['Tessel.get'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'the_name'
     });
 
@@ -1092,14 +1125,14 @@ exports['Tessel.get'] = {
     var a = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'a'
     });
 
     var b = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'b'
     });
 
@@ -1130,14 +1163,14 @@ exports['Tessel.get'] = {
 
     var usb = newTessel({
       sandbox: this.sandbox,
-      type: 'USB',
+      connectionType: 'USB',
       name: 'samesies'
     });
 
     var lan = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'samesies'
     });
 
@@ -1182,14 +1215,14 @@ exports['Tessel.get'] = {
 
     var usb = newTessel({
       sandbox: this.sandbox,
-      type: 'USB',
+      connectionType: 'USB',
       name: 'a'
     });
 
     var lan = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'a'
     });
 
@@ -1257,7 +1290,7 @@ exports['Tessel.get'] = {
 
     var usb = newTessel({
       sandbox: this.sandbox,
-      type: 'USB',
+      connectionType: 'USB',
       name: 'USBTessel'
     });
 
@@ -1298,7 +1331,7 @@ exports['Tessel.get'] = {
 
     var usb = newTessel({
       sandbox: this.sandbox,
-      type: 'USB',
+      connectionType: 'USB',
       name: 'USBTessel'
     });
 
@@ -1333,7 +1366,7 @@ exports['Tessel.get'] = {
 
     var usb = newTessel({
       sandbox: this.sandbox,
-      type: 'USB',
+      connectionType: 'USB',
       name: 'USBTessel'
     });
 
@@ -1598,7 +1631,7 @@ exports['controller.getWifiInfo'] = {
     this.lanbot = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN',
+      connectionType: 'LAN',
       name: 'lanbot'
     });
 
@@ -1725,7 +1758,7 @@ exports['controller.root'] = {
     var tessel = newTessel({
       authorized: true,
       sandbox: sandbox,
-      type: 'LAN',
+      connectionType: 'LAN',
     });
 
     var testIP = '192.1.1.1';
@@ -1781,7 +1814,7 @@ exports['controller.root'] = {
     var tessel = newTessel({
       authorized: true,
       sandbox: sandbox,
-      type: 'LAN',
+      connectionType: 'LAN',
     });
 
     this.standardTesselCommand.restore();
@@ -2020,7 +2053,7 @@ exports['controller.updateWithRemoteBuilds'] = {
     this.tessel = newTessel({
       sandbox: this.sandbox,
       authorized: true,
-      type: 'LAN'
+      connectionType: 'LAN'
     });
 
     this.requestBuildList = this.sandbox.stub(updates, 'requestBuildList').callsFake(() => {
