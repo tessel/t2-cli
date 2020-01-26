@@ -203,6 +203,46 @@ makeCommand('reboot')
   })
   .help('Reboot your Tessel');
 
+makeCommand('3g')
+  .callback(options => {
+    log.level(options.loglevel);
+
+    callControllerWith('setup3g', options);
+  })
+  .option('apn', {
+    default: 'internet',
+    help: 'Access point name of your mobile provider'
+  })
+  .option('dialnumber', {
+    default: '*99#',
+    help: 'Dialnumber provided by your provider, e.g. *99#'
+  })
+  .option('username', {
+    default: '',
+    help: 'Username provided by your provider'
+  })
+  .option('password', {
+    default: '',
+    help: 'Password provided by your provider'
+  })
+  .option('config', {
+    flag,
+    help: 'Change 3G config with parameters from above'
+  })
+  .option('on', {
+    flag,
+    help: 'Enable 3G connection'
+  })
+  .option('off', {
+    flag,
+    help: 'Disable 3G connection'
+  })
+  .option('status', {
+    flag,
+    help: 'Show 3G connection status information'
+  })
+  .help('3G USB dongle setup');
+
 makeCommand('run')
   .callback(options => {
     log.level(options.loglevel);
